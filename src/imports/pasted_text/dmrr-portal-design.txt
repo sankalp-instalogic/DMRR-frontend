@@ -1,0 +1,641 @@
+Create a **complete modern enterprise-grade Web Portal UI/UX design in Figma** for the **Government of Maharashtra – Disaster Management, Relief & Rehabilitation Department (DMRR)** called:
+
+**“DMRR Project Pipeline Monitoring System (PPMS)”**
+
+This is a **government enterprise portal** used by **vendor manpower, supervisors, PMU, committees, and administrators** for monitoring disaster mitigation proposals and procurement projects across Maharashtra.
+
+## CORE DESIGN REQUIREMENTS
+
+Design a **fully connected clickable portal prototype**, not isolated screens.
+
+Ensure:
+
+* Every page is connected with working navigation.
+* Every button navigates logically.
+* Every upload, edit, approve, reject, revise, save, submit, download, and view button works.
+* Workflow is continuous from Proposal Initiation → DDMA → PMU → PAC → Rationalization → TAC → SEC → SDMA → Tendering → Execution → Billing → Closure.
+* Include realistic Maharashtra Government data and naming.
+* Use **Maharashtra districts, talukas, departments, and government terminology**.
+* Include loading states, empty states, filters, search, notifications, document upload success, errors, and confirmation modals.
+* Design must feel premium, modern, aesthetic, and enterprise-grade.
+* Avoid blue theme completely.
+
+### COLOR SYSTEM
+
+Use a sophisticated Maharashtra Government-inspired palette:
+
+* Primary: Deep Maroon / Wine
+* Secondary: Dark Saffron / Copper
+* Accent: Emerald Green
+* Neutral: Warm white, charcoal grey, soft beige
+* Cards: clean glassmorphism + soft shadows
+* Modern dashboard aesthetics
+
+UI Style:
+
+* Clean government enterprise dashboard
+* Premium modern look
+* Rounded cards
+* Subtle gradients
+* Elegant typography
+* Spacious layout
+* Smart micro interactions
+* Premium icons
+
+---
+
+# WEB PORTAL STRUCTURE
+
+Create a **desktop-first responsive web portal**.
+
+### HEADER
+
+Top sticky header includes:
+
+* Maharashtra Government emblem
+* DMRR PPMS logo
+* System Name:
+  “Disaster Management, Relief & Rehabilitation Department”
+  “DMRR Project Pipeline Monitoring System”
+* Search bar
+* Notifications icon
+* Pending approvals icon
+* User profile dropdown
+* Role switcher
+* Theme setting
+* Current Financial Year Selector
+* District selector
+
+---
+
+## LEFT NAVIGATION (MANDATORY)
+
+Use **Hamburger Style Expandable Sidebar Navigation**
+
+Default state:
+Collapsed hamburger icon.
+
+On expand:
+show grouped menu.
+
+Navigation order MUST BE:
+
+### 1. Dashboard
+
+### 2. Proposal Mitigation
+
+Expand into:
+
+* Proposal Initiation
+* DDMA & Line Department Workflow
+* PMU Preliminary Scrutiny
+* PAC Evaluation
+* Budget Rationalization
+* TAC Technical Appraisal
+* SEC Review
+* SDMA Approval
+* Tendering & Procurement
+* Project Execution & Monitoring
+* Billing & Fund Release
+* Project Closure & Handover
+
+### 3. Procurement Section (Independent Module)
+
+Expand into:
+
+* Procurement Dashboard
+* Administrative Approval
+* Procurement Planning
+* GeM Publication
+* Technical Evaluation
+* Financial Evaluation
+* Contract Award / PO
+* Supply & Delivery
+* Inspection & Acceptance
+* Deployment & Utilization
+* Procurement Register
+
+### 4. Document Management
+
+### 5. AI Document Intelligence
+
+### 6. Reports & Analytics
+
+### 7. Audit Trail
+
+### 8. Master Data Management
+
+Expand:
+
+* District Master
+* Taluka Master
+* Department Master
+* Officer Master
+* Budget Master
+* NDMA Guidelines
+* Vendor Master
+* Equipment Catalogue
+
+### 9. Admin & Configuration
+
+---
+
+# SCREEN 1 — DASHBOARD / HOME PAGE
+
+Design a premium executive dashboard.
+
+### KPI CARDS (MANDATORY)
+
+Top overview cards:
+
+* Total Proposals
+* Approved Proposals
+* Pending Proposals
+* Rejected Proposals
+* Under PAC
+* Under TAC
+* Under SEC
+* Under SDMA
+* Proposal with Line Department / PSU
+* Proposals in Tendering
+* Procurement Ongoing
+* L1 Approval Pending
+* Implementation Stage
+* Quality Monitoring & Evaluation
+* Audit Compliance Stage
+* Billing Stage
+* Completed Projects (Certificate Issued)
+
+### BUDGET SNAPSHOT
+
+Cards + charts:
+
+* Budget Allocated
+* Budget Received
+* Budget Utilized
+* Remaining Budget
+* District-wise Utilization
+
+### PROPOSAL PIPELINE
+
+Create:
+
+* Stage-wise Funnel Visualization
+* Kanban Board
+* Stage tracker
+
+Stages:
+Proposal Created → DDMA → PMU → PAC → Rationalization → TAC → SEC → SDMA → Tender → Execution → Billing → Closure
+
+### MAP ANALYTICS
+
+Interactive Maharashtra district map:
+
+* Proposal count
+* Budget utilization
+* Risk indicator
+
+### ANALYTICS
+
+Charts:
+
+* District-wise proposal stats
+* Fund utilization
+* Proposal status trend
+* Disaster type analytics
+* Department-wise projects
+* Delayed project tracker
+
+### NOTIFICATION PANEL
+
+Include:
+
+* NDMA updates
+* Pending approvals
+* Revision alerts
+* Escalation alerts
+* Budget threshold warning
+
+Clicking notification navigates to module.
+
+---
+
+# PROPOSAL INITIATION MODULE
+
+Create a complete screen with:
+
+Fields:
+
+* Proposal Reference ID auto-generated
+
+* Disaster Type
+
+* District
+
+* Taluka
+
+* Department
+
+* Representative Details
+  (Minister / Principal Secretary / Director / Under Secretary)
+
+* Requirement Description
+
+* Estimated Cost
+
+* Priority
+
+* Receiving Officer
+
+### NDMA GUIDELINE VALIDATION
+
+Real-time validation panel:
+
+* Pass / Warning
+* Rule trace
+* Suggestion cards
+
+### DOCUMENT UPLOAD
+
+Working upload areas:
+
+* PPR Upload
+* DPR Upload
+* Technical Sanction Upload
+* Supporting Documents
+
+Buttons:
+Upload
+Edit
+Preview
+Delete
+Download
+
+### ACTION BUTTONS
+
+Save Draft
+Submit
+Reset
+Send for Review
+
+Submission changes status:
+Submitted → Under Review
+
+---
+
+# DDMA & LINE DEPARTMENT MODULE
+
+Include:
+
+* Proposal Routing
+* Collector Forward
+* Department Assignment
+  (PWD, WRD, SWCD, Forest, Urban Development, Local Body)
+
+Features:
+
+* Cost estimation
+* Resolution Upload
+* Technical Sanction Upload
+
+Buttons working:
+Forward
+Revise
+Upload
+Edit
+Save
+Submit
+
+---
+
+# PMU PRELIMINARY SCRUTINY
+
+Screen includes:
+
+Proposal Review Table:
+Search + filters.
+
+Columns:
+Proposal ID
+District
+Department
+Cost
+Compliance Status
+Pending Days
+
+NDMA Compliance Indicator
+
+Domain Expert Review section
+
+Deficiency Notes
+
+Buttons:
+Forward
+Reject
+Hold
+Send Back for Revision
+
+---
+
+# PAC EVALUATION MODULE
+
+Tabbed layout:
+
+* Administrative
+* Technical
+* Social
+* Financial
+
+Financial tab includes:
+Annual allocation vs cumulative expenditure chart.
+
+PAC Remarks section
+
+PAC MoM upload
+
+Buttons:
+Approve
+Reject
+Rework
+
+Important logic:
+Only cumulative expenditure checked.
+
+---
+
+# RATIONALIZATION MODULE
+
+Include:
+
+District Allocation Summary
+
+Cards:
+Allocated
+Committed
+Exceeded Amount
+
+Priority Ranking:
+High / Medium / Low
+
+Proposal revision interface
+
+Buttons:
+Re-submit to DMU
+Edit Scope
+Reduce Cost
+
+---
+
+# TAC MODULE
+
+Include:
+Technical appraisal workflow
+
+Features:
+
+* Revision Requests
+* TAC Recommendation
+* TAC Documentation upload
+* Technical Feasibility
+* Cost-Benefit Analysis
+
+Buttons:
+Approve
+Revise
+Upload TAC MoM
+
+---
+
+# SEC MODULE
+
+Include:
+
+* Recommendation workflow
+* Revision requests
+* SEC MoM Upload
+
+Buttons:
+Approve
+Revise
+Forward to SDMA
+
+---
+
+# SDMA MODULE
+
+Include:
+
+* Cabinet-level approval view
+* Proposal details
+* Final approval workflow
+* Administrative sanction generation
+
+Buttons:
+Approve
+Reject
+Revise
+Generate Sanction
+
+Upload:
+SDMA MoM
+
+---
+
+# TENDER MODULE
+
+Features:
+
+* Tender reference URL
+* Bid evaluation
+* L1 bidder capture
+* DMU concurrence
+
+Buttons:
+Approve L1
+Reject L1
+Generate Work Order
+
+---
+
+# PROJECT EXECUTION & MONITORING
+
+Include:
+
+Work Order Management
+
+Timeline dashboard
+
+MPR upload
+
+Lagging reasons section
+
+TPQA Monitoring upload
+
+Geo-tagged site images
+
+Audit Compliance Tracker (13-point)
+
+Progress charts:
+Physical %
+Financial %
+Schedule variance
+Cost variance
+
+Buttons:
+Upload
+View
+Edit
+Track Progress
+
+---
+
+# BILLING & FUND RELEASE
+
+Include:
+
+Invoice upload
+
+MB upload
+
+Release tracker:
+25%
+50%
+75%
+100%
+
+Technical Certification
+
+DMU concurrence workflow
+
+Payment tracker:
+Released / Pending
+
+Buttons:
+Upload
+Approve
+Reject
+Release Funds
+
+---
+
+# PROJECT CLOSURE & HANDOVER
+
+Include:
+
+Completion Certificate
+
+Final Inspection
+
+Social Audit
+
+Asset Handover
+
+Closure Dashboard
+
+Buttons:
+Upload
+Download
+Approve Closure
+
+---
+
+# DOCUMENT MANAGEMENT
+
+Document repository with:
+
+* OCR status
+* metadata extraction
+* document preview
+* version history
+* immutable records
+
+Buttons:
+View
+Edit metadata
+Download
+Version compare
+
+---
+
+# AI DOCUMENT INTELLIGENCE
+
+Create AI assistant page:
+
+Ask anything about proposals.
+
+Features:
+
+* semantic search
+* document Q&A
+* proposal insights
+* confidence score
+* cited document results
+
+Chat interface.
+
+---
+
+# REPORTS & ANALYTICS
+
+Include:
+
+* Proposal Status Register
+* Budget Utilization
+* Stage Cycle Time
+* Fund Release Tracker
+* Procurement Register
+* Project Completion Register
+* Audit Trail Export
+
+Export buttons:
+PDF
+Excel
+Print
+
+---
+
+# AUDIT TRAIL
+
+Read-only timeline.
+
+Track:
+
+* Login
+* Uploads
+* Approval
+* Edits
+* Status transitions
+
+---
+
+# MASTER DATA MANAGEMENT
+
+CRUD screens for:
+Districts, Talukas, Officers, Departments, Budget, NDMA, Vendors, Equipment.
+
+Include:
+Upload Excel
+Search
+Edit
+Deactivate
+
+---
+
+# ADMIN MODULE
+
+Include:
+
+* User Management
+* Role Management
+* Permissions
+* System Configurations
+
+---
+
+### IMPORTANT FIGMA AI INSTRUCTION
+
+Generate this as a **single connected enterprise prototype with fully linked screens and realistic data**.
+
+Do NOT create wireframes only.
+
+Create **high-fidelity UI screens with clickable navigation and complete user flow**.
