@@ -1,9 +1,5 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  ReactNode,
-} from "react";
+import { createContext, useContext, useState } from "react";
+import type { ReactNode } from "react";
 
 type SidebarContextType = {
   sidebarOpen: boolean;
@@ -13,11 +9,7 @@ type SidebarContextType = {
 
 const SidebarContext = createContext<SidebarContextType | null>(null);
 
-export function SidebarProvider({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export function SidebarProvider({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const toggleSidebar = () => {
@@ -41,9 +33,7 @@ export function useSidebar() {
   const context = useContext(SidebarContext);
 
   if (!context) {
-    throw new Error(
-      "useSidebar must be used within SidebarProvider"
-    );
+    throw new Error("useSidebar must be used within SidebarProvider");
   }
 
   return context;

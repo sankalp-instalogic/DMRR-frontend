@@ -6,6 +6,7 @@ import { Search, Filter, Eye, Download, FileText, MapPin, Building2, Calendar, A
 const mockProposals = [
   {
     id: "PROP-2026-001",
+    projectName: "Flood Protection Wall",
     disasterType: "Flood",
     district: "Mumbai",
     taluka: "Kurla",
@@ -17,6 +18,7 @@ const mockProposals = [
   },
   {
     id: "PROP-2026-002",
+    projectName: "River Deepening Project",
     disasterType: "Drought",
     district: "Pune",
     taluka: "Haveli",
@@ -28,6 +30,7 @@ const mockProposals = [
   },
   {
     id: "PROP-2026-003",
+    projectName: "Storm Water Drainage",
     disasterType: "Earthquake",
     district: "Nagpur",
     taluka: "Nagpur Urban",
@@ -39,6 +42,7 @@ const mockProposals = [
   },
   {
     id: "PROP-2026-004",
+    projectName: "Landslide Mitigation Works",
     disasterType: "Cyclone",
     district: "Thane",
     taluka: "Kalyan",
@@ -50,6 +54,7 @@ const mockProposals = [
   },
   {
     id: "PROP-2026-005",
+    projectName: "Dam Strengthening",
     disasterType: "Landslide",
     district: "Nashik",
     taluka: "Igatpuri",
@@ -61,6 +66,7 @@ const mockProposals = [
   },
   {
     id: "PROP-2026-006",
+    projectName: "River Embankment",
     disasterType: "Flood",
     district: "Kolhapur",
     taluka: "Kolhapur City",

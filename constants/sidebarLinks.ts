@@ -1,28 +1,23 @@
-// 1. Define the structural configuration for navigation links
 import {
-  LayoutDashboard,
-  FileText,
-  ShoppingCart,
-  FolderOpen,
-  Brain,
   BarChart3,
-  Shield,
+  Brain,
   Database,
+  FileText,
+  FolderOpen,
+  LayoutDashboard,
   Settings,
+  Shield,
+  ShoppingCart,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
-interface NavSubItem {
-  title: string;
-  to: string;
-}
-
-interface NavItem {
+export interface NavItem {
   title: string;
   to?: string;
-  icon: React.ComponentType<{ className?: string }>;
-  end?: boolean; // Used for exact path matching (e.g., Dashboard)
-  stateKey?: string; // Used to track dropdown expand state
-  children?: NavSubItem[];
+  icon?: LucideIcon;
+  end?: boolean;
+  stateKey?: string;
+  children?: NavItem[];
 }
 
 export const sidebarLinks: NavItem[] = [
@@ -32,54 +27,139 @@ export const sidebarLinks: NavItem[] = [
     icon: LayoutDashboard,
     end: true,
   },
+
   {
-    title: "Proposal For Mitigation",
+    title: "Proposals for Mitigation",
     icon: FileText,
     stateKey: "proposal",
     children: [
-      { title: "Proposal Initiation", to: "/proposal-initiation" },
-      { title: "DDMA & Line Department", to: "/ddma-workflow" },
-      { title: "PAC Evaluation", to: "/pac-evaluation" },
-      { title: "TAC Technical Appraisal", to: "/tac-appraisal" },
-      { title: "SEC Review", to: "/sec-review" },
-      { title: "Administrative Approval", to: "/administrative-approval" },
-      { title: "SDMA Approval", to: "/sdma-approval" },
-      { title: "Tendering & Procurement", to: "/tendering" },
-      { title: "Project Execution", to: "/project-execution" },
-      { title: "Billing & Fund Release", to: "/billing" },
-      { title: "Project Closure", to: "/project-closure" },
+      {
+        title: "A. Structural (85%)",
+        stateKey: "structural",
+        children: [
+          { title: "Proposal Initiation", to: "/proposal-initiation" },
+          { title: "Proposal List", to: "/proposal-list" },
+          { title: "DDMA & Line Department", to: "/ddma-workflow" },
+          { title: "PAC Evaluation", to: "/pac-evaluation" },
+          { title: "TAC Technical Appraisal", to: "/tac-appraisal" },
+          { title: "SEC Review", to: "/sec-review" },
+          { title: "Administrative Approval", to: "/administrative-approval" },
+          { title: "SDMA Approval", to: "/sdma-approval" },
+          { title: "Tendering", to: "/tendering" },
+          { title: "Project Execution", to: "/project-execution" },
+          { title: "Billing & Fund Release", to: "/billing" },
+          { title: "Project Closure", to: "/project-closure" },
+        ],
+      },
+
+      {
+        title: "B. Non-Structural (10%)",
+        stateKey: "nonStructural",
+        children: [
+          {
+            title: "Red Line Blue Line Survey",
+            to: "/non-structural/red-line-blue-line",
+          },
+          {
+            title: "Nature Based Solutions",
+            to: "/non-structural/nature-based",
+          },
+          {
+            title: "Data Management & Tendering",
+            to: "/non-structural/tenders",
+          },
+        ],
+      },
+
+      {
+        title: "C. Research & Grants (5%)",
+        stateKey: "research",
+        children: [
+          {
+            title: "Research & Grants",
+            to: "/non-structural/ResearchAndGrants",
+          },
+        ],
+      },
     ],
   },
+
   {
-    title: "Procurement",
+    title: "Proposals for Preparedness & Capacity Building",
     icon: ShoppingCart,
-    stateKey: "procurement",
+    stateKey: "preparedness",
     children: [
-      { title: "Procurement Dashboard", to: "/procurement" },
-      { title: "Procurement Register", to: "/procurement-register" },
-      { title: "Create Procurement", to: "/procurement-create" },
+      {
+        title: "A. Procurements",
+        stateKey: "procurements",
+        children: [
+          { title: "Procurement Dashboard", to: "/procurement" },
+          { title: "Procurement List", to: "/procurement/list" },
+          { title: "Procurement Register", to: "/procurement/register" },
+          { title: "Proposal Scrutiny Committee", to: "/procurement/psc" },
+          { title: "Technical Appraisal Committee", to: "/procurement/tac" },
+          { title: "SEC Approval", to: "/procurement/sec-approval" },
+          {
+            title: "Administrative Approval",
+            to: "/procurement/admin-approval",
+          },
+          {
+            title: "Tendering",
+            to: "/procurement/tendering/tenders",
+          },
+          {
+            title: "Project Execution",
+            to: "/procurement/project-execution",
+          },
+          { title: "Billing", to: "/procurement/billing" },
+          {
+            title: "Project Closure",
+            to: "/procurement/project-closure",
+          },
+        ],
+      },
+
+      {
+        title: "B. Funds Distributed",
+        stateKey: "fundsDistributed",
+        children: [
+          {
+            title: "To Districts",
+            to: "/funds-distributed/districts",
+          },
+          {
+            title: "To Other Utilizations",
+            to: "/funds-distributed/other-utilizations",
+          },
+        ],
+      },
     ],
   },
+
   {
     title: "Document Management",
     to: "/documents",
     icon: FolderOpen,
   },
+
   {
     title: "AI Document Intelligence",
     to: "/ai-intelligence",
     icon: Brain,
   },
+
   {
     title: "Reports & Analytics",
     to: "/reports",
     icon: BarChart3,
   },
+
   {
     title: "Audit Trail",
     to: "/audit-trail",
     icon: Shield,
   },
+
   {
     title: "Master Data",
     icon: Database,
@@ -92,8 +172,10 @@ export const sidebarLinks: NavItem[] = [
       { title: "Budget Master", to: "/master/budget" },
       { title: "NDMA Guidelines", to: "/master/ndma-guidelines" },
       { title: "Vendor Master", to: "/master/vendor" },
+      { title: "Equipment Catalogue", to: "/master/equipment" },
     ],
   },
+
   {
     title: "Admin & Configuration",
     to: "/admin",

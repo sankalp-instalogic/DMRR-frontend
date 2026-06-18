@@ -4,6 +4,37 @@ import { useNavigate } from "react-router";
 
 export function ProposalInitiation() {
   const navigate = useNavigate();
+  // const [formData, setFormData] = useState({
+  //   disasterType: "",
+  //   district: "",
+  //   taluka: "",
+  //   department: "",
+  //   representativeType: "",
+  //   representativeName: "",
+  //   requirement: "",
+  //   estimatedCost: "",
+  //   priority: "",
+  //   receivingOfficer: "",
+  //   dateOfDemand: "",
+  //   receivingAuthority: "",
+  //   officerInCharge: "",
+  //   ndmaReference: "",
+  // });
+
+// const [formData, setFormData] = useState({
+//   disasterType: "",
+//   district: "",
+//   taluka: "",
+//   lineDepartment: "",
+//   proposalReceivedFrom: "",
+//   requirement: "",
+//   estimatedCost: "",
+//   priority: "",
+//   dateOfDemand: "",
+//   receivingAuthority: "",
+//   officerInCharge: "",
+//   ndmaReference: "",
+// });
   
 const [formData, setFormData] = useState({
   disasterType: "",
@@ -31,6 +62,12 @@ const [formData, setFormData] = useState({
   
   const [validationError, setValidationError] = useState("");
 
+  const [documents, setDocuments] = useState({
+    ppr: null,
+    dpr: null,
+    technicalSanction: null,
+    supporting: [],
+  });
 
   const validateForm = () => {
     if (Number(formData.estimatedCost) < 0) return "Cost cannot be negative.";
@@ -259,7 +296,7 @@ const [formData, setFormData] = useState({
           </div>
 
           <div>
-            <label className="block text-sm mb-2">Receiving Authority *</label>
+            <label className="block text-sm mb-2">Letter of Proposal Marked to *</label>
             <select
               value={formData.receivingAuthority}
               onChange={(e) =>
@@ -270,7 +307,7 @@ const [formData, setFormData] = useState({
               }
               className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             >
-              <option value="">Select Receiving Authority</option>
+              <option value=""> Letter of Proposal is Marked to</option>
               <option value="minister">Minister</option>
               <option value="ps">Principal Secretary (PS)</option>
               <option value="director">Director</option>
@@ -298,7 +335,7 @@ const [formData, setFormData] = useState({
           </div>
 
           <div>
-            <label className="block text-sm mb-2">Officer in Charge *</label>
+            <label className="block text-sm mb-2"> Receiving Officer in Charge *</label>
             <select
                 value={formData.officerInCharge}
                 onChange={(e) =>
@@ -309,7 +346,7 @@ const [formData, setFormData] = useState({
                 }
                 className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                <option value="">Select Officer in Charge</option>
+                <option value="">Select Receiving Officer in Charge</option>
                 <option value="under_secretary">Under Secretary</option>
                 <option value="aso">ASO</option>
                 <option value="do">DO</option>

@@ -33,8 +33,11 @@ export function Billing() {
     paymentToVendor: "",
     gstAmount: "",
     tdsAmount: "",
-  });
+  intendedAmount: "",
+  paidAmount: "",
 
+});
+  
   const handleSave = () => {
     console.log(formData);
 
@@ -335,7 +338,7 @@ export function Billing() {
               />
 
               <input
-                placeholder="Account Number"
+                placeholder="RTGS Number"
                 className="border rounded-lg p-2"
               />
 
@@ -366,7 +369,7 @@ export function Billing() {
               />
 
               <input
-                placeholder="Account Number"
+                placeholder="RTGS Number"
                 className="border rounded-lg p-2"
               />
 
@@ -376,7 +379,7 @@ export function Billing() {
 
           {/* GST TDS */}
 
-          <h3 className="font-bold text-lg mb-4">
+          {/* <h3 className="font-bold text-lg mb-4">
             Amount Received By Department Through GST & TDS
           </h3>
 
@@ -404,7 +407,72 @@ export function Billing() {
               }
               className="border rounded-lg p-2"
             />
-          </div>
+          </div> */}
+
+          {/* Payment Details */}
+
+<h3 className="font-bold text-lg mb-4">
+  Payment Details
+</h3>
+
+<div className="grid md:grid-cols-2 gap-4 mb-6">
+  <input
+    placeholder="Amount Intended to Pay"
+    value={formData.intendedAmount}
+    onChange={(e) =>
+      setFormData({
+        ...formData,
+        intendedAmount: e.target.value,
+      })
+    }
+    className="border rounded-lg p-2"
+  />
+
+  <input
+    placeholder="Amount Paid by Department"
+    value={formData.paidAmount}
+    onChange={(e) =>
+      setFormData({
+        ...formData,
+        paidAmount: e.target.value,
+      })
+    }
+    className="border rounded-lg p-2"
+  />
+</div>
+
+
+{/* GST TDS */}
+
+<h3 className="font-bold text-lg mb-4">
+  Amount Received By Department Through GST & TDS
+</h3>
+
+<div className="grid md:grid-cols-2 gap-4 mb-6">
+  <input
+    placeholder="GST Amount"
+    value={formData.gstAmount}
+    onChange={(e) =>
+      setFormData({
+        ...formData,
+        gstAmount: e.target.value,
+      })
+    }
+    className="border rounded-lg p-2"
+  />
+
+  <input
+    placeholder="TDS Amount"
+    value={formData.tdsAmount}
+    onChange={(e) =>
+      setFormData({
+        ...formData,
+        tdsAmount: e.target.value,
+      })
+    }
+    className="border rounded-lg p-2"
+  />
+</div>
 
           {/* BUTTONS */}
 

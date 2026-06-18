@@ -117,7 +117,7 @@ export function ProcurementRegister() {
             Search
           </button>
           <button 
-            onClick={() => navigate("/procurement-create")}
+            onClick={() => navigate("/procurement/create")}
             className="px-4 py-2 bg-[#FF5B1A] hover:bg-opacity-90 text-white rounded-lg flex items-center gap-2 transition-colors font-medium text-sm"
           >
             <Plus className="size-4" />
@@ -164,14 +164,14 @@ export function ProcurementRegister() {
                   <td className="px-4 py-3 whitespace-nowrap">
                     <div className="flex items-center justify-center gap-2">
                       <button
-                        onClick={() => navigate(`/procurement-view/${row.id}`)}
+                        onClick={() => navigate(`/procurement/view/${row.id}`)}
                         className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
                         title="View"
                       >
                         <Eye className="size-4" />
                       </button>
                       <button
-                        onClick={() => navigate(`/procurement-edit/${row.id}`)}
+                        onClick={() => navigate(`/procurement/edit/${row.id}`)}
                         className="p-1.5 text-amber-600 hover:bg-amber-50 rounded transition-colors"
                         title="Edit"
                       >

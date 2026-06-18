@@ -33,7 +33,7 @@ export function ProcurementDashboard() {
           <p className="text-sm text-muted-foreground">Summary view of all procurement records</p>
         </div>
         <button
-          onClick={() => navigate("/procurement-create")}
+          onClick={() => navigate("/procurement/create")}
           className="bg-[#0B1F4D] text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors"
         >
           New Procurement
@@ -176,14 +176,14 @@ export function ProcurementDashboard() {
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-center gap-2">
                       <button
-                        onClick={() => navigate(`/procurement-view/${row.id}`)}
+                        onClick={() => navigate(`/procurement/view/${row.id}`)}
                         className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
                         title="View"
                       >
                         <Eye className="size-4" />
                       </button>
                       <button
-                        onClick={() => navigate(`/procurement-edit/${row.id}`)}
+                        onClick={() => navigate(`/procurement/edit/${row.id}`)}
                         className="p-1.5 text-amber-600 hover:bg-amber-50 rounded transition-colors"
                         title="Update"
                       >

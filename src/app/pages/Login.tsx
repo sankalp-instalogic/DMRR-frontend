@@ -3,6 +3,9 @@ import { useNavigate } from "react-router";
 import { useAuth } from "../context/AuthContext";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { Eye, EyeOff, Lock, Mail, AlertTriangle } from "lucide-react";
+import emblemImg from "../../imports/emblem.png";
+import logoImg from "../../imports/logo.png";
+import bgImg from "../../imports/image-1.png";
 
 export function Login() {
   const [email, setEmail] = useState("");
@@ -120,9 +123,9 @@ export function Login() {
         
         <div className="z-10 flex flex-col items-center text-center max-w-xl">
           <div className="flex gap-8 mb-8 items-center justify-center">
-            <ImageWithFallback src={"./emblem.png"} alt="Maharashtra Emblem" className="h-32 object-contain" />
+            <ImageWithFallback src={emblemImg} alt="Maharashtra Emblem" className="h-32 object-contain" />
             <div className="w-px h-24 bg-gray-300"></div>
-            <ImageWithFallback src={"/logo.png"} alt="SDMA Logo" className="h-28 object-contain" />
+            <ImageWithFallback src={logoImg} alt="SDMA Logo" className="h-28 object-contain" />
           </div>
           
           <h2 className="text-[#0B1F4D] text-sm md:text-base font-bold tracking-[0.2em] mb-4 uppercase">
