@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
-import { Edit2, Plus, Trash2, Upload } from "lucide-react";
+import { Edit2, Plus, Trash2 } from "lucide-react";
 
 import {
   Dialog,
@@ -45,7 +45,7 @@ export function OfficerMaster() {
     districtId: "",
     email: "",
     isActive: true,
-    phone:""
+    phone: "",
   });
 
   // --- QUERIES ---
@@ -145,12 +145,12 @@ export function OfficerMaster() {
       districtId: "",
       email: "",
       isActive: true,
-      phone:""
+      phone: "",
     });
     setIsModalOpen(true);
   };
 
-const handleOpenEdit = (officer: any) => {
+  const handleOpenEdit = (officer: any) => {
     // Optional: Keep this console.log temporarily to see exactly how your GET API shapes the row data
     console.log("Editing Officer Data:", officer);
 
@@ -158,16 +158,17 @@ const handleOpenEdit = (officer: any) => {
     setFormData({
       name: officer.name || "",
       designation: officer.designation || "",
-      
+
       // ✅ Look for the flat ID first, then the nested ID, then fallback to an empty string
-      lineDepartmentId: officer.lineDepartmentId || officer.lineDepartment?.id || "",
-      
+      lineDepartmentId:
+        officer.lineDepartmentId || officer.lineDepartment?.id || "",
+
       // ✅ Do the same for district to prevent the same bug there
       districtId: officer.districtId || officer.district?.id || "",
-      
+
       email: officer.email || "",
       isActive: officer.isActive ?? true,
-      phone:"1234567890"
+      phone: "1234567890",
     });
     setIsModalOpen(true);
   };
@@ -224,12 +225,6 @@ const handleOpenEdit = (officer: any) => {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            className="flex items-center gap-2 cursor-pointer"
-          >
-            <Upload className="size-5" /> Upload Excel
-          </Button>
           <Button
             onClick={handleOpenAdd}
             className="flex items-center gap-2 cursor-pointer"

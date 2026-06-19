@@ -1,115 +1,102 @@
 import { useState } from "react";
-import {
-  ArrowLeft,
-  Eye,
-  Download,
-  Printer,
-} from "lucide-react";
+import { Plus, Eye, Download, ArrowLeft, Printer } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 
-interface NBSData {
-  id: string;
+interface NBS {
+  id?: string;
+  nbsCode: string;
   title: string;
-  solutionHead: string;
-  district: string;
-  grDate: string;
-  allocatedBudget: string;
-  utilizedBudget: string;
+  districtId: string;
+  grIssuedDate: string;
+  allocatedBudget: number | string;
+  utilizedBudget: number | string;
   completionDate: string;
-  grDoc?: File | null;
-  completionDoc?: File | null;
+  grDocument?: File | null;
+  completionCertificate?: File | null;
 }
+
+interface PaginatedResponse {
+  items: NBS[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+}
+
+// Helper to format dates from ISO string
+const formatDate = (dateString: string) => {
+  if (!dateString) return "-";
+  return dateString.split("T")[0];
+};
+
+// Helper to format currency
+const formatCurrency = (amount: number | string) => {
+  if (amount === undefined || amount === null || amount === "") return "-";
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(Number(amount));
+};
+
 export function NatureBasedSolutions() {
   const [activeTab, setActiveTab] = useState<"list" | "new">("list");
+  const [selectedNBS, setSelectedNBS] = useState<NBS | null>(null);
+  
+  // --- Pagination State ---
+  const [page, setPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+  
+  const axiosPrivate = useAxiosPrivate();
 
-  const [selectedNBS, setSelectedNBS] =
-    useState<NBSData | null>(null);
+  const [formData, setFormData] = useState<NBS>({
+    nbsCode: "",
+    title: "",
+    districtId: "",
+    grIssuedDate: "",
+    allocatedBudget: "",
+    utilizedBudget: "",
+    completionDate: "",
+    grDocument: null,
+    completionCertificate: null,
+  });
 
- const [nbsList, setNbsList] = useState<NBSData[]>([
-  {
-    id: "NBS001",
-    title: "Mangrove Restoration",
-    solutionHead: "Coastal Protection",
-    district: "Mumbai",
-    grDate: "10-01-2025",
-    allocatedBudget: "₹50 Lakhs",
-    utilizedBudget: "₹42 Lakhs",
-    completionDate: "15-03-2025",
-  },
-  {
-    id: "NBS002",
-    title: "River Rejuvenation",
-    solutionHead: "Water Conservation",
-    district: "Pune",
-    grDate: "12-02-2025",
-    allocatedBudget: "₹50 Lakhs",
-    utilizedBudget: "₹38 Lakhs",
-    completionDate: "20-04-2025",
-  },
-  {
-    id: "NBS003",
-    title: "Urban Forest Development",
-    solutionHead: "Afforestation",
-    district: "Nagpur",
-    grDate: "15-02-2025",
-    allocatedBudget: "₹50 Lakhs",
-    utilizedBudget: "₹46 Lakhs",
-    completionDate: "25-04-2025",
-  },
-  {
-    id: "NBS004",
-    title: "Wetland Conservation",
-    solutionHead: "Biodiversity",
-    district: "Nashik",
-    grDate: "20-03-2025",
-    allocatedBudget: "₹50 Lakhs",
-    utilizedBudget: "₹35 Lakhs",
-    completionDate: "10-05-2025",
-  },
-  {
-    id: "NBS005",
-    title: "Green Corridor",
-    solutionHead: "Climate Adaptation",
-    district: "Thane",
-    grDate: "01-04-2025",
-    allocatedBudget: "₹50 Lakhs",
-    utilizedBudget: "₹40 Lakhs",
-    completionDate: "18-06-2025",
-  },
-]);
+  // --- GET ROUTE INTEGRATION (Updated with Pagination) ---
+  const { data, isLoading, isError, isFetching } = useQuery<PaginatedResponse>({
+    queryKey: ["nbs-list", page, pageSize], // Query invalidates/refetches when these change
+    queryFn: async () => {
+      const response = await axiosPrivate.get("/api/v1/nbs", {
+        params: {
+          page: page,
+          pageSize: pageSize,
+        },
+      });
+      return response.data;
+    },
+  });
 
- const [formData, setFormData] = useState<NBSData>({
-  id: "",
-  title: "",
-  solutionHead: "",
-  district: "",
-  grDate: "",
-  allocatedBudget: "",
-  utilizedBudget: "",
-  completionDate: "",
-  grDoc: null,
-  completionDoc: null,
-});
+  // Extract items from the paginated response, fallback to empty array
+  const nbsList = data?.items || [];
+  const totalPages = data?.totalPages || 0;
+  const totalCount = data?.totalCount || 0;
 
+  // --- POST ROUTE (ON HOLD) ---
   const handleSave = () => {
-    setNbsList([
-      ...nbsList,
-      {
-        ...formData,
-      },
-    ]);
-
+    console.log("POST request is on hold. Form Data:", formData);
+    
+    // Reset form
     setFormData({
-  id: "",
-  title: "",
-  solutionHead: "",
-  district: "",
-  grDate: "",
-  allocatedBudget: "",
-  utilizedBudget: "",
-  completionDate: "",
-  grDoc: null,
-  completionDoc: null,
-});
+      nbsCode: "",
+      title: "",
+      districtId: "",
+      grIssuedDate: "",
+      allocatedBudget: "",
+      utilizedBudget: "",
+      completionDate: "",
+      grDocument: null,
+      completionCertificate: null,
+    });
 
     setActiveTab("list");
   };
@@ -118,10 +105,9 @@ export function NatureBasedSolutions() {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-
           <button
             onClick={() => setSelectedNBS(null)}
-            className="flex items-center gap-2 px-4 py-2 border rounded-lg"
+            className="flex items-center gap-2 cursor-pointer bg-white border border-[#0B1F4D] text-[#0B1F4D] px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-gray-50 transition-colors"
           >
             <ArrowLeft className="size-4" />
             Back
@@ -129,397 +115,364 @@ export function NatureBasedSolutions() {
 
           <button
             onClick={() => window.print()}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg"
+            className="flex items-center gap-2 cursor-pointer bg-white border border-[#0B1F4D] text-[#0B1F4D] px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-gray-50 transition-colors"
           >
             <Printer className="size-4" />
             Print
           </button>
-
         </div>
 
-        <div className="bg-card border rounded-xl p-6 shadow-sm">
-
-          <h2 className="text-2xl font-bold mb-6">
+        {/* ... (Selected NBS Details remain unchanged) ... */}
+        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+          <h2 className="text-[20px] font-semibold text-[#0B1F4D] mb-6 pb-4 border-b border-gray-200">
             Nature Based Solution Details
           </h2>
-<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-  <div>
-    <label className="font-semibold">
-      NBS ID
-    </label>
-    <div>{selectedNBS.id}</div>
-  </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-6">
+            <div>
+              <label className="text-[14px] font-medium text-gray-500 mb-1 block">NBS Code</label>
+              <p className="font-semibold text-[16px] text-[#0B1F4D]">{selectedNBS.nbsCode}</p>
+            </div>
+            <div>
+              <label className="text-[14px] font-medium text-gray-500 mb-1 block">District ID</label>
+              <p className="font-semibold text-[16px] text-[#0B1F4D]">{selectedNBS.districtId}</p>
+            </div>
+            <div>
+              <label className="text-[14px] font-medium text-gray-500 mb-1 block">Title</label>
+              <p className="font-semibold text-[16px] text-[#0B1F4D]">{selectedNBS.title}</p>
+            </div>
+            <div>
+              <label className="text-[14px] font-medium text-gray-500 mb-1 block">Date of GR Issued</label>
+              <p className="font-semibold text-[16px] text-[#0B1F4D]">{formatDate(selectedNBS.grIssuedDate)}</p>
+            </div>
+            <div>
+              <label className="text-[14px] font-medium text-gray-500 mb-1 block">Allocated Budget</label>
+              <p className="font-semibold text-[16px] text-[#0B1F4D]">{formatCurrency(selectedNBS.allocatedBudget)}</p>
+            </div>
+            <div>
+              <label className="text-[14px] font-medium text-gray-500 mb-1 block">Utilized Budget</label>
+              <p className="font-semibold text-[16px] text-[#0B1F4D]">{formatCurrency(selectedNBS.utilizedBudget)}</p>
+            </div>
+            <div>
+              <label className="text-[14px] font-medium text-gray-500 mb-1 block">Date of Completion</label>
+              <p className="font-semibold text-[16px] text-[#0B1F4D]">{formatDate(selectedNBS.completionDate)}</p>
+            </div>
 
-  <div>
-    <label className="font-semibold">
-      District
-    </label>
-    <div>{selectedNBS.district}</div>
-  </div>
+            <div className="md:col-span-2 border-t border-gray-200 pt-4 mt-2"></div>
 
-  <div>
-    <label className="font-semibold">
-      Title
-    </label>
-    <div>{selectedNBS.title}</div>
-  </div>
+            <div>
+              <label className="text-[16px] font-semibold text-[#0B1F4D] block mb-4">GR Issued</label>
+              <div className="flex gap-3">
+                <button className="flex cursor-pointer items-center gap-1.5 bg-white border border-[#0B1F4D] text-[#0B1F4D] px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-gray-50 transition-colors">
+                  <Eye className="size-4" /> View
+                </button>
+                <button className="flex cursor-pointer items-center gap-1.5 bg-[#0B1F4D] text-white px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-[#0B1F4D]/90 transition-colors">
+                  <Download className="size-4" /> Download
+                </button>
+              </div>
+            </div>
 
-  <div>
-    <label className="font-semibold">
-      Date of GR Issued
-    </label>
-    <div>{selectedNBS.grDate}</div>
-  </div>
-
-  <div>
-    <label className="font-semibold">
-      Allocated Budget
-    </label>
-    <div>{selectedNBS.allocatedBudget}</div>
-  </div>
-
-  <div>
-    <label className="font-semibold">
-      Utilized Budget
-    </label>
-    <div>{selectedNBS.utilizedBudget}</div>
-  </div>
-
-  <div>
-    <label className="font-semibold">
-      Date of Completion
-    </label>
-    <div>{selectedNBS.completionDate}</div>
-  </div>
-
-  <div>
-    <label className="font-semibold">
-      GR Issued
-    </label>
-
-    <div className="flex gap-3 mt-2">
-      <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg">
-        <Eye className="size-4" />
-        View
-      </button>
-
-      <button className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg">
-        <Download className="size-4" />
-        Download
-      </button>
-    </div>
-  </div>
-
-  <div>
-    <label className="font-semibold">
-      Completion Certificate
-    </label>
-
-    <div className="flex gap-3 mt-2">
-      <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg">
-        <Eye className="size-4" />
-        View
-      </button>
-
-      <button className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg">
-        <Download className="size-4" />
-        Download
-      </button>
-    </div>
-  </div>
-
-</div>
+            <div>
+              <label className="text-[16px] font-semibold text-[#0B1F4D] block mb-4">Completion Certificate</label>
+              <div className="flex gap-3">
+                <button className="flex cursor-pointer items-center gap-1.5 bg-white border border-[#0B1F4D] text-[#0B1F4D] px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-gray-50 transition-colors">
+                  <Eye className="size-4" /> View
+                </button>
+                <button className="flex cursor-pointer items-center gap-1.5 bg-[#0B1F4D] text-white px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-[#0B1F4D]/90 transition-colors">
+                  <Download className="size-4" /> Download
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <>
-      <div className="flex items-center justify-between mb-6">
-
-        <h1 className="text-2xl">
-          Nature Based Solutions
-        </h1>
-
-        <div className="flex gap-3">
-
-          <button
-            onClick={() => setActiveTab("list")}
-            className={`px-4 py-2 rounded-lg ${
-              activeTab === "list"
-                ? "bg-primary text-white"
-                : "border"
-            }`}
-          >
-            NBS List
-          </button>
-
-          <button
-            onClick={() => setActiveTab("new")}
-            className={`px-4 py-2 rounded-lg ${
-              activeTab === "new"
-                ? "bg-primary text-white"
-                : "border"
-            }`}
-          >
-            New Solution
-          </button>
-
-        </div>
-
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-[30px] font-bold text-[#0B1F4D]">Nature Based Solutions</h1>
+        <p className="text-[14px] font-medium text-gray-500 mt-1">
+          Manage and monitor Nature Based Solutions projects and budgets.
+        </p>
       </div>
 
-      {activeTab === "list" && (
-        <div className="bg-card border rounded-xl p-6 shadow-sm">
-
-          <table className="w-full border">
-
-            <thead className="bg-muted">
-
-              <tr>
-                   
-                <th className="border text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider ">Sr No</th>
-               <th className="border text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider ">NBS ID</th>
-                <th className="border text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider ">Solution Head</th>
-                <th className="border text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider ">Date of GR Issued</th>
-              <th className="border text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider ">Allocated Budget</th>
-                 <th className="border text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider ">Utilized Budget</th>
-                <th className="border text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider ">Date of Completion</th>
-               <th className="border text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider "> Action</th>
-              </tr>
-
-            </thead>
-
-          <tbody>
-  {nbsList.map((item, index) => (
-    <tr key={index}>
-      <td className="border p-3 text-center">
-        {index + 1}
-      </td>
-
-      <td className="border p-3 text-center">
-        {item.id}
-      </td>
-
-      <td className="border p-3 text-center">
-        {item.district}
-      </td>
-
-      <td className="border p-3 text-center">
-        {item.grDate}
-      </td>
-
-      <td className="border p-3 text-center">
-        {item.allocatedBudget}
-      </td>
-
-      <td className="border p-3 text-center">
-        {item.utilizedBudget}
-      </td>
-
-      <td className="border p-3 text-center">
-        {item.completionDate}
-      </td>
-
-      <td className="border p-3 text-center">
+      {/* Top Buttons as Tabs */}
+      <div className="flex gap-2">
         <button
-          onClick={() => setSelectedNBS(item)}
-          className="px-4 py-2 bg-primary text-white rounded-lg"
+          onClick={() => setActiveTab("list")}
+          className={`px-4 py-2 cursor-pointer font-medium text-[14px] transition-colors rounded-[10px] ${
+            activeTab === "list"
+              ? "bg-[#0B1F4D] text-white"
+              : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+          }`}
         >
-          View
+          NBS List
         </button>
-      </td>
-    </tr>
-  ))}
-</tbody>
-            
-          </table>
 
+        <button
+          onClick={() => setActiveTab("new")}
+          className={`flex cursor-pointer items-center gap-2 px-4 py-2 font-medium text-[14px] transition-colors rounded-[10px] ${
+            activeTab === "new"
+              ? "bg-[#0B1F4D] text-white"
+              : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+          }`}
+        >
+          <Plus className="size-4" />
+          New Solution
+        </button>
+      </div>
+
+      {/* NBS List */}
+      {activeTab === "list" && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6 flex flex-col relative">
+          
+          {/* Loading Overlay for Pagination Refetching */}
+          {isFetching && !isLoading && (
+             <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-10 flex items-center justify-center">
+                <span className="text-[#0B1F4D] font-medium bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">Updating...</span>
+             </div>
+          )}
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-[13px] text-left">
+              <thead className="bg-[#F5F7FA] text-[#0B1F4D]">
+                <tr className="h-14">
+                  <th className="px-4 font-semibold whitespace-nowrap">Sr No</th>
+                  <th className="px-4 font-semibold whitespace-nowrap">NBS Code</th>
+                  <th className="px-4 font-semibold whitespace-nowrap">Title</th>
+                  <th className="px-4 font-semibold whitespace-nowrap">District ID</th>
+                  <th className="px-4 font-semibold whitespace-nowrap">Date of GR Issued</th>
+                  <th className="px-4 font-semibold whitespace-nowrap">Allocated Budget</th>
+                  <th className="px-4 font-semibold whitespace-nowrap">Utilized Budget</th>
+                  <th className="px-4 font-semibold whitespace-nowrap">Date of Completion</th>
+                  <th className="px-4 font-semibold whitespace-nowrap text-center">Action</th>
+                </tr>
+              </thead>
+
+              <tbody className="divide-y divide-gray-100">
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={9} className="px-4 py-8 text-center text-gray-500 font-medium">
+                      Loading solutions...
+                    </td>
+                  </tr>
+                ) : isError ? (
+                  <tr>
+                    <td colSpan={9} className="px-4 py-8 text-center text-red-500 font-medium">
+                      Failed to load solutions. Please try again.
+                    </td>
+                  </tr>
+                ) : nbsList.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} className="px-4 py-8 text-center text-gray-500 font-medium">
+                      No solutions found. Click "New Solution" to add one.
+                    </td>
+                  </tr>
+                ) : (
+                  nbsList.map((item, index) => (
+                    <tr
+                      key={item.id || index}
+                      className="hover:bg-blue-50/50 transition-colors h-14 even:bg-gray-50/50"
+                    >
+                      <td className="px-4 font-medium text-[#0B1F4D] whitespace-nowrap">
+                        {/* Dynamic Serial Number Logic */}
+                        {(page - 1) * pageSize + index + 1}
+                      </td>
+                      <td className="px-4">{item.nbsCode}</td>
+                      <td className="px-4">{item.title}</td>
+                      <td className="px-4">
+                        <span className="truncate max-w-25 inline-block" title={item.districtId}>
+                           {item.districtId.slice(0, 8)}...
+                        </span>
+                      </td>
+                      <td className="px-4">{formatDate(item.grIssuedDate)}</td>
+                      <td className="px-4">{formatCurrency(item.allocatedBudget)}</td>
+                      <td className="px-4">{formatCurrency(item.utilizedBudget)}</td>
+                      <td className="px-4">{formatDate(item.completionDate)}</td>
+
+                      <td className="px-4 whitespace-nowrap text-center">
+                        <button
+                          onClick={() => setSelectedNBS(item)}
+                          className="inline-flex cursor-pointer items-center gap-1.5 px-4 h-10 bg-white border border-[#0B1F4D] text-[#0B1F4D] rounded-[10px] hover:bg-blue-50 transition-colors text-[14px] font-medium"
+                        >
+                          <Eye className="size-4" />
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination Controls */}
+          {nbsList.length > 0 && (
+            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-[#F5F7FA]">
+              <div className="flex items-center gap-3">
+                <span className="text-[13px] text-gray-500 font-medium">
+                  Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, totalCount)} of {totalCount} entries
+                </span>
+                
+                {/* Optional: Page Size Selector */}
+                <select
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                    setPage(1); // Reset to page 1 when changing page size
+                  }}
+                  className="text-[13px] border border-gray-200 rounded px-2 py-1 bg-white outline-none focus:border-[#0B1F4D]"
+                >
+                  <option value={5}>5 per page</option>
+                  <option value={10}>10 per page</option>
+                  <option value={20}>20 per page</option>
+                  <option value={50}>50 per page</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1 || isLoading || isFetching}
+                  className="px-3 py-1.5 text-[13px] font-medium border border-gray-200 rounded-lg bg-white text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  Previous
+                </button>
+                
+                <span className="text-[13px] font-semibold text-[#0B1F4D] px-2">
+                  Page {page} of {totalPages}
+                </span>
+                
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages || isLoading || isFetching}
+                  className="px-3 py-1.5 text-[13px] font-medium border border-gray-200 rounded-lg bg-white text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
+      {/* ... (New NBS Form remains unchanged) ... */}
       {activeTab === "new" && (
-        <div className="bg-card border rounded-xl p-6 shadow-sm">
-
-          <h2 className="text-xl font-bold mb-6">
-            New Nature Based Solution
+        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+          {/* Form Content Omitted For Brevity in Display - Keeps Original implementation */}
+          <h2 className="text-[20px] font-semibold mb-6 text-[#0B1F4D]">
+            Add New Nature Based Solution
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[14px] font-medium text-gray-700 mb-1">NBS Code</label>
+              <input
+                type="text"
+                className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20"
+                value={formData.nbsCode}
+                onChange={(e) => setFormData({ ...formData, nbsCode: e.target.value })}
+              />
+            </div>
 
-  <div>
-    <label className="font-semibold block mb-2">
-      NBS ID
-    </label>
-    <input
-      className="w-full border rounded-lg p-3"
-      value={formData.id}
-      onChange={(e) =>
-        setFormData({
-          ...formData,
-          id: e.target.value,
-        })
-      }
-    />
-  </div>
+            <div>
+              <label className="block text-[14px] font-medium text-gray-700 mb-1">Title</label>
+              <input
+                type="text"
+                className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              />
+            </div>
 
-  <div>
-    <label className="font-semibold block mb-2">
-      Title
-    </label>
-    <input
-      className="w-full border rounded-lg p-3"
-      value={formData.title}
-      onChange={(e) =>
-        setFormData({
-          ...formData,
-          title: e.target.value,
-        })
-      }
-    />
-  </div>
+            <div>
+              <label className="block text-[14px] font-medium text-gray-700 mb-1">District ID</label>
+              <input
+                type="text"
+                className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20"
+                value={formData.districtId}
+                onChange={(e) => setFormData({ ...formData, districtId: e.target.value })}
+              />
+            </div>
 
-  <div>
-    <label className="font-semibold block mb-2">
-      District
-    </label>
-    <input
-      className="w-full border rounded-lg p-3"
-      value={formData.district}
-      onChange={(e) =>
-        setFormData({
-          ...formData,
-          district: e.target.value,
-        })
-      }
-    />
-  </div>
+            <div>
+              <label className="block text-[14px] font-medium text-gray-700 mb-1">Date of GR Issued</label>
+              <input
+                type="date"
+                className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20"
+                value={formData.grIssuedDate}
+                onChange={(e) => setFormData({ ...formData, grIssuedDate: e.target.value })}
+              />
+            </div>
 
-  <div>
-    <label className="font-semibold block mb-2">
-      Date of GR Issued
-    </label>
-    <input
-      type="date"
-      className="w-full border rounded-lg p-3"
-      value={formData.grDate}
-      onChange={(e) =>
-        setFormData({
-          ...formData,
-          grDate: e.target.value,
-        })
-      }
-    />
-  </div>
+            <div>
+              <label className="block text-[14px] font-medium text-gray-700 mb-1">Allocated Budget</label>
+              <input
+                type="number"
+                className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20"
+                value={formData.allocatedBudget}
+                onChange={(e) => setFormData({ ...formData, allocatedBudget: e.target.value })}
+              />
+            </div>
 
-  <div>
-    <label className="font-semibold block mb-2">
-      Allocated Budget
-    </label>
-    <input
-      className="w-full border rounded-lg p-3"
-      value={formData.allocatedBudget}
-      onChange={(e) =>
-        setFormData({
-          ...formData,
-          allocatedBudget: e.target.value,
-        })
-      }
-    />
-  </div>
+            <div>
+              <label className="block text-[14px] font-medium text-gray-700 mb-1">Utilized Budget</label>
+              <input
+                type="number"
+                className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20"
+                value={formData.utilizedBudget}
+                onChange={(e) => setFormData({ ...formData, utilizedBudget: e.target.value })}
+              />
+            </div>
 
-  <div>
-    <label className="font-semibold block mb-2">
-      Utilized Budget
-    </label>
-    <input
-      className="w-full border rounded-lg p-3"
-      value={formData.utilizedBudget}
-      onChange={(e) =>
-        setFormData({
-          ...formData,
-          utilizedBudget: e.target.value,
-        })
-      }
-    />
-  </div>
+            <div>
+              <label className="block text-[14px] font-medium text-gray-700 mb-1">Date of Completion</label>
+              <input
+                type="date"
+                className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20"
+                value={formData.completionDate}
+                onChange={(e) => setFormData({ ...formData, completionDate: e.target.value })}
+              />
+            </div>
 
-  <div>
-    <label className="font-semibold block mb-2">
-      Date of Completion
-    </label>
-    <input
-      type="date"
-      className="w-full border rounded-lg p-3"
-      value={formData.completionDate}
-      onChange={(e) =>
-        setFormData({
-          ...formData,
-          completionDate: e.target.value,
-        })
-      }
-    />
-  </div>
+            <div>
+              <label className="block text-[14px] font-medium text-gray-700 mb-1">GR Issued Upload</label>
+              <input
+                type="file"
+                className="w-full text-[14px] file:mr-4 file:py-2 file:px-4 file:rounded-[10px] file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                onChange={(e) => setFormData({ ...formData, grDocument: e.target.files?.[0] || null })}
+              />
+            </div>
 
-  <div>
-    <label className="font-semibold block mb-2">
-      GR Issued Upload
-    </label>
-    <input
-      type="file"
-      className="w-full border rounded-lg p-3"
-      onChange={(e) =>
-        setFormData({
-          ...formData,
-          grDoc: e.target.files?.[0] || null,
-        })
-      }
-    />
-  </div>
+            <div className="md:col-span-2">
+              <label className="block text-[14px] font-medium text-gray-700 mb-1">Completion Certificate Upload</label>
+              <input
+                type="file"
+                className="w-full text-[14px] file:mr-4 file:py-2 file:px-4 file:rounded-[10px] file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                onChange={(e) => setFormData({ ...formData, completionCertificate: e.target.files?.[0] || null })}
+              />
+            </div>
+          </div>
 
-  <div className="md:col-span-2">
-    <label className="font-semibold block mb-2">
-      Completion Certificate Upload
-    </label>
-    <input
-      type="file"
-      className="w-full border rounded-lg p-3"
-      onChange={(e) =>
-        setFormData({
-          ...formData,
-          completionDoc:
-            e.target.files?.[0] || null,
-        })
-      }
-    />
-  </div>
-
-</div>
-
-          {/* Buttons */}
-          <div className="flex gap-4 mt-8">
-
-            <button
-              onClick={handleSave}
-              className="bg-primary text-white px-6 py-3 rounded-lg"
-            >
-              Save
-            </button>
-
+          <div className="flex gap-3 justify-end mt-6 pt-4 border-t border-gray-200">
             <button
               onClick={() => setActiveTab("list")}
-              className="border px-6 py-3 rounded-lg"
+              className="px-4 h-10 cursor-pointer bg-white border border-[#0B1F4D] text-[#0B1F4D] rounded-[10px] font-medium hover:bg-gray-50 transition-colors text-[14px]"
             >
               Cancel
             </button>
 
+            <button
+              onClick={handleSave}
+              className="px-4 h-10 cursor-pointer bg-[#0B1F4D] text-white rounded-[10px] font-medium hover:bg-[#0B1F4D]/90 transition-colors text-[14px]"
+            >
+              Save
+            </button>
           </div>
-
         </div>
       )}
-
-    </>
+    </div>
   );
 }
