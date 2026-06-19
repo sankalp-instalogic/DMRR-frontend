@@ -14,7 +14,7 @@ export function TenderDetails() {
     <div className="space-y-6 pb-12">
       <div className="flex items-center gap-4">
         <Link 
-          to="/procurement/tendering/tenders" 
+          to="/procurement-tendering/tenders" 
           className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground hover:text-[#0B1F4D]"
         >
           <ArrowLeft className="size-5" />
@@ -165,7 +165,7 @@ export function TenderDetails() {
       {/* Bottom Action Bar */}
       <div className="flex justify-end gap-3 sticky bottom-0 bg-white p-4 border-t border-border shadow-lg z-10 -mx-6 -mb-6 px-6">
         <button 
-          onClick={() => navigate("/procurement/tendering/tenders")}
+          onClick={() => navigate("/procurement-tendering/tenders")}
           className="px-6 py-2 bg-muted text-[#0B1F4D] rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
         >
           Back

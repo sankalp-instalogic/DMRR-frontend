@@ -1,34 +1,16 @@
-// import { useState } from "react";
-// import { useNavigate } from "react-router";
-// import {
-//   CheckCircle2, XCircle, RefreshCw, Upload, AlertCircle, ArrowLeft, Send, Plus, Trash2, Eye, Download, FileText, MapPin, Calendar, IndianRupee, Map
-// } from "lucide-react";
-// import { Stage7 } from "../components/Stage7";
-// import { Stage8 } from "../components/Stage8";
-// import { Stage9 } from "../components/Stage9";
-
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import {
   CheckCircle2,
   XCircle,
   RefreshCw,
-  Upload,
   AlertCircle,
   ArrowLeft,
   Send,
   Plus,
   Trash2,
-  Eye,
-  Download,
-  FileText,
-  MapPin,
-  Calendar,
-  IndianRupee,
-  Map
 } from "lucide-react";
 
-import { Stage7 } from "../components/Stage7";
 import { Stage8 } from "../components/Stage8";
 import { Stage9 } from "../components/Stage9";
 
@@ -179,13 +161,6 @@ export function StageUpdate() {
     rejectionReason: ""
   });
 
-  // Stage 2 - PMU
-  // const [stage2Data, setStage2Data] = useState({
-  //   observation: "",
-  //   complianceFlag: false,
-  //   revisionRequired: false,
-  //   decision: "" // approve, reject, revision
-  // });
 
   const [stage2Data, setStage2Data] = useState({
   proposalReceivedDateTime: "",
@@ -196,28 +171,6 @@ export function StageUpdate() {
   decision: ""
 });
 
-  // Stage 3 - PAC
-  // const [stage3Data, setStage3Data] = useState({
-  //   decision: "", // approve, reject, revision
-  //   pacMoM: null as File | null,
-  //   observationNotes: ""
-  // });
-
-//   const [stage3Data, setStage3Data] = useState({
-//   meetingDate: "",
-//   meetingTime: "",
-//   members: [
-//     {
-//       srNo: 1,
-//       name: "",
-//       designation: ""
-//     }
-//   ],
-//   attendanceSheet: null as File | null,
-//   decision: "",
-//   pacMoM: null as File | null,
-//   observationNotes: ""
-// });
 
   const [stage3Data, setStage3Data] = useState({
   meetingDate: "",
@@ -236,13 +189,6 @@ export function StageUpdate() {
   observationNotes: ""
 });
 
-  // Stage 4 - TAC
-  // const [stage4Data, setStage4Data] = useState({
-  //   decision: "", // approve, reject, revision
-  //   tacMoM: null as File | null,
-  //   reason: "",
-  //   observationNotes: ""
-  // });
 
 const [stage4Data, setStage4Data] = useState({
   meetingDate: "",
@@ -261,13 +207,6 @@ const [stage4Data, setStage4Data] = useState({
   observationNotes: ""
 });
   
-  // Stage 5 - SEC
-  // const [stage5Data, setStage5Data] = useState({
-  //   decision: "", // approve, reject, revision
-  //   secMoM: null as File | null,
-  //   reason: "",
-  //   observationNotes: ""
-  // });
 
   const [stage5Data, setStage5Data] = useState({
   meetingDate: "",
@@ -324,21 +263,16 @@ const [stage4Data, setStage4Data] = useState({
 
   // Stage 8 - Tendering
   const [stage8Data, setStage8Data] = useState({
-    tenderDate: "",
-    tenderRef: "",
-    tenderUrl: "",
-    tenderDoc: null as File | null,
-    vendorName: "",
-    vendorRegNo: "",
-    vendorContactPerson: "",
-    vendorContactNo: "",
-    workOrderInitDate: "",
-    workOrderNo: "",
-    totalTenderCost: "",
-    installments: [] as { no: string, date: string, amount: string, remarks: string }[],
-    supportingDocs: [] as File[],
-    docType: "Bid Evaluation Report"
-  });
+  l1VendorIdentified: "",       // yes / no
+  vendorName: "",
+  l1Cost: "",
+
+  workOrderIssued: "",          // yes / no
+  workOrderIssuedDate: "",
+
+  supportingDocType: "Letter from DMRR",
+  supportingDocs: [] as File[]
+});
 
   // Stage 9 - Project Execution
   const [stage9Data, setStage9Data] = useState({
@@ -428,54 +362,6 @@ const [stage4Data, setStage4Data] = useState({
         isValid = stage2Data.decision !== "";
         message = `Proposal ${stage2Data.decision}`;
         break;
-
-      // case 3:
-      //   if (stage3Data.decision === "approve" && !stage3Data.pacMoM) {
-      //     alert("Please upload PAC Minutes of Meeting.");
-      //     return;
-      //   }
-      //   isValid = stage3Data.decision !== "";
-      //   message = stage3Data.decision === "approve" ? "Approved and forwarded to TAC" : stage3Data.decision === "reject" ? "Moved to General List" : "Sent for revision";
-      //   break;
-
-      // case 4:
-      //   if (stage4Data.decision === "approve" && !stage4Data.tacMoM) {
-      //     alert("Please upload TAC Minutes of Meeting.");
-      //     return;
-      //   }
-      //   if (stage4Data.decision === "reject" && !stage4Data.reason) {
-      //     alert("Please provide rejection reason.");
-      //     return;
-      //   }
-      //   isValid = stage4Data.decision !== "";
-      //   message = `Proposal ${stage4Data.decision}`;
-      //   break;
-
-      // case 5:
-      //   if (stage5Data.decision === "approve" && !stage5Data.secMoM) {
-      //     alert("Please upload SEC Minutes of Meeting.");
-      //     return;
-      //   }
-      //   if (stage5Data.decision === "reject" && !stage5Data.reason) {
-      //     alert("Please provide rejection reason.");
-      //     return;
-      //   }
-      //   isValid = stage5Data.decision !== "";
-      //   message = `Proposal ${stage5Data.decision}`;
-      //   break;
-
-      // case 6:
-      //   if (stage6Data.decision === "approve" && !stage6Data.sdmaMoM) {
-      //     alert("Please upload SDMA Minutes of Meeting.");
-      //     return;
-      //   }
-      //   if (stage6Data.decision === "reject" && !stage6Data.reason) {
-      //     alert("Please provide rejection reason.");
-      //     return;
-      //   }
-      //   isValid = stage6Data.decision !== "";
-      //   message = `Proposal ${stage6Data.decision}`;
-      //   break;
 
         case 3:
   // Meeting details validation
@@ -724,9 +610,32 @@ case 7:
   break;
 
       case 8:
-        isValid = true;
-        message = "Stage 8 saved. Forwarded to Stage 9.";
-        break;
+
+  if (
+    stage8Data.l1VendorIdentified === "yes" &&
+    (!stage8Data.vendorName || !stage8Data.l1Cost)
+  ) {
+    alert("Please enter Vendor Name and L1 Cost.");
+    return;
+  }
+
+  if (
+    stage8Data.workOrderIssued === "yes" &&
+    !stage8Data.workOrderIssuedDate
+  ) {
+    alert("Please enter Work Order Issued Date.");
+    return;
+  }
+
+  if (stage8Data.supportingDocs.length === 0) {
+    alert("Please upload Supporting Documents.");
+    return;
+  }
+
+  isValid = true;
+  message = "Tendering details saved successfully.";
+
+  break;
 
       case 9:
         isValid = true;
@@ -897,89 +806,6 @@ case 7:
             )}
           </div>
         )}
-
-        {/* {currentStage === 2 && (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">PMU Observation</label>
-              <textarea
-                value={stage2Data.observation}
-                onChange={(e) => setStage2Data({ ...stage2Data, observation: e.target.value })}
-                className="w-full px-4 py-3 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
-                rows={4}
-                placeholder="Enter PMU observations"
-              />
-            </div>
-
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="compliance"
-                checked={stage2Data.complianceFlag}
-                onChange={(e) => setStage2Data({ ...stage2Data, complianceFlag: e.target.checked })}
-                className="w-4 h-4"
-              />
-              <label htmlFor="compliance" className="text-sm font-medium cursor-pointer">
-                Compliance Flag
-              </label>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="revision"
-                checked={stage2Data.revisionRequired}
-                onChange={(e) => setStage2Data({ ...stage2Data, revisionRequired: e.target.checked })}
-                className="w-4 h-4"
-              />
-              <label htmlFor="revision" className="text-sm font-medium cursor-pointer">
-                Revision Requirement
-              </label>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Decision <span className="text-red-600">*</span>
-              </label>
-              <div className="flex gap-4">
-                <button
-                  onClick={() => setStage2Data({ ...stage2Data, decision: "approve" })}
-                  className={`flex-1 px-4 py-3 rounded-lg border font-medium transition-all ${
-                    stage2Data.decision === "approve"
-                      ? "bg-green-100 border-green-600 text-green-700"
-                      : "border-border hover:bg-muted"
-                  }`}
-                >
-                  <CheckCircle2 className="size-4 mx-auto mb-1" />
-                  Approve
-                </button>
-                <button
-                  onClick={() => setStage2Data({ ...stage2Data, decision: "reject" })}
-                  className={`flex-1 px-4 py-3 rounded-lg border font-medium transition-all ${
-                    stage2Data.decision === "reject"
-                      ? "bg-red-100 border-red-600 text-red-700"
-                      : "border-border hover:bg-muted"
-                  }`}
-                >
-                  <XCircle className="size-4 mx-auto mb-1" />
-                  Reject
-                </button>
-                <button
-                  onClick={() => setStage2Data({ ...stage2Data, decision: "revision" })}
-                  className={`flex-1 px-4 py-3 rounded-lg border font-medium transition-all ${
-                    stage2Data.decision === "revision"
-                      ? "bg-orange-100 border-orange-600 text-orange-700"
-                      : "border-border hover:bg-muted"
-                  }`}
-                >
-                  <RefreshCw className="size-4 mx-auto mb-1" />
-                  Revision
-                </button>
-              </div>
-            </div>
-          </div>
-        )} */}
-
 {currentStage === 2 && (
   <div className="space-y-6">
 
@@ -1155,160 +981,6 @@ case 7:
   </div>
 )}
         
-        {/* {(currentStage === 3 || currentStage === 4 || currentStage === 5 || currentStage === 6) && (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Decision <span className="text-red-600">*</span>
-              </label>
-              <div className="flex gap-4">
-                <button
-                  onClick={() => {
-                    if (currentStage === 3) setStage3Data({ ...stage3Data, decision: "approve" });
-                    if (currentStage === 4) setStage4Data({ ...stage4Data, decision: "approve" });
-                    if (currentStage === 5) setStage5Data({ ...stage5Data, decision: "approve" });
-                    if (currentStage === 6) setStage6Data({ ...stage6Data, decision: "approve" });
-                  }}
-                  className={`flex-1 px-4 py-3 rounded-lg border font-medium transition-all ${
-                    (currentStage === 3 && stage3Data.decision === "approve") ||
-                    (currentStage === 4 && stage4Data.decision === "approve") ||
-                    (currentStage === 5 && stage5Data.decision === "approve") ||
-                    (currentStage === 6 && stage6Data.decision === "approve")
-                      ? "bg-green-100 border-green-600 text-green-700"
-                      : "border-border hover:bg-muted"
-                  }`}
-                >
-                  <CheckCircle2 className="size-4 mx-auto mb-1" />
-                  Approve
-                </button>
-                <button
-                  onClick={() => {
-                    if (currentStage === 3) setStage3Data({ ...stage3Data, decision: "reject" });
-                    if (currentStage === 4) setStage4Data({ ...stage4Data, decision: "reject" });
-                    if (currentStage === 5) setStage5Data({ ...stage5Data, decision: "reject" });
-                    if (currentStage === 6) setStage6Data({ ...stage6Data, decision: "reject" });
-                  }}
-                  className={`flex-1 px-4 py-3 rounded-lg border font-medium transition-all ${
-                    (currentStage === 3 && stage3Data.decision === "reject") ||
-                    (currentStage === 4 && stage4Data.decision === "reject") ||
-                    (currentStage === 5 && stage5Data.decision === "reject") ||
-                    (currentStage === 6 && stage6Data.decision === "reject")
-                      ? "bg-red-100 border-red-600 text-red-700"
-                      : "border-border hover:bg-muted"
-                  }`}
-                >
-                  <XCircle className="size-4 mx-auto mb-1" />
-                  Reject
-                </button>
-                <button
-                  onClick={() => {
-                    if (currentStage === 3) setStage3Data({ ...stage3Data, decision: "revision" });
-                    if (currentStage === 4) setStage4Data({ ...stage4Data, decision: "revision" });
-                    if (currentStage === 5) setStage5Data({ ...stage5Data, decision: "revision" });
-                    if (currentStage === 6) setStage6Data({ ...stage6Data, decision: "revision" });
-                  }}
-                  className={`flex-1 px-4 py-3 rounded-lg border font-medium transition-all ${
-                    (currentStage === 3 && stage3Data.decision === "revision") ||
-                    (currentStage === 4 && stage4Data.decision === "revision") ||
-                    (currentStage === 5 && stage5Data.decision === "revision") ||
-                    (currentStage === 6 && stage6Data.decision === "revision")
-                      ? "bg-orange-100 border-orange-600 text-orange-700"
-                      : "border-border hover:bg-muted"
-                  }`}
-                >
-                  <RefreshCw className="size-4 mx-auto mb-1" />
-                  Revision
-                </button>
-              </div>
-            </div>
-
-            {((currentStage === 3 && stage3Data.decision === "approve") ||
-              (currentStage === 4 && stage4Data.decision === "approve") ||
-              (currentStage === 5 && stage5Data.decision === "approve") ||
-              (currentStage === 6 && stage6Data.decision === "approve")) && (
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Upload {currentStage === 3 ? "PAC" : currentStage === 4 ? "TAC" : currentStage === 5 ? "SEC" : "SDMA"} MoM{" "}
-                  <span className="text-red-600">*</span>
-                </label>
-                <input
-                  type="file"
-                  accept=".pdf,.doc,.docx"
-                  onChange={(e) => {
-                    if (currentStage === 3) handleFileUpload(e, (file) => setStage3Data({ ...stage3Data, pacMoM: file }));
-                    if (currentStage === 4) handleFileUpload(e, (file) => setStage4Data({ ...stage4Data, tacMoM: file }));
-                    if (currentStage === 5) handleFileUpload(e, (file) => setStage5Data({ ...stage5Data, secMoM: file }));
-                    if (currentStage === 6) handleFileUpload(e, (file) => setStage6Data({ ...stage6Data, sdmaMoM: file }));
-                  }}
-                  className="w-full px-4 py-3 border border-border rounded-lg bg-background"
-                />
-                {((currentStage === 3 && stage3Data.pacMoM) ||
-                  (currentStage === 4 && stage4Data.tacMoM) ||
-                  (currentStage === 5 && stage5Data.secMoM) ||
-                  (currentStage === 6 && stage6Data.sdmaMoM)) && (
-                  <p className="text-sm text-green-600 mt-2">
-                    ✓ File uploaded
-                  </p>
-                )}
-              </div>
-            )}
-
-            {((currentStage === 3 && stage3Data.decision === "reject") ||
-              (currentStage === 4 && stage4Data.decision === "reject") ||
-              (currentStage === 5 && stage5Data.decision === "reject") ||
-              (currentStage === 6 && stage6Data.decision === "reject")) && (
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Reason for Rejection <span className="text-red-600">*</span>
-                </label>
-                <textarea
-                  value={
-                    currentStage === 3 ? stage3Data.observationNotes :
-                    currentStage === 4 ? stage4Data.reason :
-                    currentStage === 5 ? stage5Data.reason :
-                    stage6Data.reason
-                  }
-                  onChange={(e) => {
-                    if (currentStage === 3) setStage3Data({ ...stage3Data, observationNotes: e.target.value });
-                    if (currentStage === 4) setStage4Data({ ...stage4Data, reason: e.target.value });
-                    if (currentStage === 5) setStage5Data({ ...stage5Data, reason: e.target.value });
-                    if (currentStage === 6) setStage6Data({ ...stage6Data, reason: e.target.value });
-                  }}
-                  className="w-full px-4 py-3 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  rows={4}
-                  placeholder="Provide detailed reason for rejection"
-                />
-              </div>
-            )}
-
-            {((currentStage === 3 && stage3Data.decision === "revision") ||
-              (currentStage === 4 && stage4Data.decision === "revision") ||
-              (currentStage === 5 && stage5Data.decision === "revision") ||
-              (currentStage === 6 && stage6Data.decision === "revision")) && (
-              <div>
-                <label className="block text-sm font-medium mb-2">Observation Notes</label>
-                <textarea
-                  value={
-                    currentStage === 3 ? stage3Data.observationNotes :
-                    currentStage === 4 ? stage4Data.observationNotes :
-                    currentStage === 5 ? stage5Data.observationNotes :
-                    stage6Data.observationNotes
-                  }
-                  onChange={(e) => {
-                    if (currentStage === 3) setStage3Data({ ...stage3Data, observationNotes: e.target.value });
-                    if (currentStage === 4) setStage4Data({ ...stage4Data, observationNotes: e.target.value });
-                    if (currentStage === 5) setStage5Data({ ...stage5Data, observationNotes: e.target.value });
-                    if (currentStage === 6) setStage6Data({ ...stage6Data, observationNotes: e.target.value });
-                  }}
-                  className="w-full px-4 py-3 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  rows={4}
-                  placeholder="Provide observation notes for revision"
-                />
-              </div>
-            )}
-          </div>
-        )} */}
-
 {(currentStage === 3 ||
   currentStage === 4 ||
   currentStage === 5 ||
@@ -1696,10 +1368,210 @@ case 7:
   </div>
 )}
         
-        {currentStage === 8 && (
-          <Stage7 data={stage8Data} setData={setStage8Data} />
-        )}
+      {currentStage === 8 && (
+  <div className="space-y-6">
 
+    {/* L1 Vendor Identified */}
+    <div>
+      <label className="block text-sm font-medium mb-3">
+        Is L1 Vendor Identified?
+      </label>
+
+      <div className="flex gap-6">
+
+        <label className="flex items-center gap-2">
+          <input
+            type="radio"
+            value="yes"
+            checked={stage8Data.l1VendorIdentified === "yes"}
+            onChange={(e) =>
+              setStage8Data({
+                ...stage8Data,
+                l1VendorIdentified: e.target.value
+              })
+            }
+          />
+          Yes
+        </label>
+
+        <label className="flex items-center gap-2">
+          <input
+            type="radio"
+            value="no"
+            checked={stage8Data.l1VendorIdentified === "no"}
+            onChange={(e) =>
+              setStage8Data({
+                ...stage8Data,
+                l1VendorIdentified: e.target.value
+              })
+            }
+          />
+          No
+        </label>
+
+      </div>
+    </div>
+
+    {/* Vendor Name & Cost */}
+    {stage8Data.l1VendorIdentified === "yes" && (
+      <div className="grid grid-cols-2 gap-4">
+
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            Vendor Name
+          </label>
+
+          <input
+            type="text"
+            value={stage8Data.vendorName}
+            onChange={(e) =>
+              setStage8Data({
+                ...stage8Data,
+                vendorName: e.target.value
+              })
+            }
+            className="w-full px-4 py-3 border border-border rounded-lg"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            L1 Cost
+          </label>
+
+          <input
+            type="number"
+            value={stage8Data.l1Cost}
+            onChange={(e) =>
+              setStage8Data({
+                ...stage8Data,
+                l1Cost: e.target.value
+              })
+            }
+            className="w-full px-4 py-3 border border-border rounded-lg"
+          />
+        </div>
+
+      </div>
+    )}
+
+    {/* Work Order */}
+    <div>
+      <label className="block text-sm font-medium mb-3">
+        Is Work Order Issued?
+      </label>
+
+      <div className="flex gap-6">
+
+        <label className="flex items-center gap-2">
+          <input
+            type="radio"
+            value="yes"
+            checked={stage8Data.workOrderIssued === "yes"}
+            onChange={(e) =>
+              setStage8Data({
+                ...stage8Data,
+                workOrderIssued: e.target.value
+              })
+            }
+          />
+          Yes
+        </label>
+
+        <label className="flex items-center gap-2">
+          <input
+            type="radio"
+            value="no"
+            checked={stage8Data.workOrderIssued === "no"}
+            onChange={(e) =>
+              setStage8Data({
+                ...stage8Data,
+                workOrderIssued: e.target.value
+              })
+            }
+          />
+          No
+        </label>
+
+      </div>
+    </div>
+
+    {/* Work Order Date */}
+    {stage8Data.workOrderIssued === "yes" && (
+      <div>
+
+        <label className="block text-sm font-medium mb-2">
+          Work Order Issued Date
+        </label>
+
+        <input
+          type="date"
+          value={stage8Data.workOrderIssuedDate}
+          onChange={(e) =>
+            setStage8Data({
+              ...stage8Data,
+              workOrderIssuedDate: e.target.value
+            })
+          }
+          className="w-full px-4 py-3 border border-border rounded-lg"
+        />
+      </div>
+    )}
+
+    {/* Document Type */}
+    <div>
+
+      <label className="block text-sm font-medium mb-2">
+        Supporting Document Type
+      </label>
+
+      <select
+        value={stage8Data.supportingDocType}
+        onChange={(e) =>
+          setStage8Data({
+            ...stage8Data,
+            supportingDocType: e.target.value
+          })
+        }
+        className="w-full px-4 py-3 border border-border rounded-lg"
+      >
+        <option>Letter from DMRR</option>
+        <option>Work Order</option>
+        <option>Bid Evaluation Report</option>
+        <option>Tender Notice</option>
+      </select>
+
+    </div>
+
+    {/* Multiple Upload */}
+    <div>
+
+      <label className="block text-sm font-medium mb-2">
+        Upload Supporting Documents
+      </label>
+
+      <input
+        type="file"
+        multiple
+        onChange={(e) =>
+          setStage8Data({
+            ...stage8Data,
+            supportingDocs: Array.from(e.target.files || [])
+          })
+        }
+        className="w-full px-4 py-3 border border-border rounded-lg"
+      />
+
+      {stage8Data.supportingDocs.length > 0 && (
+        <div className="text-green-600 text-sm mt-2">
+          {stage8Data.supportingDocs.length} file(s) selected
+        </div>
+      )}
+
+    </div>
+
+  </div>
+)}
         {currentStage === 9 && (
           <Stage8 data={stage9Data} setData={setStage9Data} />
         )}

@@ -87,7 +87,7 @@ export function ProcurementList() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-[#0B1F4D]">Procurement List</h1>
@@ -159,31 +159,31 @@ export function ProcurementList() {
           <table className="w-full text-sm text-left">
             <thead className="bg-muted text-muted-foreground border-b border-border">
               <tr>
-                <th className="px-4 py-4 font-medium whitespace-nowrap">Procurement ID</th>
-                <th className="px-4 py-4 font-medium whitespace-nowrap">Financial Year</th>
-                <th className="px-4 py-4 font-medium whitespace-nowrap">Item Name</th>
-                <th className="px-4 py-4 font-medium whitespace-nowrap">Demand From</th>
-                <th className="px-4 py-4 font-medium whitespace-nowrap">Vendor</th>
-                <th className="px-4 py-4 font-medium whitespace-nowrap">Award Cost</th>
-                <th className="px-4 py-4 font-medium whitespace-nowrap">Current Status</th>
-                <th className="px-4 py-4 font-medium whitespace-nowrap text-center">Actions</th>
+                <th className="px-4 py-4 font-medium">Procurement ID</th>
+                <th className="px-4 py-4 font-medium">Financial Year</th>
+                <th className="px-4 py-4 font-medium">Item Name</th>
+                <th className="px-4 py-4 font-medium">Demand From</th>
+                <th className="px-4 py-4 font-medium">Vendor</th>
+                <th className="px-4 py-4 font-medium">Award Cost</th>
+                <th className="px-4 py-4 font-medium">Current Status</th>
+                <th className="px-4 py-4 font-medium text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {filtered.map((row) => (
                 <tr key={row.id} className="hover:bg-muted/50 transition-colors">
-                  <td className="px-4 py-3 font-medium text-[#0B1F4D] whitespace-nowrap">{row.id}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">{row.year}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">{row.item}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">{row.demandFrom}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">{row.vendor}</td>
-                  <td className="px-4 py-3 font-medium whitespace-nowrap">{row.awardCost}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">
+                  <td className="px-4 py-3 font-medium text-[#0B1F4D]">{row.id}</td>
+                  <td className="px-4 py-3">{row.year}</td>
+                  <td className="px-4 py-3">{row.item}</td>
+                  <td className="px-4 py-3">{row.demandFrom}</td>
+                  <td className="px-4 py-3">{row.vendor}</td>
+                  <td className="px-4 py-3 font-medium">{row.awardCost}</td>
+                  <td className="px-4 py-3">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[row.status] ?? "bg-gray-100 text-gray-800"}`}>
                       {row.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
+                  <td className="px-4 py-3">
                     <div className="flex items-center justify-center gap-1">
                       <button
                         onClick={() => navigate(`/procurement/view/${row.id}`)}

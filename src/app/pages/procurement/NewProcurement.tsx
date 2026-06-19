@@ -66,9 +66,9 @@ export function NewProcurement() {
     if (!validate()) return;
 
     if (demandType === "Districts") {
-      navigate("/procurement/psc");
+      navigate("/procurement-psc");
     } else {
-      navigate("/procurement/tac");
+      navigate("/procurement-tac");
     }
   };
 
@@ -306,7 +306,7 @@ export function NewProcurement() {
         <div className="p-6 bg-muted/20 flex justify-end gap-4">
           <button
             type="button"
-            onClick={() => navigate("/procurement/list")}
+            onClick={() => navigate("/procurement-list")}
             className="px-6 py-2 bg-white border border-border text-gray-700 font-medium rounded-lg hover:bg-gray-50 flex items-center gap-2 transition-colors"
           >
             <X className="size-4" />

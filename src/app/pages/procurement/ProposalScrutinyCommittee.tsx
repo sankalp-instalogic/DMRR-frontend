@@ -32,7 +32,7 @@ export function ProposalScrutinyCommittee() {
       title="Proposal Scrutiny Committee"
       description="Review and approve procurements pending before the Proposal Scrutiny Committee"
       forwardLabel="Forward to TAC"
-      forwardPath="/procurement/tac"
+      forwardPath="/procurement-tac"
       items={pscItems}
     />
   );

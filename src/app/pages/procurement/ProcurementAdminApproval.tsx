@@ -32,7 +32,7 @@ export function ProcurementAdminApproval() {
       title="Administrative Approval"
       description="Review and approve procurements pending Administrative Approval before tendering"
       forwardLabel="Forward to Tendering"
-      forwardPath="/procurement/tendering/tenders"
+      forwardPath="/procurement-tendering/tenders"
       items={aaItems}
     />
   );

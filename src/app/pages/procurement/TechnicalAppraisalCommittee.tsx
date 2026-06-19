@@ -32,7 +32,7 @@ export function TechnicalAppraisalCommittee() {
       title="Technical Appraisal Committee"
       description="Review and approve procurements pending before the Technical Appraisal Committee"
       forwardLabel="Forward to SEC"
-      forwardPath="/procurement/sec-approval"
+      forwardPath="/procurement-sec-approval"
       items={tacItems}
     />
   );

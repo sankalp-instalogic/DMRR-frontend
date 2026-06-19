@@ -132,27 +132,27 @@ export function ProcurementRegister() {
           <table className="w-full text-sm text-left">
             <thead className="bg-muted text-muted-foreground border-b border-border">
               <tr>
-                <th className="px-4 py-4 font-medium whitespace-nowrap">Procurement ID</th>
-                <th className="px-4 py-4 font-medium whitespace-nowrap">Financial Year</th>
-                <th className="px-4 py-4 font-medium whitespace-nowrap">Item Name</th>
-                <th className="px-4 py-4 font-medium whitespace-nowrap">Beneficiary Department</th>
-                <th className="px-4 py-4 font-medium whitespace-nowrap">Vendor</th>
-                <th className="px-4 py-4 font-medium whitespace-nowrap">Award Cost</th>
-                <th className="px-4 py-4 font-medium whitespace-nowrap">Delivery %</th>
-                <th className="px-4 py-4 font-medium whitespace-nowrap">Current Status</th>
-                <th className="px-4 py-4 font-medium whitespace-nowrap text-center">Actions</th>
+                <th className="px-4 py-4 font-medium">Procurement ID</th>
+                <th className="px-4 py-4 font-medium">Financial Year</th>
+                <th className="px-4 py-4 font-medium">Item Name</th>
+                <th className="px-4 py-4 font-medium">Beneficiary Department</th>
+                <th className="px-4 py-4 font-medium">Vendor</th>
+                <th className="px-4 py-4 font-medium">Award Cost</th>
+                <th className="px-4 py-4 font-medium">Delivery %</th>
+                <th className="px-4 py-4 font-medium">Current Status</th>
+                <th className="px-4 py-4 font-medium text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {procurementData.map((row) => (
                 <tr key={row.id} className="hover:bg-muted/50 transition-colors">
-                  <td className="px-4 py-3 font-medium text-[#0B1F4D] whitespace-nowrap">{row.id}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">{row.year}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">{row.item}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">{row.dept}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">{row.vendor}</td>
-                  <td className="px-4 py-3 font-medium whitespace-nowrap">{row.cost}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">
+                  <td className="px-4 py-3 font-medium text-[#0B1F4D]">{row.id}</td>
+                  <td className="px-4 py-3">{row.year}</td>
+                  <td className="px-4 py-3">{row.item}</td>
+                  <td className="px-4 py-3">{row.dept}</td>
+                  <td className="px-4 py-3">{row.vendor}</td>
+                  <td className="px-4 py-3 font-medium">{row.cost}</td>
+                  <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <div className="w-full bg-gray-200 rounded-full h-1.5 max-w-[60px]">
                         <div className="bg-primary h-1.5 rounded-full" style={{ width: row.delivery }}></div>
@@ -160,8 +160,8 @@ export function ProcurementRegister() {
                       <span className="text-xs text-muted-foreground">{row.delivery}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap">{getStatusBadge(row.status)}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">
+                  <td className="px-4 py-3">{getStatusBadge(row.status)}</td>
+                  <td className="px-4 py-3">
                     <div className="flex items-center justify-center gap-2">
                       <button
                         onClick={() => navigate(`/procurement/view/${row.id}`)}

@@ -32,7 +32,7 @@ export function SECApprovalProcurement() {
       title="SEC Approval"
       description="Review and approve procurements pending before the State Executive Committee"
       forwardLabel="Forward to Administrative Approval"
-      forwardPath="/procurement/admin-approval"
+      forwardPath="/procurement-admin-approval"
       items={secItems}
     />
   );

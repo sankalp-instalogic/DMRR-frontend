@@ -27,7 +27,7 @@ export function TendersList() {
         </div>
         <div className="flex items-center gap-3">
           <Link
-            to="/procurement/tendering/new"
+            to="/procurement-tendering/new"
             className="flex items-center gap-2 bg-[#1E5AA8] text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
           >
             <Plus className="size-4" />
@@ -70,7 +70,7 @@ export function TendersList() {
                   <td className="px-6 py-4 whitespace-nowrap">{tender.orgChain}</td>
                   <td className="px-6 py-4 text-center whitespace-nowrap">
                     <button 
-                      onClick={() => navigate(`/procurement/tendering/tenders/${tender.id}`)}
+                      onClick={() => navigate(`/procurement-tendering/tenders/${tender.id}`)}
                       className="p-2 inline-flex justify-center hover:bg-muted rounded-lg text-muted-foreground hover:text-[#0B1F4D] transition-colors"
                       title="View Details"
                     >
