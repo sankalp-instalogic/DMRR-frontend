@@ -1,7 +1,7 @@
 import { Outlet } from "react-router";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
-import { useSidebar } from "../context/SidebarContext";
+import { useSidebar } from "../../context/SidebarContext";
 
 export function Layout() {
   const { sidebarOpen } = useSidebar();

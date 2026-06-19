@@ -1,23 +1,16 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
+import useAxiosPrivate from "../../hooks/useAxiosPrivate";
+import { useQuery } from "@tanstack/react-query";
 import {
   FileText,
   CheckCircle2,
   Clock,
   XCircle,
-  TrendingUp,
-  TrendingDown,
   AlertCircle,
   IndianRupee,
-  MapPin,
-  Calendar,
   ArrowRight,
   Package,
-  CalendarDays,
-  Building2,
-  Wallet,
-  Activity,
-  Briefcase,
   Filter,
 } from "lucide-react";
 import {
@@ -48,24 +41,6 @@ const districts = [
   "Thane",
   "Kolhapur",
   "Ahmednagar",
-];
-const disasterTypes = [
-  "All Types",
-  "Flood",
-  "Drought",
-  "Earthquake",
-  "Cyclone",
-  "Landslide",
-];
-const departments = [
-  "All Departments",
-  "PWD",
-  "WRD",
-  "Health",
-  "Forest",
-  "Urban Development",
-  "Rural Development",
-  "PSU",
 ];
 
 // Section 1 - Mitigation Proposals KPIs
@@ -109,11 +84,6 @@ const proposalsUnderReview = [
   },
 ];
 
-const budgetAllocationData = [
-  { name: "Allocated", value: 2450, color: "#0B1F4D" },
-  { name: "Received", value: 1876, color: "#1E5AA8" },
-  { name: "Utilized", value: 1234, color: "#059669" },
-];
 
 // Section 2 - Preparedness  KPIs
 const procurementKPIs = {
@@ -150,49 +120,6 @@ const lineDeptProposals = [
   { dept: "PSU", count: 42 },
 ];
 
-const tenderingPipeline = [
-  { stage: "Initiated", count: 145 },
-  { stage: "Evaluation", count: 98 },
-  { stage: "L1 Identified", count: 65 },
-  { stage: "DMU Concurrence", count: 42 },
-  { stage: "WO Issued", count: 312 },
-];
-
-const projectMonitoringPipeline = [
-  { stage: "Implementation", count: 234 },
-  { stage: "Quality Monitoring", count: 156 },
-  { stage: "Audit Compliance", count: 112 },
-  { stage: "Billing", count: 89 },
-  { stage: "Completion", count: 345 },
-  { stage: "Asset Handover", count: 210 },
-];
-
-const budgetData = [
-  {
-    title: "Budget Allocated",
-    value: "₹2,450 Cr",
-    icon: IndianRupee,
-    color: "bg-chart-1",
-  },
-  {
-    title: "Budget Received",
-    value: "₹1,876 Cr",
-    icon: CheckCircle2,
-    color: "bg-chart-3",
-  },
-  {
-    title: "Budget Utilized",
-    value: "₹1,234 Cr",
-    icon: TrendingUp,
-    color: "bg-chart-2",
-  },
-  {
-    title: "Remaining Budget",
-    value: "₹642 Cr",
-    icon: Clock,
-    color: "bg-chart-4",
-  },
-];
 
 const districtBudgetData = [
   { district: "Mumbai", allocated: 450, utilized: 387 },
@@ -203,22 +130,6 @@ const districtBudgetData = [
   { district: "Thane", allocated: 315, utilized: 267 },
 ];
 
-const proposalTrend = [
-  { month: "Jan", created: 145, approved: 98, rejected: 23 },
-  { month: "Feb", created: 167, approved: 112, rejected: 28 },
-  { month: "Mar", created: 189, approved: 134, rejected: 31 },
-  { month: "Apr", created: 178, approved: 124, rejected: 27 },
-  { month: "May", created: 198, approved: 145, rejected: 34 },
-  { month: "Jun", created: 212, approved: 167, rejected: 29 },
-];
-
-const disasterTypeData = [
-  { name: "Flood", value: 456, color: "#0B1F4D" },
-  { name: "Drought", value: 345, color: "#1E5AA8" },
-  { name: "Earthquake", value: 178, color: "#FBAC1B" },
-  { name: "Cyclone", value: 145, color: "#059669" },
-  { name: "Landslide", value: 123, color: "#D97706" },
-];
 
 const notifications = [
   {
@@ -254,11 +165,16 @@ export function Dashboard() {
   const [selectedFY, setSelectedFY] = useState("2025-26");
   const [selectedDistrict, setSelectedDistrict] =
     useState("All Districts");
-  const [selectedDisasterType, setSelectedDisasterType] =
-    useState("All Types");
-  const [selectedDepartment, setSelectedDepartment] = useState(
-    "All Departments",
-  );
+
+    const axiosPrivate = useAxiosPrivate();
+
+  const { data, isLoading, error } = useQuery({
+  queryKey: ["dashboard-summary"],
+  queryFn: async () => {
+    const response = await axiosPrivate.get("/api/v1/Dashboard/summary");
+    return response.data;
+  },
+});
 
   const handleKPIDrillDown = (filter: string) => {
     // navigate(`/proposal-list?filter=${filter}&fy=${selectedFY}&district=${selectedDistrict}&type=${selectedDisasterType}&dept=${selectedDepartment}`);
@@ -279,13 +195,13 @@ export function Dashboard() {
         <div className="flex gap-3">
           <Link
             to="/proposal-initiation"
-            className="bg-[#0B1F4D] text-white px-[16px] h-[40px] flex items-center justify-center rounded-[10px] hover:bg-[#0B1F4D]/90 transition-all text-sm font-medium"
+            className="bg-[#0B1F4D] text-white px-4 h-10 flex items-center justify-center rounded-[10px] hover:bg-[#0B1F4D]/90 transition-all text-sm font-medium"
           >
             New Proposal
           </Link>
           <Link
             to="/proposal-list"
-            className="bg-white text-[#0B1F4D] border border-[#0B1F4D] px-[16px] h-[40px] flex items-center justify-center rounded-[10px] hover:bg-gray-50 transition-all text-sm font-medium"
+            className="bg-white text-[#0B1F4D] border border-[#0B1F4D] px-4 h-10 flex items-center justify-center rounded-[10px] hover:bg-gray-50 transition-all text-sm font-medium"
           >
             Open Proposal
           </Link>
@@ -293,14 +209,14 @@ export function Dashboard() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white border border-gray-200 rounded-[12px] p-[16px] shadow-sm mb-[24px]">
+      <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm mb-6">
         <div className="flex items-center gap-2 mb-3">
           <Filter className="size-5 text-[#0B1F4D]" />
           <h3 className="font-semibold text-[16px] text-[#0B1F4D]">
             Dashboard Filters
           </h3>
         </div>
-        <div className="flex flex-row gap-[16px]">
+        <div className="flex flex-row gap-4">
           <div className="flex-1">
             <label className="text-[14px] font-medium text-gray-500 mb-1 block">
               Financial Year
@@ -308,7 +224,7 @@ export function Dashboard() {
             <select
               value={selectedFY}
               onChange={(e) => setSelectedFY(e.target.value)}
-              className="w-full px-3 h-[40px] border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20"
+              className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20"
             >
               {financialYears.map((fy) => (
                 <option key={fy} value={fy}>
@@ -324,7 +240,7 @@ export function Dashboard() {
             <select
               value={selectedDistrict}
               onChange={(e) => setSelectedDistrict(e.target.value)}
-              className="w-full px-3 h-[40px] border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20"
+              className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20"
             >
               {districts.map((dist) => (
                 <option key={dist} value={dist}>
@@ -337,16 +253,16 @@ export function Dashboard() {
       </div>
 
       {/* SECTION 1 - MITIGATION PROPOSALS */}
-      <div className="mb-[24px]">
-        <h2 className="text-[20px] font-semibold mb-[24px] text-[#0B1F4D]">
+      <div className="mb-6">
+        <h2 className="text-[20px] font-semibold mb-6 text-[#0B1F4D]">
           Section 1 — Mitigation Proposals
         </h2>
 
         {/* A. Total Proposals (Parent KPI with Child KPIs) */}
-        <div className="mb-[24px]">
+        <div className="mb-6">
           <div
             onClick={() => handleKPIDrillDown("all")}
-            className="bg-gradient-to-br from-[#0B1F4D] to-[#1E5AA8] text-white rounded-[16px] p-[20px] shadow-sm hover:shadow-md transition-all cursor-pointer mb-[24px]"
+            className="bg-linear-to-br from-[#0B1F4D] to-[#1E5AA8] text-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-all cursor-pointer mb-[24px]"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -365,7 +281,7 @@ export function Dashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-[24px]">
             <div
               onClick={() => handleKPIDrillDown("approved")}
-              className="bg-white border border-gray-200 rounded-[16px] p-[20px] shadow-sm hover:shadow-md transition-all cursor-pointer group hover:border-green-500"
+              className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all cursor-pointer group hover:border-green-500"
             >
               <div className="flex items-center justify-between mb-2">
                 <CheckCircle2 className="size-5 text-green-600" />
@@ -378,17 +294,6 @@ export function Dashboard() {
                 Approved Proposals
               </div>
             </div>
-            {/* <div
-              onClick={() => handleKPIDrillDown('pending')}
-              className="bg-white border border-gray-200 rounded-[16px] p-[20px] shadow-sm hover:shadow-md transition-all cursor-pointer group hover:border-orange-500"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <Clock className="size-5 text-orange-600" />
-                <ArrowRight className="size-4 text-gray-400 group-hover:text-orange-600 transition-colors" />
-              </div>
-              <div className="text-[24px] font-bold text-orange-600">{totalProposalsData.pending}</div>
-              <div className="text-[14px] font-medium text-gray-500 mt-1">Pending Proposals</div>
-            </div> */}
             <div
               onClick={() => handleKPIDrillDown("rejected")}
               className="bg-white border border-gray-200 rounded-[16px] p-[20px] shadow-sm hover:shadow-md transition-all cursor-pointer group hover:border-red-500"

@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from "react-router";
 import { useState, useEffect } from "react";
-import { useSidebar } from "../context/SidebarContext";
+import { useSidebar } from "../../context/SidebarContext";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { sidebarLinks } from "../../../constants/sidebarLinks";
 import type { NavItem } from "../../../constants/sidebarLinks";
