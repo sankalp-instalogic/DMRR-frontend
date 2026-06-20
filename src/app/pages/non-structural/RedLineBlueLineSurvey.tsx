@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Plus, Eye, Download, ArrowLeft, Printer } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { Plus, Eye, Download, ArrowLeft } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 
 interface Survey {
@@ -24,13 +24,11 @@ interface PaginatedResponse {
   totalPages: number;
 }
 
-// Helper to format dates from ISO string (e.g., 2026-06-01T12:09:16.871 -> 2026-06-01)
 const formatDate = (dateString: string) => {
   if (!dateString) return "-";
   return dateString.split("T")[0];
 };
 
-// Helper to format currency
 const formatCurrency = (amount: number | string) => {
   if (amount === undefined || amount === null || amount === "") return "-";
   return new Intl.NumberFormat("en-IN", {
@@ -43,14 +41,14 @@ const formatCurrency = (amount: number | string) => {
 export function RedLineBlueLineSurvey() {
   const [activeTab, setActiveTab] = useState<"list" | "new">("list");
   const [selectedSurvey, setSelectedSurvey] = useState<Survey | null>(null);
-  
-  // --- Pagination State ---
+
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
 
   const axiosPrivate = useAxiosPrivate();
+  const queryClient = useQueryClient();
 
-  const [formData, setFormData] = useState<Survey>({
+  const initialFormState: Survey = {
     surveyCode: "",
     title: "",
     districtId: "",
@@ -60,29 +58,22 @@ export function RedLineBlueLineSurvey() {
     completionDate: "",
     grDocument: null,
     completionCertificate: null,
-  });
+  };
 
-  // --- GET ROUTE INTEGRATION (Updated with Pagination) ---
+  const [formData, setFormData] = useState<Survey>(initialFormState);
+
+  // --- QUERIES ---
   const { data, isLoading, isError, isFetching } = useQuery<PaginatedResponse>({
-    queryKey: ["rlbl-surveys", page, pageSize], // Re-fetch when page or pageSize changes
+    queryKey: ["rlbl-surveys", page, pageSize],
     queryFn: async () => {
       const response = await axiosPrivate.get("/api/v1/surveys/rlbl", {
-        params: {
-          page: page,
-          pageSize: pageSize,
-        },
+        params: { page, pageSize },
       });
       return response.data;
     },
   });
 
-  // Extract items from the paginated response, fallback to empty array
-  const surveys = data?.items || [];
-  const totalCount = data?.totalCount || 0;
-  const totalPages = data?.totalPages || 0;
-
-
-    const { data: districtsData, isLoading: isDistrictsLoading } = useQuery({
+  const { data: districtsData, isLoading: isDistrictsLoading } = useQuery({
     queryKey: ["districts"],
     queryFn: async () => {
       const response = await axiosPrivate.get("/api/v1/masters/districts", {
@@ -92,31 +83,166 @@ export function RedLineBlueLineSurvey() {
     },
   });
 
-    const districts = districtsData ?? [];
-  const districtMap = isDistrictsLoading
-    ? {}
-    : Object.fromEntries(
-        districts.items?.map((district: any) => [district.id, district.name]),
+  // Fetch Documents for selected survey
+  const { data: documentsData, isLoading: isDocumentsLoading } = useQuery({
+    queryKey: ["documents", selectedSurvey?.id],
+    queryFn: async () => {
+      const response = await axiosPrivate.get("/api/v1/Documents/list", {
+        params: { ownerType: "6", ownerId: selectedSurvey?.id },
+      });
+      return response.data;
+    },
+    enabled: !!selectedSurvey?.id,
+  });
+
+  const surveys = data?.items || [];
+  const totalCount = data?.totalCount || 0;
+  const totalPages = data?.totalPages || 0;
+  const districtsList = districtsData?.items || [];
+
+  const districtMap =
+    isDistrictsLoading || !districtsData?.items
+      ? {}
+      : Object.fromEntries(
+          districtsData.items.map((district: any) => [
+            district.id,
+            district.name,
+          ]),
+        );
+
+  // UPDATED: Helper to find document by documentTypeName
+  const getDocumentByType = (typeName: string) => {
+    // Check if the response is an array directly or inside an 'items' property
+    const docs = Array.isArray(documentsData) ? documentsData : documentsData?.items || [];
+    return docs.find((doc: any) => doc.documentTypeName === typeName);
+  };
+
+  // UPDATED: Match against the actual string names from your JSON
+  const grDocument = getDocumentByType("GRCopy");
+  const completionDoc = getDocumentByType("CompletionReport");
+
+  // --- MUTATIONS ---
+
+  // Upload Document Mutation
+  const uploadMutation = useMutation({
+    mutationFn: async ({
+      file,
+      ownerId,
+      documentType,
+    }: {
+      file: File;
+      ownerId: string;
+      documentType: string;
+    }) => {
+      const uploadData = new FormData();
+      uploadData.append("file", file);
+      uploadData.append("ownerId", ownerId);
+      uploadData.append("ownerType", "6");
+      uploadData.append("documentType", documentType);
+
+      const response = await axiosPrivate.post(
+        "/api/v1/Documents/upload",
+        uploadData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        },
       );
+      return response.data;
+    },
+  });
 
-  // --- POST ROUTE (ON HOLD) ---
+  // Add Survey Data Mutation
+  const addMutation = useMutation({
+    mutationFn: async (newData: any) => {
+      const response = await axiosPrivate.post(
+        "/api/v1/surveys/rlbl",
+        newData,
+        {
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+      return response.data;
+    },
+    onSuccess: async (responseData) => {
+      if (responseData?.id) {
+        const uploadPromises = [];
+
+        // Note: You may need to update '25' to the exact UUID (12d863df-353b-413e-84df-da0bbafccbb2) 
+        // if your upload endpoint strictly requires the `documentTypeId` instead of numeric map.
+        if (formData.grDocument) {
+          uploadPromises.push(
+            uploadMutation.mutateAsync({
+              file: formData.grDocument,
+              ownerId: responseData.id,
+              documentType: "25", 
+            }),
+          );
+        }
+
+        // Note: Similarly, update '19' to (eee38b1f-47cf-49fe-adee-d047f9295110) if needed.
+        if (formData.completionCertificate) {
+          uploadPromises.push(
+            uploadMutation.mutateAsync({
+              file: formData.completionCertificate,
+              ownerId: responseData.id,
+              documentType: "18", 
+            }),
+          );
+        }
+
+        try {
+          if (uploadPromises.length > 0) {
+            await Promise.all(uploadPromises);
+          }
+        } catch (err) {
+          console.error("Document upload failed:", err);
+        }
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["rlbl-surveys"] });
+      setFormData(initialFormState);
+      setActiveTab("list");
+    },
+    onError: (err) => {
+      console.error("Failed to save survey:", err);
+    },
+  });
+
+  // --- HANDLERS ---
   const handleSave = () => {
-    console.log("POST request is on hold. Form Data:", formData);
-    
-    // Reset form
-    setFormData({
-      surveyCode: "",
-      title: "",
-      districtId: "",
-      grIssuedDate: "",
-      allocatedBudget: "",
-      utilizedBudget: "",
-      completionDate: "",
-      grDocument: null,
-      completionCertificate: null,
-    });
+    const { grDocument, completionCertificate, ...textData } = formData;
 
-    setActiveTab("list");
+    const payload = {
+      ...textData,
+      grIssuedDate: textData.grIssuedDate
+        ? new Date(textData.grIssuedDate).toISOString()
+        : null,
+      completionDate: textData.completionDate
+        ? new Date(textData.completionDate).toISOString()
+        : null,
+    };
+
+    addMutation.mutate(payload);
+  };
+
+  const handleDownload = async (doc: any) => {
+    if (!doc?.id) return;
+    try {
+      const response = await axiosPrivate.get(`/api/v1/Documents/${doc.id}/download`, {
+        responseType: "blob",
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", doc.fileName || `document-${doc.id}`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to download document:", error);
+    }
   };
 
   if (selectedSurvey) {
@@ -130,14 +256,6 @@ export function RedLineBlueLineSurvey() {
             <ArrowLeft className="size-4" />
             Back
           </button>
-
-          <button
-            onClick={() => window.print()}
-            className="flex items-center gap-2 cursor-pointer bg-white border border-[#0B1F4D] text-[#0B1F4D] px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-gray-50 transition-colors"
-          >
-            <Printer className="size-4" />
-            Print
-          </button>
         </div>
 
         <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
@@ -147,55 +265,90 @@ export function RedLineBlueLineSurvey() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-6">
             <div>
-              <label className="text-[14px] font-medium text-gray-500 mb-1 block">Survey Code</label>
-              <p className="font-semibold text-[16px] text-[#0B1F4D]">{selectedSurvey.surveyCode}</p>
+              <label className="text-[14px] font-medium text-gray-500 mb-1 block">
+                Survey Code
+              </label>
+              <p className="font-semibold text-[16px] text-[#0B1F4D]">
+                {selectedSurvey.surveyCode}
+              </p>
             </div>
             <div>
-              <label className="text-[14px] font-medium text-gray-500 mb-1 block">District ID</label>
-              <p className="font-semibold text-[16px] text-[#0B1F4D]">{districtMap[selectedSurvey.districtId]}</p>
+              <label className="text-[14px] font-medium text-gray-500 mb-1 block">
+                District
+              </label>
+              <p className="font-semibold text-[16px] text-[#0B1F4D]">
+                {districtMap[selectedSurvey.districtId] ||
+                  selectedSurvey.districtId}
+              </p>
             </div>
             <div>
-              <label className="text-[14px] font-medium text-gray-500 mb-1 block">Title</label>
-              <p className="font-semibold text-[16px] text-[#0B1F4D]">{selectedSurvey.title}</p>
+              <label className="text-[14px] font-medium text-gray-500 mb-1 block">
+                Title
+              </label>
+              <p className="font-semibold text-[16px] text-[#0B1F4D]">
+                {selectedSurvey.title}
+              </p>
             </div>
             <div>
-              <label className="text-[14px] font-medium text-gray-500 mb-1 block">Date of GR Issued</label>
-              <p className="font-semibold text-[16px] text-[#0B1F4D]">{formatDate(selectedSurvey.grIssuedDate)}</p>
+              <label className="text-[14px] font-medium text-gray-500 mb-1 block">
+                Date of GR Issued
+              </label>
+              <p className="font-semibold text-[16px] text-[#0B1F4D]">
+                {formatDate(selectedSurvey.grIssuedDate)}
+              </p>
             </div>
             <div>
-              <label className="text-[14px] font-medium text-gray-500 mb-1 block">Allocated Budget</label>
-              <p className="font-semibold text-[16px] text-[#0B1F4D]">{formatCurrency(selectedSurvey.allocatedBudget)}</p>
+              <label className="text-[14px] font-medium text-gray-500 mb-1 block">
+                Allocated Budget
+              </label>
+              <p className="font-semibold text-[16px] text-[#0B1F4D]">
+                {formatCurrency(selectedSurvey.allocatedBudget)}
+              </p>
             </div>
             <div>
-              <label className="text-[14px] font-medium text-gray-500 mb-1 block">Utilized Budget</label>
-              <p className="font-semibold text-[16px] text-[#0B1F4D]">{formatCurrency(selectedSurvey.utilizedBudget)}</p>
+              <label className="text-[14px] font-medium text-gray-500 mb-1 block">
+                Utilized Budget
+              </label>
+              <p className="font-semibold text-[16px] text-[#0B1F4D]">
+                {formatCurrency(selectedSurvey.utilizedBudget)}
+              </p>
             </div>
             <div>
-              <label className="text-[14px] font-medium text-gray-500 mb-1 block">Date of Completion</label>
-              <p className="font-semibold text-[16px] text-[#0B1F4D]">{formatDate(selectedSurvey.completionDate)}</p>
+              <label className="text-[14px] font-medium text-gray-500 mb-1 block">
+                Date of Completion
+              </label>
+              <p className="font-semibold text-[16px] text-[#0B1F4D]">
+                {formatDate(selectedSurvey.completionDate)}
+              </p>
             </div>
 
             <div className="md:col-span-2 border-t border-gray-200 pt-4 mt-2"></div>
 
             <div>
-              <label className="text-[16px] font-semibold text-[#0B1F4D] block mb-4">GR Issued</label>
+              <label className="text-[16px] font-semibold text-[#0B1F4D] block mb-4">
+                GR Issued {isDocumentsLoading && <span className="text-sm text-gray-400 font-normal ml-2">(Loading...)</span>}
+              </label>
               <div className="flex gap-3">
-                <button className="flex cursor-pointer items-center gap-1.5 bg-white border border-[#0B1F4D] text-[#0B1F4D] px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-gray-50 transition-colors">
-                  <Eye className="size-4" /> View
-                </button>
-                <button className="flex cursor-pointer items-center gap-1.5 bg-[#0B1F4D] text-white px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-[#0B1F4D]/90 transition-colors">
+                <button 
+                  onClick={() => handleDownload(grDocument)}
+                  disabled={!grDocument || isDocumentsLoading}
+                  className="flex cursor-pointer items-center gap-1.5 bg-[#0B1F4D] text-white px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-[#0B1F4D]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   <Download className="size-4" /> Download
                 </button>
               </div>
             </div>
 
             <div>
-              <label className="text-[16px] font-semibold text-[#0B1F4D] block mb-4">Completion Certificate</label>
+              <label className="text-[16px] font-semibold text-[#0B1F4D] block mb-4">
+                Completion Certificate {isDocumentsLoading && <span className="text-sm text-gray-400 font-normal ml-2">(Loading...)</span>}
+              </label>
               <div className="flex gap-3">
-                <button className="flex cursor-pointer items-center gap-1.5 bg-white border border-[#0B1F4D] text-[#0B1F4D] px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-gray-50 transition-colors">
-                  <Eye className="size-4" /> View
-                </button>
-                <button className="flex cursor-pointer items-center gap-1.5 bg-[#0B1F4D] text-white px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-[#0B1F4D]/90 transition-colors">
+                <button 
+                  onClick={() => handleDownload(completionDoc)}
+                  disabled={!completionDoc || isDocumentsLoading}
+                  className="flex cursor-pointer items-center gap-1.5 bg-[#0B1F4D] text-white px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-[#0B1F4D]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   <Download className="size-4" /> Download
                 </button>
               </div>
@@ -209,13 +362,14 @@ export function RedLineBlueLineSurvey() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[30px] font-bold text-[#0B1F4D]">Red Line Blue Line Survey</h1>
+        <h1 className="text-[30px] font-bold text-[#0B1F4D]">
+          Red Line Blue Line Survey
+        </h1>
         <p className="text-[14px] font-medium text-gray-500 mt-1">
           Manage and monitor Red Line Blue Line Survey activities.
         </p>
       </div>
 
-      {/* Top Buttons as Tabs */}
       <div className="flex gap-2">
         <button
           onClick={() => setActiveTab("list")}
@@ -241,48 +395,72 @@ export function RedLineBlueLineSurvey() {
         </button>
       </div>
 
-      {/* Survey List */}
       {activeTab === "list" && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6 flex flex-col relative">
-          
-          {/* Loading Overlay for Pagination Refetching */}
           {isFetching && !isLoading && (
-             <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-10 flex items-center justify-center">
-                <span className="text-[#0B1F4D] font-medium bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">Updating...</span>
-             </div>
+            <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-10 flex items-center justify-center">
+              <span className="text-[#0B1F4D] font-medium bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">
+                Updating...
+              </span>
+            </div>
           )}
 
           <div className="overflow-x-auto">
             <table className="w-full text-[13px] text-left">
               <thead className="bg-[#F5F7FA] text-[#0B1F4D]">
                 <tr className="h-14">
-                  <th className="px-4 font-semibold whitespace-nowrap">Sr No</th>
-                  <th className="px-4 font-semibold whitespace-nowrap">Survey Code</th>
-                  <th className="px-4 font-semibold whitespace-nowrap">District ID</th>
-                  <th className="px-4 font-semibold whitespace-nowrap">Date of GR Issued</th>
-                  <th className="px-4 font-semibold whitespace-nowrap">Allocated Budget</th>
-                  <th className="px-4 font-semibold whitespace-nowrap">Utilized Budget</th>
-                  <th className="px-4 font-semibold whitespace-nowrap">Date of Completion</th>
-                  <th className="px-4 font-semibold whitespace-nowrap text-center">Action</th>
+                  <th className="px-4 font-semibold whitespace-nowrap">
+                    Title
+                  </th>
+                  <th className="px-4 font-semibold whitespace-nowrap">
+                    Survey Code
+                  </th>
+                  <th className="px-4 font-semibold whitespace-nowrap">
+                    District
+                  </th>
+                  <th className="px-4 font-semibold whitespace-nowrap">
+                    Date of GR Issued
+                  </th>
+                  <th className="px-4 font-semibold whitespace-nowrap">
+                    Allocated Budget
+                  </th>
+                  <th className="px-4 font-semibold whitespace-nowrap">
+                    Utilized Budget
+                  </th>
+                  <th className="px-4 font-semibold whitespace-nowrap">
+                    Date of Completion
+                  </th>
+                  <th className="px-4 font-semibold whitespace-nowrap text-center">
+                    Action
+                  </th>
                 </tr>
               </thead>
 
               <tbody className="divide-y divide-gray-100">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={8} className="px-4 py-8 text-center text-gray-500 font-medium">
+                    <td
+                      colSpan={8}
+                      className="px-4 py-8 text-center text-gray-500 font-medium"
+                    >
                       Loading surveys...
                     </td>
                   </tr>
                 ) : isError ? (
                   <tr>
-                    <td colSpan={8} className="px-4 py-8 text-center text-red-500 font-medium">
+                    <td
+                      colSpan={8}
+                      className="px-4 py-8 text-center text-red-500 font-medium"
+                    >
                       Failed to load surveys. Please try again.
                     </td>
                   </tr>
                 ) : surveys.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-4 py-8 text-center text-gray-500 font-medium">
+                    <td
+                      colSpan={8}
+                      className="px-4 py-8 text-center text-gray-500 font-medium"
+                    >
                       No surveys found. Click "New Survey" to add one.
                     </td>
                   </tr>
@@ -292,20 +470,30 @@ export function RedLineBlueLineSurvey() {
                       key={survey.id || index}
                       className="hover:bg-blue-50/50 transition-colors h-14 even:bg-gray-50/50"
                     >
-                      <td className="px-4 font-medium text-[#0B1F4D] whitespace-nowrap">
-                        {/* Dynamic Serial Number Logic */}
-                        {(page - 1) * pageSize + index + 1}
-                      </td>
                       <td className="px-4">{survey.surveyCode}</td>
+                      <td className="px-4">{survey.title}</td>
                       <td className="px-4">
-                        <span className="truncate max-w-25 inline-block" title={districtMap[survey.districtId]}>
-                           {districtMap[survey.districtId]}
+                        <span
+                          className="truncate max-w-25 inline-block"
+                          title={
+                            districtMap[survey.districtId] || survey.districtId
+                          }
+                        >
+                          {districtMap[survey.districtId] || survey.districtId}
                         </span>
                       </td>
-                      <td className="px-4">{formatDate(survey.grIssuedDate)}</td>
-                      <td className="px-4">{formatCurrency(survey.allocatedBudget)}</td>
-                      <td className="px-4">{formatCurrency(survey.utilizedBudget)}</td>
-                      <td className="px-4">{formatDate(survey.completionDate)}</td>
+                      <td className="px-4">
+                        {formatDate(survey.grIssuedDate)}
+                      </td>
+                      <td className="px-4">
+                        {formatCurrency(survey.allocatedBudget)}
+                      </td>
+                      <td className="px-4">
+                        {formatCurrency(survey.utilizedBudget)}
+                      </td>
+                      <td className="px-4">
+                        {formatDate(survey.completionDate)}
+                      </td>
 
                       <td className="px-4 whitespace-nowrap text-center">
                         <button
@@ -323,19 +511,20 @@ export function RedLineBlueLineSurvey() {
             </table>
           </div>
 
-          {/* Pagination Controls */}
           {surveys.length > 0 && (
             <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-[#F5F7FA]">
               <div className="flex items-center gap-3">
                 <span className="text-[13px] text-gray-500 font-medium">
-                  Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, totalCount)} of {totalCount} entries
+                  Showing {(page - 1) * pageSize + 1} to{" "}
+                  {Math.min(page * pageSize, totalCount)} of {totalCount}{" "}
+                  entries
                 </span>
-                
+
                 <select
                   value={pageSize}
                   onChange={(e) => {
                     setPageSize(Number(e.target.value));
-                    setPage(1); // Reset to page 1
+                    setPage(1);
                   }}
                   className="text-[13px] border border-gray-200 rounded px-2 py-1 bg-white outline-none focus:border-[#0B1F4D]"
                 >
@@ -354,11 +543,11 @@ export function RedLineBlueLineSurvey() {
                 >
                   Previous
                 </button>
-                
+
                 <span className="text-[13px] font-semibold text-[#0B1F4D] px-2">
                   Page {page} of {totalPages}
                 </span>
-                
+
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page >= totalPages || isLoading || isFetching}
@@ -372,7 +561,6 @@ export function RedLineBlueLineSurvey() {
         </div>
       )}
 
-      {/* New Survey Form */}
       {activeTab === "new" && (
         <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
           <h2 className="text-[20px] font-semibold mb-6 text-[#0B1F4D]">
@@ -381,97 +569,153 @@ export function RedLineBlueLineSurvey() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-[14px] font-medium text-gray-700 mb-1">Survey Code</label>
+              <label className="block text-[14px] font-medium text-gray-700 mb-1">
+                Survey Code
+              </label>
               <input
                 type="text"
                 className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20"
                 value={formData.surveyCode}
-                onChange={(e) => setFormData({ ...formData, surveyCode: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, surveyCode: e.target.value })
+                }
               />
             </div>
 
             <div>
-              <label className="block text-[14px] font-medium text-gray-700 mb-1">Title</label>
+              <label className="block text-[14px] font-medium text-gray-700 mb-1">
+                Title
+              </label>
               <input
                 type="text"
                 className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20"
                 value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
               />
             </div>
 
             <div>
-              <label className="block text-[14px] font-medium text-gray-700 mb-1">District ID</label>
-              <input
-                type="text"
-                className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20"
+              <label className="block text-[14px] font-medium text-gray-700 mb-1">
+                District
+              </label>
+              <select
+                className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20 disabled:opacity-50"
                 value={formData.districtId}
-                onChange={(e) => setFormData({ ...formData, districtId: e.target.value })}
-              />
+                onChange={(e) =>
+                  setFormData({ ...formData, districtId: e.target.value })
+                }
+                disabled={isDistrictsLoading}
+              >
+                <option value="" disabled>
+                  {isDistrictsLoading
+                    ? "Loading districts..."
+                    : "Select District"}
+                </option>
+                {districtsList.map((district: any) => (
+                  <option key={district.id} value={district.id}>
+                    {district.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
-              <label className="block text-[14px] font-medium text-gray-700 mb-1">Date of GR Issued</label>
+              <label className="block text-[14px] font-medium text-gray-700 mb-1">
+                Date of GR Issued
+              </label>
               <input
                 type="date"
                 className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20"
                 value={formData.grIssuedDate}
-                onChange={(e) => setFormData({ ...formData, grIssuedDate: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, grIssuedDate: e.target.value })
+                }
               />
             </div>
 
             <div>
-              <label className="block text-[14px] font-medium text-gray-700 mb-1">Allocated Budget</label>
+              <label className="block text-[14px] font-medium text-gray-700 mb-1">
+                Allocated Budget
+              </label>
               <input
                 type="number"
                 className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20"
                 value={formData.allocatedBudget}
-                onChange={(e) => setFormData({ ...formData, allocatedBudget: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, allocatedBudget: e.target.value })
+                }
               />
             </div>
 
             <div>
-              <label className="block text-[14px] font-medium text-gray-700 mb-1">Utilized Budget</label>
+              <label className="block text-[14px] font-medium text-gray-700 mb-1">
+                Utilized Budget
+              </label>
               <input
                 type="number"
                 className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20"
                 value={formData.utilizedBudget}
-                onChange={(e) => setFormData({ ...formData, utilizedBudget: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, utilizedBudget: e.target.value })
+                }
               />
             </div>
 
             <div>
-              <label className="block text-[14px] font-medium text-gray-700 mb-1">Date of Completion</label>
+              <label className="block text-[14px] font-medium text-gray-700 mb-1">
+                Date of Completion
+              </label>
               <input
                 type="date"
                 className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20"
                 value={formData.completionDate}
-                onChange={(e) => setFormData({ ...formData, completionDate: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, completionDate: e.target.value })
+                }
               />
             </div>
 
             <div>
-              <label className="block text-[14px] font-medium text-gray-700 mb-1">GR Issued Upload</label>
+              <label className="block text-[14px] font-medium text-gray-700 mb-1">
+                GR Issued Upload
+              </label>
               <input
                 type="file"
                 className="w-full text-[14px] file:mr-4 file:py-2 file:px-4 file:rounded-[10px] file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                onChange={(e) => setFormData({ ...formData, grDocument: e.target.files?.[0] || null })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    grDocument: e.target.files?.[0] || null,
+                  })
+                }
               />
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-[14px] font-medium text-gray-700 mb-1">Completion Certificate Upload</label>
+              <label className="block text-[14px] font-medium text-gray-700 mb-1">
+                Completion Certificate Upload
+              </label>
               <input
                 type="file"
                 className="w-full text-[14px] file:mr-4 file:py-2 file:px-4 file:rounded-[10px] file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                onChange={(e) => setFormData({ ...formData, completionCertificate: e.target.files?.[0] || null })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    completionCertificate: e.target.files?.[0] || null,
+                  })
+                }
               />
             </div>
           </div>
 
           <div className="flex gap-3 justify-end mt-6 pt-4 border-t border-gray-200">
             <button
-              onClick={() => setActiveTab("list")}
+              onClick={() => {
+                setFormData(initialFormState);
+                setActiveTab("list");
+              }}
               className="px-4 h-10 cursor-pointer bg-white border border-[#0B1F4D] text-[#0B1F4D] rounded-[10px] font-medium hover:bg-gray-50 transition-colors text-[14px]"
             >
               Cancel
@@ -479,9 +723,12 @@ export function RedLineBlueLineSurvey() {
 
             <button
               onClick={handleSave}
-              className="px-4 h-10 cursor-pointer bg-[#0B1F4D] text-white rounded-[10px] font-medium hover:bg-[#0B1F4D]/90 transition-colors text-[14px]"
+              disabled={addMutation.isPending || uploadMutation.isPending}
+              className="px-4 h-10 cursor-pointer bg-[#0B1F4D] text-white rounded-[10px] font-medium hover:bg-[#0B1F4D]/90 transition-colors text-[14px] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Save
+              {addMutation.isPending || uploadMutation.isPending
+                ? "Saving..."
+                : "Save"}
             </button>
           </div>
         </div>

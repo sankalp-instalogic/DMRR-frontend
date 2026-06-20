@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Plus, Eye, Download, ArrowLeft, Printer } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { Plus, Eye, Download, ArrowLeft } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 
 interface NBS {
@@ -43,14 +43,15 @@ const formatCurrency = (amount: number | string) => {
 export function NatureBasedSolutions() {
   const [activeTab, setActiveTab] = useState<"list" | "new">("list");
   const [selectedNBS, setSelectedNBS] = useState<NBS | null>(null);
-  
+
   // --- Pagination State ---
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
-  
-  const axiosPrivate = useAxiosPrivate();
 
-  const [formData, setFormData] = useState<NBS>({
+  const axiosPrivate = useAxiosPrivate();
+  const queryClient = useQueryClient();
+
+  const initialFormState: NBS = {
     nbsCode: "",
     title: "",
     districtId: "",
@@ -60,45 +61,190 @@ export function NatureBasedSolutions() {
     completionDate: "",
     grDocument: null,
     completionCertificate: null,
-  });
+  };
 
-  // --- GET ROUTE INTEGRATION (Updated with Pagination) ---
+  const [formData, setFormData] = useState<NBS>(initialFormState);
+
+  // --- QUERIES ---
+
+  // Get NBS List
   const { data, isLoading, isError, isFetching } = useQuery<PaginatedResponse>({
-    queryKey: ["nbs-list", page, pageSize], // Query invalidates/refetches when these change
+    queryKey: ["nbs-list", page, pageSize],
     queryFn: async () => {
       const response = await axiosPrivate.get("/api/v1/nbs", {
-        params: {
-          page: page,
-          pageSize: pageSize,
-        },
+        params: { page, pageSize },
       });
       return response.data;
     },
   });
 
-  // Extract items from the paginated response, fallback to empty array
+  // Get Districts Master
+  const { data: districtsData, isLoading: isDistrictsLoading } = useQuery({
+    queryKey: ["districts"],
+    queryFn: async () => {
+      const response = await axiosPrivate.get("/api/v1/masters/districts", {
+        params: { page: 1, pageSize: 100 },
+      });
+      return response.data;
+    },
+  });
+
+  // Fetch Documents for selected NBS (ownerType: "7")
+  const { data: documentsData, isLoading: isDocumentsLoading } = useQuery({
+    queryKey: ["documents", selectedNBS?.id],
+    queryFn: async () => {
+      const response = await axiosPrivate.get("/api/v1/Documents/list", {
+        params: { ownerType: "7", ownerId: selectedNBS?.id },
+      });
+      return response.data;
+    },
+    enabled: !!selectedNBS?.id,
+  });
+
   const nbsList = data?.items || [];
   const totalPages = data?.totalPages || 0;
   const totalCount = data?.totalCount || 0;
+  const districtsList = districtsData?.items || [];
 
-  // --- POST ROUTE (ON HOLD) ---
+  const districtMap =
+    isDistrictsLoading || !districtsData?.items
+      ? {}
+      : Object.fromEntries(
+          districtsData.items.map((district: any) => [
+            district.id,
+            district.name,
+          ]),
+        );
+
+  // Document Helpers
+  const getDocumentByType = (typeName: string) => {
+    const docs = Array.isArray(documentsData) ? documentsData : documentsData?.items || [];
+    return docs.find((doc: any) => doc.documentTypeName === typeName);
+  };
+
+  const grDocumentObj = getDocumentByType("GRCopy");
+  const completionDocObj = getDocumentByType("CompletionReport");
+
+  // --- MUTATIONS ---
+
+  // Upload Document Mutation (ownerType: "7")
+  const uploadMutation = useMutation({
+    mutationFn: async ({
+      file,
+      ownerId,
+      documentType,
+    }: {
+      file: File;
+      ownerId: string;
+      documentType: string;
+    }) => {
+      const uploadData = new FormData();
+      uploadData.append("file", file);
+      uploadData.append("ownerId", ownerId);
+      uploadData.append("ownerType", "7"); // Updated to 7
+      uploadData.append("documentType", documentType);
+
+      const response = await axiosPrivate.post(
+        "/api/v1/Documents/upload",
+        uploadData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        },
+      );
+      return response.data;
+    },
+  });
+
+  // Add NBS Mutation
+  const addMutation = useMutation({
+    mutationFn: async (newData: any) => {
+      const response = await axiosPrivate.post(
+        "/api/v1/nbs",
+        newData,
+        {
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+      return response.data;
+    },
+    onSuccess: async (responseData) => {
+      if (responseData?.id) {
+        const uploadPromises = [];
+
+        if (formData.grDocument) {
+          uploadPromises.push(
+            uploadMutation.mutateAsync({
+              file: formData.grDocument,
+              ownerId: responseData.id,
+              documentType: "25",
+            }),
+          );
+        }
+
+        if (formData.completionCertificate) {
+          uploadPromises.push(
+            uploadMutation.mutateAsync({
+              file: formData.completionCertificate,
+              ownerId: responseData.id,
+              documentType: "18",
+            }),
+          );
+        }
+
+        try {
+          if (uploadPromises.length > 0) {
+            await Promise.all(uploadPromises);
+          }
+        } catch (err) {
+          console.error("Document upload failed:", err);
+        }
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["nbs-list"] });
+      setFormData(initialFormState);
+      setActiveTab("list");
+    },
+    onError: (err) => {
+      console.error("Failed to save NBS:", err);
+    },
+  });
+
+  // --- HANDLERS ---
+
   const handleSave = () => {
-    console.log("POST request is on hold. Form Data:", formData);
-    
-    // Reset form
-    setFormData({
-      nbsCode: "",
-      title: "",
-      districtId: "",
-      grIssuedDate: "",
-      allocatedBudget: "",
-      utilizedBudget: "",
-      completionDate: "",
-      grDocument: null,
-      completionCertificate: null,
-    });
+    const { grDocument, completionCertificate, ...textData } = formData;
 
-    setActiveTab("list");
+    const payload = {
+      ...textData,
+      grIssuedDate: textData.grIssuedDate
+        ? new Date(textData.grIssuedDate).toISOString()
+        : null,
+      completionDate: textData.completionDate
+        ? new Date(textData.completionDate).toISOString()
+        : null,
+    };
+
+    addMutation.mutate(payload);
+  };
+
+  const handleDownload = async (doc: any) => {
+    if (!doc?.id) return;
+    try {
+      const response = await axiosPrivate.get(`/api/v1/Documents/${doc.id}/download`, {
+        responseType: "blob",
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", doc.fileName || `document-${doc.id}`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to download document:", error);
+    }
   };
 
   if (selectedNBS) {
@@ -113,16 +259,8 @@ export function NatureBasedSolutions() {
             Back
           </button>
 
-          <button
-            onClick={() => window.print()}
-            className="flex items-center gap-2 cursor-pointer bg-white border border-[#0B1F4D] text-[#0B1F4D] px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-gray-50 transition-colors"
-          >
-            <Printer className="size-4" />
-            Print
-          </button>
         </div>
 
-        {/* ... (Selected NBS Details remain unchanged) ... */}
         <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
           <h2 className="text-[20px] font-semibold text-[#0B1F4D] mb-6 pb-4 border-b border-gray-200">
             Nature Based Solution Details
@@ -134,8 +272,10 @@ export function NatureBasedSolutions() {
               <p className="font-semibold text-[16px] text-[#0B1F4D]">{selectedNBS.nbsCode}</p>
             </div>
             <div>
-              <label className="text-[14px] font-medium text-gray-500 mb-1 block">District ID</label>
-              <p className="font-semibold text-[16px] text-[#0B1F4D]">{selectedNBS.districtId}</p>
+              <label className="text-[14px] font-medium text-gray-500 mb-1 block">District</label>
+              <p className="font-semibold text-[16px] text-[#0B1F4D]">
+                {districtMap[selectedNBS.districtId] || selectedNBS.districtId}
+              </p>
             </div>
             <div>
               <label className="text-[14px] font-medium text-gray-500 mb-1 block">Title</label>
@@ -161,24 +301,30 @@ export function NatureBasedSolutions() {
             <div className="md:col-span-2 border-t border-gray-200 pt-4 mt-2"></div>
 
             <div>
-              <label className="text-[16px] font-semibold text-[#0B1F4D] block mb-4">GR Issued</label>
+              <label className="text-[16px] font-semibold text-[#0B1F4D] block mb-4">
+                GR Issued {isDocumentsLoading && <span className="text-sm text-gray-400 font-normal ml-2">(Loading...)</span>}
+              </label>
               <div className="flex gap-3">
-                <button className="flex cursor-pointer items-center gap-1.5 bg-white border border-[#0B1F4D] text-[#0B1F4D] px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-gray-50 transition-colors">
-                  <Eye className="size-4" /> View
-                </button>
-                <button className="flex cursor-pointer items-center gap-1.5 bg-[#0B1F4D] text-white px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-[#0B1F4D]/90 transition-colors">
+                <button
+                  onClick={() => handleDownload(grDocumentObj)}
+                  disabled={!grDocumentObj || isDocumentsLoading}
+                  className="flex cursor-pointer items-center gap-1.5 bg-[#0B1F4D] text-white px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-[#0B1F4D]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   <Download className="size-4" /> Download
                 </button>
               </div>
             </div>
 
             <div>
-              <label className="text-[16px] font-semibold text-[#0B1F4D] block mb-4">Completion Certificate</label>
+              <label className="text-[16px] font-semibold text-[#0B1F4D] block mb-4">
+                Completion Certificate {isDocumentsLoading && <span className="text-sm text-gray-400 font-normal ml-2">(Loading...)</span>}
+              </label>
               <div className="flex gap-3">
-                <button className="flex cursor-pointer items-center gap-1.5 bg-white border border-[#0B1F4D] text-[#0B1F4D] px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-gray-50 transition-colors">
-                  <Eye className="size-4" /> View
-                </button>
-                <button className="flex cursor-pointer items-center gap-1.5 bg-[#0B1F4D] text-white px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-[#0B1F4D]/90 transition-colors">
+                <button
+                  onClick={() => handleDownload(completionDocObj)}
+                  disabled={!completionDocObj || isDocumentsLoading}
+                  className="flex cursor-pointer items-center gap-1.5 bg-[#0B1F4D] text-white px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-[#0B1F4D]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   <Download className="size-4" /> Download
                 </button>
               </div>
@@ -239,10 +385,9 @@ export function NatureBasedSolutions() {
             <table className="w-full text-[13px] text-left">
               <thead className="bg-[#F5F7FA] text-[#0B1F4D]">
                 <tr className="h-14">
-                  <th className="px-4 font-semibold whitespace-nowrap">Sr No</th>
                   <th className="px-4 font-semibold whitespace-nowrap">NBS Code</th>
                   <th className="px-4 font-semibold whitespace-nowrap">Title</th>
-                  <th className="px-4 font-semibold whitespace-nowrap">District ID</th>
+                  <th className="px-4 font-semibold whitespace-nowrap">District</th>
                   <th className="px-4 font-semibold whitespace-nowrap">Date of GR Issued</th>
                   <th className="px-4 font-semibold whitespace-nowrap">Allocated Budget</th>
                   <th className="px-4 font-semibold whitespace-nowrap">Utilized Budget</th>
@@ -276,15 +421,11 @@ export function NatureBasedSolutions() {
                       key={item.id || index}
                       className="hover:bg-blue-50/50 transition-colors h-14 even:bg-gray-50/50"
                     >
-                      <td className="px-4 font-medium text-[#0B1F4D] whitespace-nowrap">
-                        {/* Dynamic Serial Number Logic */}
-                        {(page - 1) * pageSize + index + 1}
-                      </td>
                       <td className="px-4">{item.nbsCode}</td>
                       <td className="px-4">{item.title}</td>
                       <td className="px-4">
-                        <span className="truncate max-w-25 inline-block" title={item.districtId}>
-                           {item.districtId.slice(0, 8)}...
+                        <span className="truncate max-w-25 inline-block" title={districtMap[item.districtId] || item.districtId}>
+                           {districtMap[item.districtId] || item.districtId}
                         </span>
                       </td>
                       <td className="px-4">{formatDate(item.grIssuedDate)}</td>
@@ -316,12 +457,11 @@ export function NatureBasedSolutions() {
                   Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, totalCount)} of {totalCount} entries
                 </span>
                 
-                {/* Optional: Page Size Selector */}
                 <select
                   value={pageSize}
                   onChange={(e) => {
                     setPageSize(Number(e.target.value));
-                    setPage(1); // Reset to page 1 when changing page size
+                    setPage(1); 
                   }}
                   className="text-[13px] border border-gray-200 rounded px-2 py-1 bg-white outline-none focus:border-[#0B1F4D]"
                 >
@@ -358,10 +498,9 @@ export function NatureBasedSolutions() {
         </div>
       )}
 
-      {/* ... (New NBS Form remains unchanged) ... */}
+      {/* New NBS Form */}
       {activeTab === "new" && (
         <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-          {/* Form Content Omitted For Brevity in Display - Keeps Original implementation */}
           <h2 className="text-[20px] font-semibold mb-6 text-[#0B1F4D]">
             Add New Nature Based Solution
           </h2>
@@ -388,13 +527,22 @@ export function NatureBasedSolutions() {
             </div>
 
             <div>
-              <label className="block text-[14px] font-medium text-gray-700 mb-1">District ID</label>
-              <input
-                type="text"
-                className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20"
+              <label className="block text-[14px] font-medium text-gray-700 mb-1">District</label>
+              <select
+                className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20 disabled:opacity-50"
                 value={formData.districtId}
                 onChange={(e) => setFormData({ ...formData, districtId: e.target.value })}
-              />
+                disabled={isDistrictsLoading}
+              >
+                <option value="" disabled>
+                  {isDistrictsLoading ? "Loading districts..." : "Select District"}
+                </option>
+                {districtsList.map((district: any) => (
+                  <option key={district.id} value={district.id}>
+                    {district.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
@@ -458,7 +606,10 @@ export function NatureBasedSolutions() {
 
           <div className="flex gap-3 justify-end mt-6 pt-4 border-t border-gray-200">
             <button
-              onClick={() => setActiveTab("list")}
+              onClick={() => {
+                setFormData(initialFormState);
+                setActiveTab("list");
+              }}
               className="px-4 h-10 cursor-pointer bg-white border border-[#0B1F4D] text-[#0B1F4D] rounded-[10px] font-medium hover:bg-gray-50 transition-colors text-[14px]"
             >
               Cancel
@@ -466,9 +617,10 @@ export function NatureBasedSolutions() {
 
             <button
               onClick={handleSave}
-              className="px-4 h-10 cursor-pointer bg-[#0B1F4D] text-white rounded-[10px] font-medium hover:bg-[#0B1F4D]/90 transition-colors text-[14px]"
+              disabled={addMutation.isPending || uploadMutation.isPending}
+              className="px-4 h-10 cursor-pointer bg-[#0B1F4D] text-white rounded-[10px] font-medium hover:bg-[#0B1F4D]/90 transition-colors text-[14px] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Save
+              {addMutation.isPending || uploadMutation.isPending ? "Saving..." : "Save"}
             </button>
           </div>
         </div>
