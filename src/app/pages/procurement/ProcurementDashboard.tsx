@@ -97,12 +97,6 @@ export function ProcurementDashboard() {
             Summary view of all procurement records
           </p>
         </div>
-        <button
-          onClick={() => navigate("/procurement/create")}
-          className="bg-[#0B1F4D] text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors"
-        >
-          New Procurement
-        </button>
       </div>
 
       {/* Top Filter Section */}

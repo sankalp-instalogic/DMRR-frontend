@@ -1,31 +1,31 @@
 import { useState } from "react";
-import { Eye, Printer, Download, ArrowLeft, Plus, FileText } from "lucide-react";
+import {
+  Eye,
+  Download,
+  ArrowLeft,
+  Plus,
+  FileText,
+} from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
+import { queryClient } from "../../App";
 
 type RecordType = {
   id: string;
-  srNo: number;
-  department: string;
-  head: string;
-  allocatedAmount: string;
-  utilizedAmount: string;
-  date: string;
+  lineDepartmentId: string;
+  utilizationHead?: string;
+  allocatedCr: number;
+  utilizedCr: number;
+  issuingDate: string;
 };
 
-const DUMMY_RECORDS: RecordType[] = [
-  { id: "1", srNo: 1, department: "PWD", head: "Flood Protection", allocatedAmount: "₹500 Cr", utilizedAmount: "₹350 Cr", date: "20-05-2026" },
-  { id: "2", srNo: 2, department: "WRD", head: "Emergency Materials", allocatedAmount: "₹300 Cr", utilizedAmount: "₹200 Cr", date: "18-05-2026" },
-  { id: "3", srNo: 3, department: "Health", head: "Equipment Purchase", allocatedAmount: "₹150 Cr", utilizedAmount: "₹100 Cr", date: "15-05-2026" },
-  { id: "4", srNo: 4, department: "Forest", head: "Relief Activities", allocatedAmount: "₹80 Cr", utilizedAmount: "₹60 Cr", date: "10-05-2026" },
-  { id: "5", srNo: 5, department: "Urban Development", head: "Monitoring Systems", allocatedAmount: "₹200 Cr", utilizedAmount: "₹150 Cr", date: "05-05-2026" },
-];
-
-const DEPARTMENTS = [
-  "PWD", "WRD", "Health", "Forest", "Urban Development", "Rural Development"
-];
-
 export function FundsDistributedOther() {
-  const [activeTab, setActiveTab] = useState<"overview" | "new" | "view">("overview");
-  const [records, setRecords] = useState<RecordType[]>(DUMMY_RECORDS);
+  const axiosPrivate = useAxiosPrivate();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const [activeTab, setActiveTab] = useState<"overview" | "new" | "view">(
+    "overview",
+  );
   const [viewRecord, setViewRecord] = useState<RecordType | null>(null);
 
   // Form states
@@ -35,102 +35,266 @@ export function FundsDistributedOther() {
   const [formAllocated, setFormAllocated] = useState("");
   const [formUtilized, setFormUtilized] = useState("");
 
+  // --- QUERIES ---
+
+  // 1. Fetch Departments for Dropdown and Mapping
+  const { data: deptData, isLoading: isDepartmentsLoading } = useQuery({
+    queryKey: ["departments-dropdown"],
+    queryFn: async () => {
+      const response = await axiosPrivate.get(
+        "/api/v1/masters/line-departments",
+        {
+          params: { page: 1, pageSize: 100 },
+        },
+      );
+      return response.data;
+    },
+  });
+
+  const departments = deptData?.items ?? [];
+  const departmentsMap = isDepartmentsLoading
+    ? {}
+    : Object.fromEntries(departments.map((dept: any) => [dept.id, dept.name]));
+
+  // 2. Fetch Utilizations
+  const {
+    data: utilsData,
+    isLoading: isUtilsLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["utilizations"],
+    queryFn: async () => {
+      const response = await axiosPrivate.get("/api/v1/funds/utilizations");
+      return response.data;
+    },
+  });
+
+  const records: RecordType[] = utilsData?.items || utilsData || [];
+
+  // 3. Fetch Document for View Tab
+  const { data: documentsData, isLoading: isDocumentsLoading } = useQuery({
+    queryKey: ["documents-other", viewRecord?.id],
+    queryFn: async () => {
+      const response = await axiosPrivate.get("/api/v1/Documents/list", {
+        params: { ownerType: "14", ownerId: viewRecord?.id }, // Using "14" to match upload mutation
+      });
+      return response.data;
+    },
+    enabled: !!viewRecord?.id,
+  });
+
+  const getDocument = () => {
+    const docs = Array.isArray(documentsData) ? documentsData : documentsData?.items || [];
+    return docs.length > 0 ? docs[0] : null;
+  };
+  const utilDoc = getDocument();
+
+  // --- MUTATIONS ---
+  const uploadMutation = useMutation({
+    mutationFn: async ({ file, ownerId }: { file: File; ownerId: string }) => {
+      const uploadData = new FormData();
+      uploadData.append("file", file);
+      uploadData.append("ownerId", ownerId);
+      uploadData.append("ownerType", "14");
+      uploadData.append("documentType", "27");
+
+      return await axiosPrivate.post("/api/v1/Documents/upload", uploadData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+    },
+  });
+
+  const addMutation = useMutation({
+    mutationFn: async (newData: any) => {
+      const response = await axiosPrivate.post(
+        "/api/v1/funds/utilizations",
+        newData,
+        {
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+      return response.data; 
+    },
+    onSuccess: async (responseData) => {
+      // Trigger file upload if a file was selected and we have a new record ID
+      if (responseData?.id && selectedFile) {
+        try {
+          await uploadMutation.mutateAsync({
+            file: selectedFile,
+            ownerId: responseData.id,
+          });
+        } catch (err) {
+          console.error("Document upload failed:", err);
+        }
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["utilizations"] });
+
+      // Reset form
+      setFormDepartment("");
+      setFormHead("");
+      setFormDate("");
+      setFormAllocated("");
+      setFormUtilized("");
+      setSelectedFile(null); 
+
+      setActiveTab("overview");
+    },
+  });
+
+  // --- HANDLERS ---
   const handleView = (record: RecordType) => {
     setViewRecord(record);
     setActiveTab("view");
   };
 
   const handleSave = () => {
-    const newEntry: RecordType = {
-      id: Math.random().toString(),
-      srNo: records.length + 1,
-      department: formDepartment,
-      head: formHead,
-      allocatedAmount: `₹${formAllocated} Cr`,
-      utilizedAmount: `₹${formUtilized} Cr`,
-      date: formDate.split("-").reverse().join("-"), // basic format
+    const payload = {
+      lineDepartmentId: formDepartment,
+      utilizationHead: formHead,
+      allocatedCr: Number(formAllocated),
+      utilizedCr: Number(formUtilized),
+      issuingDate: new Date(formDate).toISOString(),
     };
-    setRecords([newEntry, ...records]);
-    
-    // reset form
-    setFormDepartment("");
-    setFormHead("");
-    setFormDate("");
-    setFormAllocated("");
-    setFormUtilized("");
 
-    setActiveTab("overview");
+    addMutation.mutate(payload);
   };
+
+  const handleDownload = async (doc: any) => {
+    if (!doc?.id) return;
+    try {
+      const response = await axiosPrivate.get(
+        `/api/v1/Documents/${doc.id}/download`,
+        {
+          responseType: "blob",
+        },
+      );
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", doc.fileName || `document-${doc.id}`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to download document:", error);
+    }
+  };
+
+  if (isUtilsLoading) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-100">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-[#0B1F4D]"></div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex items-center justify-center p-6">
+        <div className="max-w-md rounded-xl border border-red-200 bg-red-50 p-4 shadow-sm">
+          <h3 className="font-semibold text-red-800">Something went wrong</h3>
+          <p className="mt-1 text-sm text-red-600">
+            {(error as Error).message}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#0B1F4D]">Funds Distributed to Other Utilizations</h1>
-        <p className="text-sm text-muted-foreground mt-1">Manage and track funds allocated for various specific heads</p>
+        <h1 className="text-[30px] font-bold text-[#0B1F4D]">
+          Funds Distributed to Other Utilizations
+        </h1>
+        <p className="text-[14px] font-medium text-gray-500 mt-1">
+          Manage and track funds allocated for various specific heads
+        </p>
       </div>
 
       {activeTab !== "view" && (
-        <div className="flex gap-2 border-b border-border">
+        <div className="flex gap-2">
           <button
             onClick={() => setActiveTab("overview")}
-            className={`px-4 py-2 font-medium text-sm transition-colors relative ${
-              activeTab === "overview" ? "text-[#0B1F4D]" : "text-muted-foreground hover:text-foreground"
+            className={`px-4 py-2 font-medium text-[14px] transition-colors rounded-[10px] cursor-pointer ${
+              activeTab === "overview"
+                ? "bg-[#0B1F4D] text-white"
+                : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
             }`}
           >
             Overview
-            {activeTab === "overview" && (
-              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#0B1F4D] rounded-t-full"></span>
-            )}
           </button>
           <button
             onClick={() => setActiveTab("new")}
-            className={`px-4 py-2 font-medium text-sm transition-colors relative ${
-              activeTab === "new" ? "text-[#0B1F4D]" : "text-muted-foreground hover:text-foreground"
+            className={`px-4 py-2 font-medium text-[14px] transition-colors rounded-[10px] cursor-pointer ${
+              activeTab === "new"
+                ? "bg-[#0B1F4D] text-white"
+                : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
             }`}
           >
             New Utilization
-            {activeTab === "new" && (
-              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#0B1F4D] rounded-t-full"></span>
-            )}
           </button>
         </div>
       )}
 
       {activeTab === "overview" && (
-        <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-[#0B1F4D] text-white">
-                <tr>
-                  <th className="px-4 py-4 font-medium whitespace-nowrap">Sr No</th>
-                  <th className="px-4 py-4 font-medium whitespace-nowrap">Utilization Department</th>
-                  <th className="px-4 py-4 font-medium whitespace-nowrap">Utilization Head</th>
-                  <th className="px-4 py-4 font-medium whitespace-nowrap">Allocated Amount</th>
-                  <th className="px-4 py-4 font-medium whitespace-nowrap">Utilized Amount</th>
-                  <th className="px-4 py-4 font-medium whitespace-nowrap">Date of Issuing</th>
-                  <th className="px-4 py-4 font-medium whitespace-nowrap text-center">Action</th>
+            <table className="w-full text-[13px] text-left">
+              <thead className="bg-[#F5F7FA] text-[#0B1F4D]">
+                <tr className="h-14">
+                  <th className="px-4 font-semibold whitespace-nowrap">
+                    Sr No
+                  </th>
+                  <th className="font-semibold">Utilization Department</th>
+                  <th className="font-semibold">Utilization Head</th>
+                  <th className="font-semibold">Allocated Amount</th>
+                  <th className="font-semibold">Utilized Amount</th>
+                  <th className="font-semibold">Date of Issuing</th>
+                  <th className="px-4 font-semibold whitespace-nowrap text-center">
+                    Action
+                  </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
-                {records.map((row, index) => (
-                  <tr key={row.id} className="hover:bg-muted/50 transition-colors">
-                    <td className="px-4 py-3 font-medium text-[#0B1F4D] whitespace-nowrap">{index + 1}</td>
-                    <td className="px-4 py-3 whitespace-nowrap">{row.department}</td>
-                    <td className="px-4 py-3 whitespace-nowrap">{row.head}</td>
-                    <td className="px-4 py-3 whitespace-nowrap">{row.allocatedAmount}</td>
-                    <td className="px-4 py-3 whitespace-nowrap">{row.utilizedAmount}</td>
-                    <td className="px-4 py-3 whitespace-nowrap">{row.date}</td>
-                    <td className="px-4 py-3 whitespace-nowrap text-center">
-                      <button
-                        onClick={() => handleView(row)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-md transition-colors text-xs font-medium"
-                      >
-                        <Eye className="size-3.5" />
-                        View
-                      </button>
+              <tbody className="divide-y divide-gray-100">
+                {records.length > 0 ? (
+                  records.map((row, index) => (
+                    <tr
+                      key={row.id || index}
+                      className="hover:bg-blue-50/50 transition-colors h-14 even:bg-gray-50/50"
+                    >
+                      <td className="px-4 font-medium text-[#0B1F4D] whitespace-nowrap">
+                        {index + 1}
+                      </td>
+                      <td>
+                        {departmentsMap[row.lineDepartmentId] || "Unknown Dept"}
+                      </td>
+                      <td>{row.utilizationHead || "-"}</td>
+                      <td>₹{(row.allocatedCr || 0).toFixed(2)} Cr</td>
+                      <td>₹{(row.utilizedCr || 0).toFixed(2)} Cr</td>
+                      <td>{new Date(row.issuingDate).toLocaleDateString()}</td>
+                      <td className="px-4 whitespace-nowrap text-center">
+                        <button
+                          onClick={() => handleView(row)}
+                          className="inline-flex items-center gap-1.5 px-4 h-10 bg-white border border-[#0B1F4D] text-[#0B1F4D] rounded-[10px] hover:bg-blue-50 transition-colors text-[14px] font-medium cursor-pointer"
+                        >
+                          <Eye className="size-4" />
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={7} className="text-center py-6 text-gray-500">
+                      No utilization records found.
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
@@ -138,92 +302,144 @@ export function FundsDistributedOther() {
       )}
 
       {activeTab === "new" && (
-        <div className="bg-white rounded-xl shadow-sm border border-border p-6">
-          <h2 className="text-lg font-semibold text-[#0B1F4D] mb-6">New Utilization</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h2 className="text-[20px] font-semibold text-[#0B1F4D] mb-6">
+            New Utilization
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Utilization Department</label>
+              <label className="text-[14px] font-medium text-gray-700">
+                Utilization Department
+              </label>
               <select
                 value={formDepartment}
                 onChange={(e) => setFormDepartment(e.target.value)}
-                className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20 focus:border-[#0B1F4D] bg-white"
+                className="w-full px-3 h-10 border border-gray-200 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20 focus:border-[#0B1F4D] bg-white text-[14px]"
               >
                 <option value="">Select Department</option>
-                {DEPARTMENTS.map(d => (
-                  <option key={d} value={d}>{d}</option>
+                {departments.map((d: any) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name} {d.code ? `(${d.code})` : ""}
+                  </option>
                 ))}
               </select>
             </div>
-            
+
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Utilization Head</label>
+              <label className="text-[14px] font-medium text-gray-700">
+                Utilization Head
+              </label>
               <input
                 type="text"
                 value={formHead}
                 onChange={(e) => setFormHead(e.target.value)}
-                className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20 focus:border-[#0B1F4D]"
+                className="w-full px-3 h-10 border border-gray-200 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20 focus:border-[#0B1F4D] text-[14px]"
                 placeholder="Enter utilization head"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Issuing Date</label>
+              <label className="text-[14px] font-medium text-gray-700">
+                Issuing Date
+              </label>
               <input
                 type="date"
                 value={formDate}
                 onChange={(e) => setFormDate(e.target.value)}
-                className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20 focus:border-[#0B1F4D]"
+                className="w-full px-3 h-10 border border-gray-200 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20 focus:border-[#0B1F4D] text-[14px]"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Budget Allocated (Cr)</label>
+              <label className="text-[14px] font-medium text-gray-700">
+                Budget Allocated (Cr)
+              </label>
               <input
                 type="number"
                 value={formAllocated}
                 onChange={(e) => setFormAllocated(e.target.value)}
-                className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20 focus:border-[#0B1F4D]"
+                className="w-full px-3 h-10 border border-gray-200 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20 focus:border-[#0B1F4D] text-[14px]"
                 placeholder="Enter allocated amount in Cr"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Budget Utilized (Cr)</label>
+              <label className="text-[14px] font-medium text-gray-700">
+                Budget Utilized (Cr)
+              </label>
               <input
                 type="number"
                 value={formUtilized}
                 onChange={(e) => setFormUtilized(e.target.value)}
-                className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20 focus:border-[#0B1F4D]"
+                className="w-full px-3 h-10 border border-gray-200 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20 focus:border-[#0B1F4D] text-[14px]"
                 placeholder="Enter utilized amount in Cr"
               />
             </div>
 
-            <div className="space-y-2 md:col-span-2">
-              <label className="text-sm font-medium text-gray-700">Utilization Certificate Upload</label>
-              <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:bg-muted/30 transition-colors">
-                <input type="file" className="hidden" id="cert-upload" accept=".pdf,.doc,.docx" />
-                <label htmlFor="cert-upload" className="cursor-pointer flex flex-col items-center">
-                  <Plus className="size-8 text-gray-400 mb-2" />
-                  <span className="text-sm font-medium text-[#0B1F4D]">Click to upload Utilization Certificate</span>
-                  <span className="text-xs text-muted-foreground mt-1">Accepts PDF, DOC, DOCX</span>
+            <div className="space-y-2 md:col-span-2 mt-4">
+              <label className="text-[14px] font-medium text-gray-700">
+                Utilization Certificate Upload
+              </label>
+              <div className="border-2 border-dashed border-gray-300 rounded-[10px] p-6 text-center hover:bg-gray-50 transition-colors">
+                <input
+                  type="file"
+                  className="hidden"
+                  id="cert-upload"
+                  accept=".pdf,.doc,.docx"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files.length > 0) {
+                      setSelectedFile(e.target.files[0]);
+                    }
+                    e.target.value = "";
+                  }}
+                />
+                <label
+                  htmlFor="cert-upload"
+                  className="cursor-pointer flex flex-col items-center"
+                >
+                  {selectedFile ? (
+                    <>
+                      <FileText className="size-6 text-[#0B1F4D] mb-2" />
+                      <span className="text-[14px] font-medium text-[#0B1F4D]">
+                        {selectedFile.name}
+                      </span>
+                      <span className="text-[12px] text-gray-500 mt-1">
+                        Click to change file (
+                        {(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="size-6 text-[#0B1F4D] mb-2" />
+                      <span className="text-[14px] font-medium text-[#0B1F4D]">
+                        Click to upload Utilization Certificate
+                      </span>
+                      <span className="text-[12px] text-gray-500 mt-1">
+                        Accepts PDF, DOC, DOCX
+                      </span>
+                    </>
+                  )}
                 </label>
               </div>
             </div>
           </div>
 
-          <div className="mt-8 flex gap-3 justify-end pt-4 border-t border-border">
+          <div className="mt-6 flex gap-3 justify-end pt-4 border-t border-gray-200">
             <button
               onClick={() => setActiveTab("overview")}
-              className="px-6 py-2 border border-border text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+              className="px-4 h-10 bg-white border border-[#0B1F4D] text-[#0B1F4D] rounded-[10px] font-medium hover:bg-gray-50 transition-colors text-[14px] cursor-pointer"
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
-              className="px-6 py-2 bg-[#0B1F4D] text-white rounded-lg font-medium hover:bg-[#0B1F4D]/90 transition-colors"
+              disabled={addMutation.isPending || uploadMutation.isPending}
+              className="px-4 h-10 bg-[#0B1F4D] text-white rounded-[10px] font-medium hover:bg-[#0B1F4D]/90 transition-colors text-[14px] disabled:opacity-50 cursor-pointer"
             >
-              Save
+              {addMutation.isPending || uploadMutation.isPending
+                ? "Saving..."
+                : "Save"}
             </button>
           </div>
         </div>
@@ -234,65 +450,93 @@ export function FundsDistributedOther() {
           <div className="flex items-center justify-between">
             <button
               onClick={() => setActiveTab("overview")}
-              className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-[#0B1F4D] transition-colors"
+              className="inline-flex items-center gap-2 text-[14px] font-medium text-gray-600 hover:text-[#0B1F4D] transition-colors cursor-pointer"
             >
               <ArrowLeft className="size-4" />
               Back
             </button>
-            <button
-              onClick={() => window.print()}
-              className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              <Printer className="size-4" />
-              Print
-            </button>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-border p-6">
-            <h2 className="text-lg font-semibold text-[#0B1F4D] mb-6 pb-4 border-b border-border">Utilization Details</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 className="text-[20px] font-semibold text-[#0B1F4D] mb-6 pb-4 border-b border-gray-200">
+              Utilization Details
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-y-6 gap-x-6">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Utilization Department</p>
-                <p className="font-medium text-base text-[#0B1F4D]">{viewRecord.department}</p>
+                <p className="text-[14px] font-medium text-gray-500 mb-1">
+                  Utilization Department
+                </p>
+                <p className="font-semibold text-[16px] text-[#0B1F4D]">
+                  {departmentsMap[viewRecord.lineDepartmentId] ||
+                    "Unknown Dept"}
+                </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Utilization Head</p>
-                <p className="font-medium text-base text-[#0B1F4D]">{viewRecord.head}</p>
+                <p className="text-[14px] font-medium text-gray-500 mb-1">
+                  Utilization Head
+                </p>
+                <p className="font-semibold text-[16px] text-[#0B1F4D]">
+                  {viewRecord.utilizationHead || "-"}
+                </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Allocated Amount</p>
-                <p className="font-medium text-base text-[#0B1F4D]">{viewRecord.allocatedAmount}</p>
+                <p className="text-[14px] font-medium text-gray-500 mb-1">
+                  Allocated Amount
+                </p>
+                <p className="font-semibold text-[16px] text-[#0B1F4D]">
+                  ₹{((viewRecord.allocatedCr || 0) / 100).toFixed(2)} Cr
+                </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Utilized Amount</p>
-                <p className="font-medium text-base text-[#0B1F4D]">{viewRecord.utilizedAmount}</p>
+                <p className="text-[14px] font-medium text-gray-500 mb-1">
+                  Utilized Amount
+                </p>
+                <p className="font-semibold text-[16px] text-[#0B1F4D]">
+                  ₹{((viewRecord.utilizedCr || 0) / 100).toFixed(2)} Cr
+                </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Date of Issuing</p>
-                <p className="font-medium text-base text-[#0B1F4D]">{viewRecord.date}</p>
+                <p className="text-[14px] font-medium text-gray-500 mb-1">
+                  Date of Issuing
+                </p>
+                <p className="font-semibold text-[16px] text-[#0B1F4D]">
+                  {new Date(viewRecord.issuingDate).toLocaleDateString()}
+                </p>
               </div>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-border">
-              <p className="text-sm font-medium text-gray-700 mb-3">Utilization Certificate</p>
-              <div className="flex items-center gap-4 p-4 border border-border rounded-lg bg-gray-50/50">
-                <FileText className="size-8 text-red-500" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-[#0B1F4D]">Utilization_Certificate.pdf</p>
-                  <p className="text-xs text-muted-foreground">1.8 MB</p>
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <p className="text-[16px] font-semibold text-[#0B1F4D] mb-4">
+                Utilization Certificate
+                {isDocumentsLoading && (
+                  <span className="text-sm text-gray-400 font-normal ml-2">
+                    (Loading...)
+                  </span>
+                )}
+              </p>
+
+              {utilDoc ? (
+                <div className="flex items-center gap-4 p-4 border border-gray-200 rounded-[10px] bg-gray-50/50">
+                  <FileText className="size-8 text-red-500" />
+                  <div className="flex-1">
+                    <p className="text-[14px] font-medium text-[#0B1F4D]">
+                      {utilDoc.fileName || "Utilization_Certificate.pdf"}
+                    </p>
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => handleDownload(utilDoc)}
+                      className="inline-flex items-center gap-1.5 px-4 h-10 bg-[#0B1F4D] text-white rounded-[10px] transition-colors text-[14px] font-medium hover:bg-[#0B1F4D]/90 cursor-pointer"
+                    >
+                      <Download className="size-4" />
+                      Download
+                    </button>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <button className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-border rounded text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-                    <Eye className="size-3.5" />
-                    View
-                  </button>
-                  <button className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded transition-colors text-sm font-medium">
-                    <Download className="size-3.5" />
-                    Download
-                  </button>
-                </div>
-              </div>
+              ) : (
+                <p className="text-[14px] text-gray-500 italic">No document available for this utilization.</p>
+              )}
             </div>
           </div>
         </div>

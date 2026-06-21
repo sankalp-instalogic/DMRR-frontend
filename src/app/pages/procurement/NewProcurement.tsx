@@ -1,17 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Save, X, Plus, Trash2 } from "lucide-react";
-
-const maharashtraDistricts = [
-  "Ahmednagar", "Akola", "Amravati", "Aurangabad", "Beed", "Bhandara",
-  "Buldhana", "Chandrapur", "Dhule", "Gadchiroli", "Gondia", "Hingoli",
-  "Jalgaon", "Jalna", "Kolhapur", "Latur", "Mumbai City", "Mumbai Suburban",
-  "Nagpur", "Nanded", "Nandurbar", "Nashik", "Osmanabad", "Palghar",
-  "Parbhani", "Pune", "Raigad", "Ratnagiri", "Sangli", "Satara",
-  "Sindhudurg", "Solapur", "Thane", "Wardha", "Washim", "Yavatmal",
-];
-
-const otherDepartments = ["Army", "NDRF", "SDRF"];
+import { useQuery, useMutation } from "@tanstack/react-query";
+import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 
 interface DetailRow {
   id: number;
@@ -21,20 +12,66 @@ interface DetailRow {
 
 export function NewProcurement() {
   const navigate = useNavigate();
+  const axiosPrivate = useAxiosPrivate();
 
+  // --- FORM STATE ---
   const [financialYear, setFinancialYear] = useState("");
   const [itemName, setItemName] = useState("");
   const [demandType, setDemandType] = useState<"Districts" | "Other Departments" | "">("");
-  const [selectedDistrict, setSelectedDistrict] = useState("");
-  const [selectedDept, setSelectedDept] = useState("");
-  const [rows, setRows] = useState<DetailRow[]>([{ id: 1, quantity: "", location: "" }]);
+  const [selectedDistrictId, setSelectedDistrictId] = useState("");
+  const [selectedDeptId, setSelectedDeptId] = useState("");
+  const [rows, setRows] = useState<DetailRow[]>([
+    { id: 1, quantity: "", location: "" },
+  ]);
   const [awardCost, setAwardCost] = useState("");
-  const [savingAA, setSavingAA] = useState("");
+  const [savingAA, setSavingAA] = useState(""); // Captures Total Items Qty as per existing UI label
   const [deliveryDeadline, setDeliveryDeadline] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // --- API QUERIES ---
+  // Fetch Districts List
+  const { data: districtsData, isLoading: isDistrictsLoading } = useQuery({
+    queryKey: ["districts-dropdown"],
+    queryFn: async () => {
+      const response = await axiosPrivate.get("/api/v1/masters/districts", {
+        params: { page: 1, pageSize: 100 },
+      });
+      return response.data;
+    },
+  });
+
+  // Fetch Line Departments List
+  const { data: deptData, isLoading: isDepartmentsLoading } = useQuery({
+    queryKey: ["departments-dropdown"],
+    queryFn: async () => {
+      const response = await axiosPrivate.get("/api/v1/masters/line-departments", {
+        params: { page: 1, pageSize: 100 },
+      });
+      return response.data;
+    },
+  });
+
+  const districts = districtsData?.items ?? [];
+  const departments = deptData?.items ?? [];
+
+  // --- SUBMIT MUTATION ---
+  const createProcurementMutation = useMutation({
+    mutationFn: async (payload: any) => {
+      return await axiosPrivate.post("/api/v1/Procurements", payload, {
+        headers: { "Content-Type": "application/json" },
+      });
+    },
+    onSuccess: () => {
+      navigate("/procurement-list");
+    },
+  });
+
+  // --- TABLE ACTIONS ---
   const addRow = () => {
-    setRows((prev) => [...prev, { id: Date.now(), quantity: "", location: "" }]);
+    setRows((prev) => [
+      ...prev,
+      { id: Date.now(), quantity: "", location: "" },
+    ]);
   };
 
   const removeRow = (id: number) => {
@@ -42,34 +79,63 @@ export function NewProcurement() {
   };
 
   const updateRow = (id: number, field: keyof DetailRow, value: string) => {
-    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
+    setRows((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, [field]: value } : r)),
+    );
   };
 
+  // --- VALIDATION ---
   const validate = () => {
     const e: Record<string, string> = {};
     if (!financialYear) e.financialYear = "Required";
     if (!itemName.trim()) e.itemName = "Required";
     if (!demandType) e.demandType = "Required";
-    if (demandType === "Districts" && !selectedDistrict) e.selectedDistrict = "Required";
-    if (demandType === "Other Departments" && !selectedDept) e.selectedDept = "Required";
+    if (demandType === "Districts" && !selectedDistrictId)
+      e.selectedDistrictId = "Required";
+    if (demandType === "Other Departments" && !selectedDeptId)
+      e.selectedDeptId = "Required";
+    
     rows.forEach((r, i) => {
       if (!r.quantity.trim()) e[`qty_${i}`] = "Required";
       if (!r.location.trim()) e[`loc_${i}`] = "Required";
     });
+    
     if (!awardCost.trim()) e.awardCost = "Required";
     if (!deliveryDeadline) e.deliveryDeadline = "Required";
+    
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
+  // --- SAVE / HANDLER ---
   const handleSave = () => {
     if (!validate()) return;
 
-    if (demandType === "Districts") {
-      navigate("/procurement-psc");
-    } else {
-      navigate("/procurement-tac");
-    }
+    // Mapping items for payload
+    const itemsPayload = rows.map((r) => ({
+      quantity: Number(r.quantity) || 0, // Fallback to 0 if input string contains characters
+      location: r.location,
+    }));
+
+    // Summing quantities up or falling back to the total quantity provided
+    const totalQuantity = itemsPayload.reduce((acc, curr) => acc + curr.quantity, 0);
+
+    // Build POST request schema layout
+    const payload = {
+      financialYear,
+      itemName,
+      demandFrom: demandType === "Districts" ? "1" : "2",
+      beneficiaryDistrictId: demandType === "Districts" ? selectedDistrictId : null,
+      beneficiaryDepartmentId: demandType === "Other Departments" ? selectedDeptId : null,
+      aaValueLakhs: 0, // Fallback placeholder standard value
+      awardCostInclGstLakhs: Number(awardCost) || 0,
+      quantity: totalQuantity || Number(savingAA) || 0,
+      deliveryDeadline: new Date(deliveryDeadline).toISOString(),
+      deliveryLocation: rows[0]?.location || "", // Root location fallback to primary first item location
+      items: itemsPayload,
+    };
+
+    createProcurementMutation.mutate(payload);
   };
 
   const fieldClass = (key: string) =>
@@ -81,15 +147,18 @@ export function NewProcurement() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-[#0B1F4D]">New Procurement</h1>
-        <p className="text-sm text-muted-foreground">Capture procurement details and initiate the approval workflow</p>
+        <p className="text-sm text-muted-foreground">
+          Capture procurement details and initiate the approval workflow
+        </p>
       </div>
 
       <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
         {/* Section 1: Basic Information */}
         <div className="p-6 border-b border-border">
-          <h2 className="text-lg font-semibold text-[#0B1F4D] mb-5">Section 1: Basic Information</h2>
+          <h2 className="text-lg font-semibold text-[#0B1F4D] mb-5">
+            Section 1: Basic Information
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
             {/* Financial Year */}
             <div>
               <label className="block text-sm font-medium mb-1">
@@ -105,7 +174,11 @@ export function NewProcurement() {
                 <option value="2024-25">2024-25</option>
                 <option value="2023-24">2023-24</option>
               </select>
-              {errors.financialYear && <p className="text-xs text-destructive mt-1">{errors.financialYear}</p>}
+              {errors.financialYear && (
+                <p className="text-xs text-destructive mt-1">
+                  {errors.financialYear}
+                </p>
+              )}
             </div>
 
             {/* Name of Item */}
@@ -120,7 +193,11 @@ export function NewProcurement() {
                 onChange={(e) => setItemName(e.target.value)}
                 className={fieldClass("itemName")}
               />
-              {errors.itemName && <p className="text-xs text-destructive mt-1">{errors.itemName}</p>}
+              {errors.itemName && (
+                <p className="text-xs text-destructive mt-1">
+                  {errors.itemName}
+                </p>
+              )}
             </div>
 
             {/* Demand From */}
@@ -133,7 +210,11 @@ export function NewProcurement() {
                   <button
                     key={type}
                     type="button"
-                    onClick={() => { setDemandType(type); setSelectedDistrict(""); setSelectedDept(""); }}
+                    onClick={() => {
+                      setDemandType(type);
+                      setSelectedDistrictId("");
+                      setSelectedDeptId("");
+                    }}
                     className={`px-5 py-2.5 rounded-lg border text-sm font-medium transition-colors ${
                       demandType === type
                         ? "bg-[#0B1F4D] text-white border-[#0B1F4D]"
@@ -144,7 +225,11 @@ export function NewProcurement() {
                   </button>
                 ))}
               </div>
-              {errors.demandType && <p className="text-xs text-destructive mb-2">{errors.demandType}</p>}
+              {errors.demandType && (
+                <p className="text-xs text-destructive mb-2">
+                  {errors.demandType}
+                </p>
+              )}
 
               {demandType === "Districts" && (
                 <div>
@@ -152,16 +237,25 @@ export function NewProcurement() {
                     Select District <span className="text-destructive">*</span>
                   </label>
                   <select
-                    value={selectedDistrict}
-                    onChange={(e) => setSelectedDistrict(e.target.value)}
-                    className={fieldClass("selectedDistrict")}
+                    value={selectedDistrictId}
+                    onChange={(e) => setSelectedDistrictId(e.target.value)}
+                    className={fieldClass("selectedDistrictId")}
+                    disabled={isDistrictsLoading}
                   >
-                    <option value="">Select District</option>
-                    {maharashtraDistricts.map((d) => (
-                      <option key={d} value={d}>{d}</option>
+                    <option value="">
+                      {isDistrictsLoading ? "Loading Districts..." : "Select District"}
+                    </option>
+                    {districts.map((d: any) => (
+                      <option key={d.id} value={d.id}>
+                        {d.name}
+                      </option>
                     ))}
                   </select>
-                  {errors.selectedDistrict && <p className="text-xs text-destructive mt-1">{errors.selectedDistrict}</p>}
+                  {errors.selectedDistrictId && (
+                    <p className="text-xs text-destructive mt-1">
+                      {errors.selectedDistrictId}
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -171,16 +265,25 @@ export function NewProcurement() {
                     Select Department <span className="text-destructive">*</span>
                   </label>
                   <select
-                    value={selectedDept}
-                    onChange={(e) => setSelectedDept(e.target.value)}
-                    className={fieldClass("selectedDept")}
+                    value={selectedDeptId}
+                    onChange={(e) => setSelectedDeptId(e.target.value)}
+                    className={fieldClass("selectedDeptId")}
+                    disabled={isDepartmentsLoading}
                   >
-                    <option value="">Select Department</option>
-                    {otherDepartments.map((d) => (
-                      <option key={d} value={d}>{d}</option>
+                    <option value="">
+                      {isDepartmentsLoading ? "Loading Departments..." : "Select Department"}
+                    </option>
+                    {departments.map((d: any) => (
+                      <option key={d.id} value={d.id}>
+                        {d.name} {d.code ? `(${d.code})` : ""}
+                      </option>
                     ))}
                   </select>
-                  {errors.selectedDept && <p className="text-xs text-destructive mt-1">{errors.selectedDept}</p>}
+                  {errors.selectedDeptId && (
+                    <p className="text-xs text-destructive mt-1">
+                      {errors.selectedDeptId}
+                    </p>
+                  )}
                 </div>
               )}
             </div>
@@ -189,7 +292,9 @@ export function NewProcurement() {
 
         {/* Section 2: Procurement Details */}
         <div className="p-6 border-b border-border">
-          <h2 className="text-lg font-semibold text-[#0B1F4D] mb-5">Section 2: Procurement Details</h2>
+          <h2 className="text-lg font-semibold text-[#0B1F4D] mb-5">
+            Section 2: Procurement Details
+          </h2>
 
           {/* Item Table */}
           <div className="overflow-x-auto mb-5">
@@ -209,7 +314,7 @@ export function NewProcurement() {
                     <td className="px-4 py-2">
                       <input
                         type="text"
-                        placeholder="e.g. 50 Units"
+                        placeholder="e.g. 50"
                         value={row.quantity}
                         onChange={(e) => updateRow(row.id, "quantity", e.target.value)}
                         className={`w-full px-3 py-1.5 bg-input-background border rounded-lg text-sm ${
@@ -266,13 +371,17 @@ export function NewProcurement() {
                 onChange={(e) => setAwardCost(e.target.value)}
                 className={fieldClass("awardCost")}
               />
-              {errors.awardCost && <p className="text-xs text-destructive mt-1">{errors.awardCost}</p>}
+              {errors.awardCost && (
+                <p className="text-xs text-destructive mt-1">
+                  {errors.awardCost}
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Total Items Qty</label>
               <input
                 type="number"
-                placeholder="Enter Total Items Qty "
+                placeholder="Enter Total Items Qty"
                 value={savingAA}
                 onChange={(e) => setSavingAA(e.target.value)}
                 className={fieldClass("savingAA")}
@@ -288,18 +397,14 @@ export function NewProcurement() {
                 onChange={(e) => setDeliveryDeadline(e.target.value)}
                 className={fieldClass("deliveryDeadline")}
               />
-              {errors.deliveryDeadline && <p className="text-xs text-destructive mt-1">{errors.deliveryDeadline}</p>}
+              {errors.deliveryDeadline && (
+                <p className="text-xs text-destructive mt-1">
+                  {errors.deliveryDeadline}
+                </p>
+              )}
             </div>
           </div>
 
-          {demandType && (
-            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
-              <strong>Routing Notice:</strong>{" "}
-              {demandType === "Districts"
-                ? "After saving, this procurement will be forwarded to the Proposal Scrutiny Committee (PSC)."
-                : "After saving, this procurement will be forwarded to the Technical Appraisal Committee (TAC)."}
-            </div>
-          )}
         </div>
 
         {/* Buttons */}
@@ -315,10 +420,11 @@ export function NewProcurement() {
           <button
             type="button"
             onClick={handleSave}
-            className="px-6 py-2 bg-[#0B1F4D] text-white font-medium rounded-lg hover:bg-opacity-90 flex items-center gap-2 transition-colors"
+            disabled={createProcurementMutation.isPending}
+            className="px-6 py-2 bg-[#0B1F4D] text-white font-medium rounded-lg hover:bg-opacity-90 flex items-center gap-2 transition-colors disabled:opacity-50"
           >
             <Save className="size-4" />
-            Save
+            {createProcurementMutation.isPending ? "Saving..." : "Save"}
           </button>
         </div>
       </div>

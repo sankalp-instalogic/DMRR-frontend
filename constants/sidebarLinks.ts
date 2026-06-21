@@ -46,8 +46,8 @@ export const sidebarLinks: NavItem[] = [
           { title: "Administrative Approval", to: "/administrative-approval" },
           { title: "SDMA Approval", to: "/sdma-approval" },
           { title: "Tendering", to: "/tendering" },
-          // { title: "Project Execution", to: "/project-execution" },
-          // { title: "Billing & Fund Release", to: "/billing" },
+          { title: "Project Execution", to: "/project-execution" },
+          { title: "Billing & Fund Release", to: "/billing" },
           { title: "Project Closure", to: "/project-closure" },
         ],
       },
@@ -95,7 +95,7 @@ export const sidebarLinks: NavItem[] = [
         children: [
           { title: "Procurement Dashboard", to: "/procurement" },
           { title: "Procurement List", to: "/procurement-list" },
-          { title: "Procurement Register", to: "/procurement-register" },
+          // { title: "Procurement Register", to: "/procurement-register" },
           { title: "Proposal Scrutiny Committee", to: "/procurement-psc" },
           { title: "Technical Appraisal Committee", to: "/procurement-tac" },
           { title: "SEC Approval", to: "/procurement-sec-approval" },
@@ -107,11 +107,11 @@ export const sidebarLinks: NavItem[] = [
             title: "Tendering",
             to: "/procurement-tendering/tenders",
           },
-          {
-            title: "Project Execution",
-            to: "/procurement/project-execution",
-          },
-          { title: "Billing", to: "/procurement/billing" },
+          // {
+          //   title: "Project Execution",
+          //   to: "/procurement/project-execution",
+          // },
+          // { title: "Billing", to: "/procurement/billing" },
           {
             title: "Project Closure",
             to: "/procurement/project-closure",
