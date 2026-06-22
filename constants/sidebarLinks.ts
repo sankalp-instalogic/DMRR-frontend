@@ -113,8 +113,8 @@ export const sidebarLinks: NavItem[] = [
           // },
           // { title: "Billing", to: "/procurement/billing" },
           {
-            title: "Project Closure",
-            to: "/procurement/project-closure",
+            title: "procurement Closure",
+            to: "/procurement-closure",
           },
         ],
       },

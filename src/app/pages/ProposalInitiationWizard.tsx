@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { CheckCircle2, ArrowRight, ArrowLeft, Save, Send } from "lucide-react";
+import toast from "react-hot-toast";
+import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 
 import { ProposalStepper } from "./proposalInitialiation/ProposalStepper";
 import { LocationStep } from "./proposalInitialiation/LocationStep";
@@ -8,11 +10,23 @@ import { OfficersStep } from "./proposalInitialiation/OfficerStep";
 import { NdmaReferenceStep } from "./proposalInitialiation/NdmaReferenceStep";
 import { DocumentsStep } from "./proposalInitialiation/DocumentStep";
 
+function currentFinancialYear(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const startYear = now.getMonth() >= 3 ? y : y - 1;
+  const endYY = String((startYear + 1) % 100).padStart(2, "0");
+  return `${startYear}-${endYY}`;
+}
+
 export function ProposalInitiationWizard() {
   const navigate = useNavigate();
+  const axiosPrivate = useAxiosPrivate();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [ndmaValidationStatus, setNdmaValidationStatus] = useState<"idle" | "running" | "success" | "failed">("idle");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [ndmaValidationStatus, setNdmaValidationStatus] = useState<
+    "idle" | "running" | "success" | "failed"
+  >("idle");
   const [ndmaValidationMessage, setNdmaValidationMessage] = useState("");
 
   const [step1Data, setStep1Data] = useState({
@@ -37,9 +51,9 @@ export function ProposalInitiationWizard() {
 
   const [step4Data, setStep4Data] = useState({
     projectCost: "",
-    proposalDemandFile: null as File | null,
+    proposalDemandFile: null as File | null, // Kept in state for UI compatibility, but ignored in submission
   });
-  
+
   const totalSteps = 4;
 
   const handleNext = () => {
@@ -75,33 +89,100 @@ export function ProposalInitiationWizard() {
     setTimeout(() => {
       setNdmaValidationStatus("success");
       setNdmaValidationMessage(
-        `NDMA Validation Passed:\n- Guideline compliance verified\n- Budget alignment confirmed\n- Technical specifications met`
+        `NDMA Validation Passed:\n- Guideline compliance verified\n- Budget alignment confirmed\n- Technical specifications met`,
       );
     }, 2000);
   };
 
-  const handleSubmit = () => {
-    if (!step4Data.proposalDemandFile) {
-      alert("Please upload the Proposal Demand File before submitting.");
-      return;
-    }
-
+  const handleSubmit = async () => {
     if (ndmaValidationStatus !== "success") {
-      alert("Please run and pass NDMA validation before submitting.");
+      toast.error("Please run and pass NDMA validation before submitting.");
       return;
     }
 
-    // Mark as submitted
-    setIsSubmitted(true);
-    alert("Proposal submitted successfully! Status: S02 - Under Review");
+    // Convert dates to ISO string to match the JSON example, assuming YYYY-MM-DD input
+    const formatToISO = (dateString: string) => {
+      return dateString
+        ? new Date(dateString).toISOString()
+        : new Date().toISOString();
+    };
 
-    // Clear draft
-    localStorage.removeItem("proposalDraft");
+    // Build the payload matching the required JSON structure exactly
+    const payload = {
+      financialYear: currentFinancialYear(),
+      disasterTypeId: step1Data.disasterType || null,
+      districtId: step1Data.district || null,
+      talukaId: step1Data.taluka || null,
+      lineDepartmentId: step2Data.lineDepartment || null,
+      receivedFromSourceId: step2Data.proposalReceivedFrom || null,
+      proposalReceivedDate: formatToISO(step2Data.proposalReceivedDate),
+      sourceName: step2Data.sourceName || "string",
+      markedToAuthorityId: step2Data.receivingAuthority || null,
+      dateReceivedByAuthority: formatToISO(step2Data.authorityReceivedDate),
+      receivingOfficerId: step2Data.officerInCharge || null,
+      receivingOfficerName: "string", // Placeholder as per example
+      ndmaGuidelineId: step3Data.ndmaGuideline || null,
+      costOfProjectLakhs: step4Data.projectCost
+        ? Number(step4Data.projectCost)
+        : 0,
+      title: step2Data.sourceName
+        ? `Structural Mitigation - ${step2Data.sourceName}`
+        : "Structural Mitigation Proposal",
+    };
 
-    // Navigate to proposal list after a short delay
-    setTimeout(() => {
-      navigate("/proposal-list");
-    }, 1500);
+    setIsSubmitting(true);
+    const toastId = toast.loading("Creating proposal...");
+
+    try {
+      // 1. Post the text data to get the proposal ID
+      const proposalResponse = await axiosPrivate.post(
+        "/api/v1/Proposals",
+        payload,
+      );
+
+      // Extract the ID from the response (adjust .data.id if your API nests it differently)
+      const proposalId = proposalResponse.data?.id;
+
+      if (!proposalId) {
+        throw new Error(
+          "Proposal was created but no ID was returned from the server.",
+        );
+      }
+
+      // 2. If a file was selected, upload it using the returned ID
+      if (step4Data.proposalDemandFile) {
+        toast.loading("Uploading document...", { id: toastId }); // Update the toast message
+
+        const formData = new FormData();
+        formData.append("ownerType", "1");
+        formData.append("ownerId", proposalId);
+        formData.append("documentType", "1");
+        formData.append("file", step4Data.proposalDemandFile);
+
+        await axiosPrivate.post("/api/v1/Documents/upload", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+      }
+
+      toast.success("Proposal and document submitted successfully!", {
+        id: toastId,
+      });
+      localStorage.removeItem("proposalDraft");
+      setIsSubmitted(true);
+      setTimeout(() => navigate("/proposal-list"), 1500);
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.title ||
+        (typeof err?.response?.data === "string" ? err.response.data : null) ||
+        err?.message ||
+        "Failed to submit the proposal. Please try again.";
+      toast.error(message, { id: toastId });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -129,7 +210,9 @@ export function ProposalInitiationWizard() {
   const isStepValid = (step: number) => {
     switch (step) {
       case 1:
-        return Boolean(step1Data.disasterType && step1Data.district && step1Data.taluka);
+        return Boolean(
+          step1Data.disasterType && step1Data.district && step1Data.taluka,
+        );
       case 2:
         return Boolean(
           step2Data.lineDepartment &&
@@ -138,12 +221,13 @@ export function ProposalInitiationWizard() {
           step2Data.proposalReceivedDate &&
           step2Data.receivingAuthority &&
           step2Data.authorityReceivedDate &&
-          step2Data.officerInCharge
+          step2Data.officerInCharge,
         );
       case 3:
         return Boolean(step3Data.ndmaGuideline);
       case 4:
-        return step4Data.proposalDemandFile !== null;
+        // Ignoring file validation for now; validating project cost only
+        return Boolean(step4Data.projectCost);
       default:
         return false;
     }
@@ -159,13 +243,19 @@ export function ProposalInitiationWizard() {
                 <CheckCircle2 className="size-16 text-green-600" />
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-primary mb-3">Proposal Submitted Successfully!</h2>
+            <h2 className="text-2xl font-bold text-primary mb-3">
+              Proposal Submitted Successfully!
+            </h2>
             <p className="text-muted-foreground mb-4">
               Your proposal has been submitted and is now in read-only mode.
             </p>
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-              <p className="text-sm font-medium text-blue-900">Status: S02 - Under Review</p>
-              <p className="text-xs text-blue-700 mt-1">The proposal will be processed by the next committee.</p>
+              <p className="text-sm font-medium text-blue-900">
+                Status: S02 - Under Review
+              </p>
+              <p className="text-xs text-blue-700 mt-1">
+                The proposal will be processed by the next committee.
+              </p>
             </div>
             <button
               onClick={() => navigate("/proposal-list")}
@@ -184,7 +274,9 @@ export function ProposalInitiationWizard() {
       {/* Header */}
       <div>
         <h1>Proposal Create</h1>
-        <p className="text-sm text-muted-foreground">Multi-step proposal creation wizard</p>
+        <p className="text-sm text-muted-foreground">
+          Multi-step proposal creation wizard
+        </p>
       </div>
 
       {/* Progress Steps */}
@@ -195,19 +287,19 @@ export function ProposalInitiationWizard() {
         {currentStep === 1 && (
           <LocationStep data={step1Data} setData={setStep1Data} />
         )}
-        
+
         {currentStep === 2 && (
           <OfficersStep data={step2Data} setData={setStep2Data} />
         )}
-        
+
         {currentStep === 3 && (
           <NdmaReferenceStep data={step3Data} setData={setStep3Data} />
         )}
-        
+
         {currentStep === 4 && (
-          <DocumentsStep 
-            data={step4Data} 
-            setData={setStep4Data} 
+          <DocumentsStep
+            data={step4Data}
+            setData={setStep4Data}
             ndmaValidationStatus={ndmaValidationStatus}
             ndmaValidationMessage={ndmaValidationMessage}
             onValidate={handleRunNdmaValidation}
@@ -256,15 +348,17 @@ export function ProposalInitiationWizard() {
           {currentStep === totalSteps && (
             <button
               onClick={handleSubmit}
-              disabled={!isStepValid(currentStep) || ndmaValidationStatus !== "success"}
+              disabled={!isStepValid(currentStep) || isSubmitting}
               className={`px-6 py-3 rounded-lg font-medium transition-opacity flex items-center gap-2 ${
-                !isStepValid(currentStep) || ndmaValidationStatus !== "success"
+                !isStepValid(currentStep) ||
+                ndmaValidationStatus !== "success" ||
+                isSubmitting
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                   : "bg-green-600 text-white hover:opacity-90"
               }`}
             >
               <Send className="size-4" />
-              Submit Proposal
+              {isSubmitting ? "Submitting..." : "Submit Proposal"}
             </button>
           )}
         </div>

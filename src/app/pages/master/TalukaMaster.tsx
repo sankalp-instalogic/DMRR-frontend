@@ -69,11 +69,12 @@ export function TalukaMaster() {
 
   const districts = districtsData ?? [];
 
-  const districtMap = isDistrictsLoading
-    ? {}
-    : Object.fromEntries(
-        districts?.items?.map((district: any) => [district.id, district.name]),
-      );
+  const districtMap = Object.fromEntries(
+    (districts?.items ?? []).map((district: any) => [
+      district.id,
+      district.name,
+    ]),
+  );
 
   const talukas = data ?? [];
   const totalPages = 1;

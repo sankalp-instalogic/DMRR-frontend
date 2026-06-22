@@ -1,4 +1,12 @@
-import { AlertCircle, CheckCircle2, FileCheck, FileText, Shield, Upload, XCircle } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  FileCheck,
+  FileText,
+  Shield,
+  Upload,
+  XCircle,
+} from "lucide-react";
 
 export interface Step4Data {
   projectCost: string;
@@ -107,7 +115,8 @@ export function DocumentsStep(props: DocumentsStepProps) {
         <button
           onClick={props.onValidate}
           disabled={
-            props.ndmaValidationStatus === "running" || !props.data.proposalDemandFile
+            props.ndmaValidationStatus === "running" ||
+            !props.data.proposalDemandFile
           }
           className={`px-6 py-3 cursor-pointer rounded-lg font-medium transition-opacity flex items-center gap-2 ${
             props.ndmaValidationStatus === "running"
@@ -131,7 +140,7 @@ export function DocumentsStep(props: DocumentsStepProps) {
         {props.ndmaValidationStatus === "success" && (
           <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-4">
             <div className="flex items-start gap-3">
-              <CheckCircle2 className="size-5 text-green-600 flex-shrink-0 mt-0.5" />
+              <CheckCircle2 className="size-5 text-green-600 shrink-0 mt-0.5" />
               <div>
                 <p className="font-semibold text-green-900 mb-1">
                   Validation Passed
@@ -147,12 +156,14 @@ export function DocumentsStep(props: DocumentsStepProps) {
         {props.ndmaValidationStatus === "failed" && (
           <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
             <div className="flex items-start gap-3">
-              <AlertCircle className="size-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="size-5 text-red-600 shrink-0 mt-0.5" />
               <div>
                 <p className="font-semibold text-red-900 mb-1">
                   Validation Failed
                 </p>
-                <p className="text-sm text-red-700">{props.ndmaValidationMessage}</p>
+                <p className="text-sm text-red-700">
+                  {props.ndmaValidationMessage}
+                </p>
               </div>
             </div>
           </div>

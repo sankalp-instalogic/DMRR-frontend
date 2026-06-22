@@ -27,6 +27,7 @@ import { NewProcurement } from "./pages/procurement/NewProcurement";
 import { EditProcurement } from "./pages/procurement/EditProcurement";
 import { ProcurementOpen } from "./pages/procurement/ProcurementOpen";
 import { ProposalScrutinyCommittee } from "./pages/procurement/ProposalScrutinyCommittee";
+import { ProcurementClosure } from "./pages/ProcurementClosure";
 import { TechnicalAppraisalCommittee } from "./pages/procurement/TechnicalAppraisalCommittee";
 import { SECApprovalProcurement } from "./pages/procurement/SECApprovalProcurement";
 import { ProcurementAdminApproval } from "./pages/procurement/ProcurementAdminApproval";
@@ -48,18 +49,22 @@ import { TendersList } from "./pages/procurement/tendering/TendersList";
 import { TenderDetails } from "./pages/procurement/tendering/TenderDetails";
 import { NewTender } from "./pages/procurement/tendering/NewTender";
 import { UnderDevelopment } from "./pages/UnderDevelopment";
-import { RedLineBlueLineSurvey} from "./pages/non-structural/RedLineBlueLineSurvey";
+import { RedLineBlueLineSurvey } from "./pages/non-structural/RedLineBlueLineSurvey";
 import { NatureBasedSolutions } from "./pages/non-structural/NatureBasedSolutions";
-import { Tenders} from "./pages/non-structural/Tenders";
-import {ResearchAndGrants} from "./pages/non-structural/ResearchAndGrants";
+import { Tenders } from "./pages/non-structural/Tenders";
+import { ResearchAndGrants } from "./pages/non-structural/ResearchAndGrants";
 import { FundsDistributedDistricts } from "./pages/funds-distributed/FundsDistributedDistricts";
 import { FundsDistributedOther } from "./pages/funds-distributed/FundsDistributedOther";
 
 // const RedLineBlueLine = () => <UnderDevelopment moduleName="Red Line Blue Line Survey" />;
 // const NatureBasedSolutions = () => <UnderDevelopment moduleName="Nature Based Solutions" />;
-const ResearchGrants = () => <UnderDevelopment moduleName="Research & Grants" />;
+const ResearchGrants = () => (
+  <UnderDevelopment moduleName="Research & Grants" />
+);
 const TrainingModule = () => <UnderDevelopment moduleName="Training" />;
-const ProcurementTraining = () => <UnderDevelopment moduleName="Procurement + Training" />;
+const ProcurementTraining = () => (
+  <UnderDevelopment moduleName="Procurement + Training" />
+);
 const MediaBudget = () => <UnderDevelopment moduleName="Media Budget" />;
 
 export const router = createBrowserRouter([
@@ -89,7 +94,10 @@ export const router = createBrowserRouter([
           { path: "pac-evaluation", Component: PACEvaluation },
           { path: "tac-appraisal", Component: TACAppraisal },
           { path: "sec-review", Component: SECReview },
-          { path: "administrative-approval", Component: AdministrativeApproval },
+          {
+            path: "administrative-approval",
+            Component: AdministrativeApproval,
+          },
           { path: "sdma-approval", Component: SDMAApproval },
           { path: "tendering", Component: Tendering },
           { path: "project-execution", Component: ProjectExecution },
@@ -98,22 +106,24 @@ export const router = createBrowserRouter([
 
           // Proposal For Mitigation - Non-Structural
           {
-  path: "non-structural/red-line-blue-line",
-  Component: RedLineBlueLineSurvey
-},
+            path: "non-structural/red-line-blue-line",
+            Component: RedLineBlueLineSurvey,
+          },
           {
-  path: "non-structural/nature-based",
-  Component: NatureBasedSolutions
-},
+            path: "non-structural/nature-based",
+            Component: NatureBasedSolutions,
+          },
 
           {
-  path: "non-structural/tenders",
-  Component: Tenders
-},
-
+            path: "non-structural/tenders",
+            Component: Tenders,
+          },
 
           // Proposal For Mitigation - Research & Grants
-          { path: "non-structural/ResearchAndGrants", Component: ResearchAndGrants },
+          {
+            path: "non-structural/ResearchAndGrants",
+            Component: ResearchAndGrants,
+          },
 
           // Proposals for Preparedness & Capacity Building - Procurements
           { path: "procurement", Component: ProcurementDashboard },
@@ -125,18 +135,39 @@ export const router = createBrowserRouter([
           { path: "procurement/view/:id", Component: ProcurementOpen },
           { path: "procurement-psc", Component: ProposalScrutinyCommittee },
           { path: "procurement-tac", Component: TechnicalAppraisalCommittee },
-          { path: "procurement-sec-approval", Component: SECApprovalProcurement },
-          { path: "procurement-admin-approval", Component: ProcurementAdminApproval },
+          {
+            path: "procurement-sec-approval",
+            Component: SECApprovalProcurement,
+          },
+          {
+            path: "procurement-admin-approval",
+            Component: ProcurementAdminApproval,
+          },
           { path: "procurement-tendering/tenders", Component: TendersList },
-          { path: "procurement-tendering/tenders/:id", Component: TenderDetails },
+          {
+            path: "procurement-tendering/tenders/:id",
+            Component: TenderDetails,
+          },
           { path: "procurement-tendering/new", Component: NewTender },
-          { path: "procurement/project-execution", Component: ProjectExecution },
+          {
+            path: "procurement/project-execution",
+            Component: ProjectExecution,
+          },
           { path: "procurement/billing", Component: Billing },
-          { path: "procurement/project-closure", Component: ProjectClosure },
+          {
+            path: "procurement-closure",
+            Component: ProcurementClosure,
+          },
 
           // Funds Distributed
-          { path: "funds-distributed/districts", Component: FundsDistributedDistricts },
-          { path: "funds-distributed/other-utilizations", Component: FundsDistributedOther },
+          {
+            path: "funds-distributed/districts",
+            Component: FundsDistributedDistricts,
+          },
+          {
+            path: "funds-distributed/other-utilizations",
+            Component: FundsDistributedOther,
+          },
 
           // Proposals for Preparedness & Capacity Building - Other sections
           { path: "prep/training", Component: TrainingModule },
