@@ -1,573 +1,285 @@
-// import { ExternalLink, CheckCircle2, XCircle, FileText } from "lucide-react";
-
-// const tenders = [
-//   { id: "DMRR/TENDER/2025/001", proposal: "DMRR/2025/MUM/001", l1Bidder: "ABC Construction Pvt Ltd", amount: "₹398 Lakhs", status: "L1 Pending Approval" },
-//   { id: "DMRR/TENDER/2025/002", proposal: "DMRR/2025/PUN/034", l1Bidder: "XYZ Infrastructure", amount: "₹615 Lakhs", status: "Evaluation Complete" },
-// ];
-
-// export function Tendering() {
-//   return (
-//     <div className="space-y-6">
-//       <div>
-//         <h1>Tendering & Procurement</h1>
-//         <p className="text-sm text-muted-foreground">Manage tenders and bid evaluation</p>
-//       </div>
-
-//       <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
-//         <div className="overflow-x-auto">
-//           <table className="w-full">
-//             <thead className="bg-muted">
-//               <tr>
-//                 <th className="px-6 py-4 text-left text-sm">Tender ID</th>
-//                 <th className="px-6 py-4 text-left text-sm">Proposal ID</th>
-//                 <th className="px-6 py-4 text-left text-sm">L1 Bidder</th>
-//                 <th className="px-6 py-4 text-left text-sm">L1 Amount</th>
-//                 <th className="px-6 py-4 text-left text-sm">Status</th>
-//                 <th className="px-6 py-4 text-left text-sm">Actions</th>
-//               </tr>
-//             </thead>
-//             <tbody>
-//               {tenders.map((tender, index) => (
-//                 <tr key={index} className="border-t border-border hover:bg-muted/50">
-//                   <td className="px-6 py-4 font-medium">{tender.id}</td>
-//                   <td className="px-6 py-4">{tender.proposal}</td>
-//                   <td className="px-6 py-4">{tender.l1Bidder}</td>
-//                   <td className="px-6 py-4">{tender.amount}</td>
-//                   <td className="px-6 py-4">
-//                     <span className="px-2 py-1 bg-secondary/20 text-secondary rounded-full text-xs">
-//                       {tender.status}
-//                     </span>
-//                   </td>
-//                   <td className="px-6 py-4">
-//                     <div className="flex gap-2">
-//                       <button className="px-3 py-1 bg-accent text-accent-foreground rounded text-sm hover:opacity-90">
-//                         Approve L1
-//                       </button>
-//                       <button className="px-3 py-1 bg-destructive text-destructive-foreground rounded text-sm hover:opacity-90">
-//                         Reject
-//                       </button>
-//                     </div>
-//                   </td>
-//                 </tr>
-//               ))}
-//             </tbody>
-//           </table>
-//         </div>
-//       </div>
-
-//       <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
-//         <h3 className="mb-4">Tender Details</h3>
-//         <div className="space-y-4">
-//           <div>
-//             <label className="block text-sm mb-2">Tender Reference URL</label>
-//             <div className="flex gap-2">
-//               <input
-//                 type="text"
-//                 value="https://mahatenders.gov.in/tender/DMRR-2025-001"
-//                 className="flex-1 px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-//               />
-//               <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 flex items-center gap-2">
-//                 <ExternalLink className="size-5" />
-//                 Open
-//               </button>
-//             </div>
-//           </div>
-
-//           <div>
-//             <label className="block text-sm mb-2">L1 Bidder Information</label>
-//             <input
-//               type="text"
-//               placeholder="Enter L1 bidder company name"
-//               className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-//             />
-//           </div>
-
-//           <div>
-//             <label className="block text-sm mb-2">L1 Bid Amount (₹ Lakhs)</label>
-//             <input
-//               type="number"
-//               placeholder="Enter L1 bid amount"
-//               className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-//             />
-//           </div>
-
-//           <div>
-//             <label className="block text-sm mb-2">DMU Concurrence Required</label>
-//             <select className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-//               <option>Yes - Forward to DMU</option>
-//               <option>No - Proceed Directly</option>
-//             </select>
-//           </div>
-//         </div>
-//       </div>
-
-//       <div className="flex gap-4">
-//         <button className="px-6 py-3 bg-accent text-accent-foreground rounded-lg hover:opacity-90 flex items-center gap-2">
-//           <CheckCircle2 className="size-5" />
-//           Approve L1 Bidder
-//         </button>
-//         <button className="px-6 py-3 bg-destructive text-destructive-foreground rounded-lg hover:opacity-90 flex items-center gap-2">
-//           <XCircle className="size-5" />
-//           Reject L1 Bidder
-//         </button>
-//         <button className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:opacity-90 flex items-center gap-2">
-//           <FileText className="size-5" />
-//           Generate Work Order
-//         </button>
-//       </div>
-//     </div>
-//   );
-// }
-
-
-// import { useState } from "react";
-// import { Upload, Save, Plus, Trash2 } from "lucide-react";
-
-// const initialTenders = [
-//   {
-//     id: "DMRR/TENDER/2025/001",
-//     proposal: "DMRR/2025/MUM/001",
-//     projectName: "Flood Protection Wall",
-//     l1Bidder: "ABC Construction Pvt Ltd",
-//     amount: "₹398 Lakhs",
-//     status: "L1 Pending Approval",
-//   },
-//   {
-//     id: "DMRR/TENDER/2025/002",
-//     proposal: "DMRR/2025/PUN/034",
-//     projectName: "Check Dam Rehabilitation",
-//     l1Bidder: "XYZ Infrastructure",
-//     amount: "₹615 Lakhs",
-//     status: "Evaluation Complete",
-//   },
-// ];
-
-// export function Tendering() {
-//   const [tenders, setTenders] = useState(initialTenders);
-//   const [selectedTender, setSelectedTender] = useState<any>(null);
-
-//   const [formData, setFormData] = useState({
-//     publicationDate: "",
-//     tenderRefNo: "",
-//     tenderUrl: "",
-
-//     vendorName: "",
-//     vendorRegNo: "",
-//     vendorContactPerson: "",
-//     vendorContactNo: "",
-
-//     initiationDate: "",
-//     workOrderNo: "",
-//     totalTenderCost: "",
-//   });
-
-//   const [installments, setInstallments] = useState([
-//     {
-//       no: 1,
-//       date: "",
-//       amount: "",
-//       remarks: "",
-//     },
-//   ]);
-
-//   const [documents, setDocuments] = useState({
-//     bidEvaluation: null,
-//     workOrder: null,
-//     tenderNotice: null,
-//     others: null,
-//   });
-
-//   const handleSave = () => {
-//     const updated = tenders.map((tender) =>
-//       tender.id === selectedTender.id
-//         ? {
-//             ...tender,
-//             status: "Tender Details Completed",
-//           }
-//         : tender
-//     );
-
-//     setTenders(updated);
-
-//     console.log({
-//       tender: selectedTender,
-//       formData,
-//       installments,
-//       documents,
-//     });
-
-//     alert("Tender details saved successfully");
-
-//     setSelectedTender(null);
-//   };
-
-//   const addInstallment = () => {
-//     setInstallments([
-//       ...installments,
-//       {
-//         no: installments.length + 1,
-//         date: "",
-//         amount: "",
-//         remarks: "",
-//       },
-//     ]);
-//   };
-
-//   const removeInstallment = (index: number) => {
-//     const updated = [...installments];
-//     updated.splice(index, 1);
-//     setInstallments(updated);
-//   };
-
-//   return (
-//     <div className="space-y-6">
-//       <div>
-//         <h1>Tendering </h1>
-//         <p className="text-sm text-muted-foreground">
-//           Manage tender activities
-//         </p>
-//       </div>
-
-//       {/* Tender List */}
-
-//       <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
-//         <table className="w-full">
-//           <thead className="bg-muted">
-//             <tr>
-//               <th className="px-6 py-4 text-left">Tender ID</th>
-//               <th className="px-6 py-4 text-left">Proposal ID</th>
-//               <th className="px-6 py-4 text-left">Project Name</th>
-//               <th className="px-6 py-4 text-left">L1 Bidder</th>
-//               <th className="px-6 py-4 text-left">L1 Amount</th>
-//               <th className="px-6 py-4 text-left">Status</th>
-//             </tr>
-//           </thead>
-
-//           <tbody>
-//             {tenders.map((tender) => (
-//               <tr
-//                 key={tender.id}
-//                 className="border-t border-border"
-//               >
-//                 <td className="px-6 py-4">{tender.id}</td>
-//                 <td className="px-6 py-4">{tender.proposal}</td>
-//                 <td className="px-6 py-4 max-w-xs truncate" title={tender.projectName}>{tender.projectName}</td>
-//                 <td className="px-6 py-4">{tender.l1Bidder}</td>
-//                 <td className="px-6 py-4">{tender.amount}</td>
-
-//                 <td className="px-6 py-4">
-//                   <button
-//                     onClick={() => {
-//                       if (
-//                         tender.status ===
-//                         "L1 Pending Approval"
-//                       ) {
-//                         setSelectedTender(tender);
-//                       }
-//                     }}
-//                     className="px-3 py-1 bg-secondary/20 text-secondary rounded-full text-xs"
-//                   >
-//                     {tender.status}
-//                   </button>
-//                 </td>
-//               </tr>
-//             ))}
-//           </tbody>
-//         </table>
-//       </div>
-
-//       {/* Tender Form */}
-
-//       {selectedTender && (
-//         <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
-
-//           <h3 className="font-bold text-lg mb-6">
-//             Tendering : {selectedTender.proposal} - {selectedTender.projectName}
-//           </h3>
-
-//           {/* Tender Publication */}
-
-//           <h4 className="font-semibold mb-4">
-//             Tender Publication Details
-//           </h4>
-
-//           <div className="grid md:grid-cols-2 gap-4 mb-4">
-//             <input
-//               type="date"
-//               className="border rounded-lg p-2"
-//               value={formData.publicationDate}
-//               onChange={(e) =>
-//                 setFormData({
-//                   ...formData,
-//                   publicationDate: e.target.value,
-//                 })
-//               }
-//             />
-
-//             <input
-//               placeholder="Tender Reference Number"
-//               className="border rounded-lg p-2"
-//               value={formData.tenderRefNo}
-//               onChange={(e) =>
-//                 setFormData({
-//                   ...formData,
-//                   tenderRefNo: e.target.value,
-//                 })
-//               }
-//             />
-//           </div>
-
-//           <input
-//             placeholder="Tender URL"
-//             className="border rounded-lg p-2 w-full mb-6"
-//             value={formData.tenderUrl}
-//             onChange={(e) =>
-//               setFormData({
-//                 ...formData,
-//                 tenderUrl: e.target.value,
-//               })
-//             }
-//           />
-
-//           {/* Vendor */}
-
-//           <h4 className="font-semibold mb-4">
-//             L1 Vendor Information
-//           </h4>
-
-//           <div className="grid md:grid-cols-2 gap-4 mb-6">
-
-//             <input
-//               placeholder="Vendor Name"
-//               className="border rounded-lg p-2"
-//             />
-
-//             <input
-//               placeholder="Vendor Registration Number"
-//               className="border rounded-lg p-2"
-//             />
-
-//             <input
-//               placeholder="Vendor Contact Person"
-//               className="border rounded-lg p-2"
-//             />
-
-//             <input
-//               placeholder="Vendor Contact Number"
-//               className="border rounded-lg p-2"
-//             />
-//           </div>
-
-//           {/* Work Order */}
-
-//           <h4 className="font-semibold mb-4">
-//             Work Order Details
-//           </h4>
-
-//           <div className="grid md:grid-cols-3 gap-4 mb-6">
-
-//             <input type="date" className="border rounded-lg p-2" />
-
-//             <input
-//               placeholder="Work Order Number"
-//               className="border rounded-lg p-2"
-//             />
-
-//             <input
-//               placeholder="Total Tender Cost"
-//               className="border rounded-lg p-2"
-//             />
-//           </div>
-
-//           {/* Installments */}
-
-//           <div className="flex justify-between items-center mb-4">
-//             <h4 className="font-semibold">
-//               Running Account Bills
-//             </h4>
-
-//             <button
-//               onClick={addInstallment}
-//               className="px-3 py-1 bg-primary text-white rounded flex items-center gap-2"
-//             >
-//               <Plus size={16} />
-//               Add
-//             </button>
-//           </div>
-
-//           {installments.map((item, index) => (
-//             <div
-//               key={index}
-//               className="grid grid-cols-12 gap-2 mb-3"
-//             >
-//               <input
-//                 value={item.no}
-//                 disabled
-//                 className="col-span-1 border rounded p-2"
-//               />
-
-//               <input
-//                 type="date"
-//                 className="col-span-2 border rounded p-2"
-//               />
-
-//               <input
-//                 placeholder="Amount"
-//                 className="col-span-3 border rounded p-2"
-//               />
-
-//               <input
-//                 placeholder="Remarks"
-//                 className="col-span-5 border rounded p-2"
-//               />
-
-//               <button
-//                 onClick={() => removeInstallment(index)}
-//                 className="text-red-500"
-//               >
-//                 <Trash2 size={16} />
-//               </button>
-//             </div>
-//           ))}
-
-//           {/* Supporting Docs */}
-
-//           <h4 className="font-semibold mt-6 mb-4">
-//             Supporting Documents
-//           </h4>
-
-//           <div className="flex gap-3 items-center mb-6">
-//             <select className="border rounded-lg p-2">
-//               <option>Bid Evaluation Report</option>
-//               <option>Work Order Copy</option>
-//               <option>Tender Notice</option>
-//               <option>Other Documents</option>
-//             </select>
-
-//             <input
-//               type="file"
-//               onChange={(e) =>
-//                 setDocuments({
-//                   ...documents,
-//                   bidEvaluation:
-//                     e.target.files?.[0] || null,
-//                 })
-//               }
-//             />
-//           </div>
-
-//           <button
-//             onClick={handleSave}
-//             className="px-6 py-3 bg-primary text-primary-foreground rounded-lg flex items-center gap-2"
-//           >
-//             <Save size={18} />
-//             Save
-//           </button>
-//         </div>
-//       )}
-//     </div>
-//   );
-// }
-
-
-
-
-
-import { useState } from "react";
-import { Upload, Save, Plus, Trash2 } from "lucide-react";
-
-const initialTenders = [
-  {
-    id: "DMRR/TENDER/2025/001",
-    proposal: "DMRR/2025/MUM/001",
-    projectName: "Flood Protection Wall",
-    l1Bidder: "ABC Construction Pvt Ltd",
-    amount: "₹398 Lakhs",
-    status: "L1 Pending Approval",
-  },
-  {
-    id: "DMRR/TENDER/2025/002",
-    proposal: "DMRR/2025/PUN/034",
-    projectName: "Check Dam Rehabilitation",
-    l1Bidder: "XYZ Infrastructure",
-    amount: "₹615 Lakhs",
-    status: "Evaluation Complete",
-  },
-];
+import { useState, useEffect } from "react";
+import {
+  Save,
+  FileText,
+  Upload,
+  CheckCircle2,
+  XCircle,
+  Loader2,
+} from "lucide-react";
+import toast from "react-hot-toast";
+import useAxPrivate from "../../hooks/useAxiosPrivate";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
+// Document Type Mapping Configuration
+const DOCUMENT_TYPES: Record<string, string> = {
+  bidEvaluationReport: "41",
+  workOrderCopy: "8",
+  tenderNotice: "9",
+  dmrrLetter: "40",
+};
 
 export function Tendering() {
-  const [tenders, setTenders] = useState(initialTenders);
+  const axios = useAxPrivate();
+  const queryClient = useQueryClient();
   const [selectedTender, setSelectedTender] = useState<any>(null);
 
+  // Form state
   const [formData, setFormData] = useState({
-  tenderRefNo: "",
-  l1VendorIdentified: "",
-  vendorName: "",
-  workOrderIssued: "",
-  workOrderIssuedDate: "",
-  biddingCost: "",
-});
+    tenderRefNo: "",
+    l1VendorIdentified: "no",
+    vendorId: "",
+    l1CostLakhs: "",
+    workOrderIssued: "no",
+    workOrderDate: "",
+    biddingCost: "",
+  });
 
-  // const [installments, setInstallments] = useState([
-  //   {
-  //     no: 1,
-  //     date: "",
-  //     amount: "",
-  //     remarks: "",
-  //   },
-  // ]);
+  // Track dynamic file upload states
+  const [documents, setDocuments] = useState<{ [key: string]: File | null }>({
+    bidEvaluationReport: null,
+    workOrderCopy: null,
+    tenderNotice: null,
+    dmrrLetter: null,
+  });
 
-const [documents, setDocuments] = useState({
-  dmrrLetter: null,
-  tenderNotice: null,
-  bidEvaluationReport: null,
-  workOrderCopy: null,
-});
+  // Reset form states whenever selected tender row changes
+  useEffect(() => {
+    if (selectedTender) {
+      setFormData({
+        tenderRefNo: selectedTender.proposalRefNo || "",
+        l1VendorIdentified: "no",
+        vendorId: "",
+        l1CostLakhs: "",
+        workOrderIssued: "no",
+        workOrderDate: "",
+        biddingCost: "",
+      });
+      setDocuments({
+        bidEvaluationReport: null,
+        workOrderCopy: null,
+        tenderNotice: null,
+        dmrrLetter: null,
+      });
+    }
+  }, [selectedTender]);
 
-  const handleSave = () => {
-    const updated = tenders.map((tender) =>
-      tender.id === selectedTender.id
-        ? {
-            ...tender,
-            status: "Tender Details Completed",
-          }
-        : tender
+  // 1. Fetch tenders using React Query
+  const {
+    data: tenders = [],
+    isLoading: isTendersLoading,
+    isError: isTendersError,
+  } = useQuery({
+    queryKey: ["tendersQueue"],
+    queryFn: async () => {
+      const response = await axios.get("/api/v1/Tendering/queue");
+      return response.data;
+    },
+  });
+
+  // 2. Fetch vendors for the dropdown
+  const { data: vendorsResponse, isLoading: isVendorsLoading } = useQuery({
+    queryKey: ["vendorsDropdown"],
+    queryFn: async () => {
+      const response = await axios.get("/api/v1/masters/vendors", {
+        params: { page: 1, pageSize: 100 },
+      });
+      return response.data;
+    },
+  });
+
+  const vendors = vendorsResponse?.items || [];
+
+  // 3. Mutation for ensuring the tender
+  const ensureMutation = useMutation({
+    mutationFn: async (proposalId: string) => {
+      const response = await axios.post(
+        `/api/v1/Tendering/${proposalId}/ensure`,
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Tender ensured successfully!");
+      queryClient.invalidateQueries({ queryKey: ["tendersQueue"] });
+    },
+    onError: () => {
+      toast.error("Failed to ensure tender. Please try again.");
+    },
+  });
+
+  // 4. Mutation for uploading documents
+  const uploadDocumentMutation = useMutation({
+    mutationFn: async ({
+      file,
+      ownerId,
+      documentType,
+    }: {
+      file: File;
+      ownerId: string;
+      documentType: string;
+    }) => {
+      const uploadData = new FormData();
+      uploadData.append("file", file);
+      uploadData.append("ownerId", ownerId);
+      uploadData.append("ownerType", "1"); // Owner type 1 as per requirements
+      uploadData.append("documentType", documentType);
+
+      const response = await axios.post(
+        "/api/v1/Documents/upload",
+        uploadData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        },
+      );
+      return response.data;
+    },
+  });
+
+  // 5. Mutation for saving tender details
+  const saveDetailsMutation = useMutation({
+    mutationFn: async ({
+      proposalId,
+      payload,
+    }: {
+      proposalId: string;
+      payload: any;
+    }) => {
+      const response = await axios.post(
+        `/api/v1/Tendering/${proposalId}/details`,
+        payload,
+        {
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+      return response.data;
+    },
+    onSuccess: async (_, variables) => {
+      const proposalId = variables.proposalId;
+
+      // Map through uploaded documents sequentially via Promise processing structure
+      const uploadPromises = Object.entries(documents).map(([docKey, file]) => {
+        const documentType = DOCUMENT_TYPES[docKey];
+        if (file && documentType) {
+          return uploadDocumentMutation.mutateAsync({
+            file,
+            ownerId: proposalId,
+            documentType,
+          });
+        }
+        return Promise.resolve();
+      });
+
+      try {
+        await Promise.all(uploadPromises);
+        toast.success("Tender details and documents saved successfully");
+      } catch (err) {
+        console.error("One or more document uploads failed:", err);
+        toast.error(
+          "Tender details saved, but some documents failed to upload.",
+        );
+      }
+
+      setSelectedTender(null);
+      queryClient.invalidateQueries({ queryKey: ["tendersQueue"] });
+    },
+    onError: (err) => {
+      console.error("Failed to save tender details:", err);
+      toast.error("Failed to save tender details. Please try again.");
+    },
+  });
+
+  // 6. Mutation for completing/closing the tender
+  const completeTenderMutation = useMutation({
+    mutationFn: async (proposalId: string) => {
+      const response = await axios.post(
+        `/api/v1/Tendering/${proposalId}/complete`,
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Tender completed successfully!");
+      setSelectedTender(null);
+      queryClient.invalidateQueries({ queryKey: ["tendersQueue"] });
+    },
+    onError: (err) => {
+      console.error("Failed to complete tender:", err);
+      toast.error("Failed to complete tender. Please try again.");
+    },
+  });
+
+  const handleSave = async () => {
+    if (!selectedTender) return;
+
+    // Find vendor name from the selected identifier code
+    const selectedVendor = vendors.find(
+      (v: any) => String(v.id) === String(formData.vendorId),
     );
 
-    setTenders(updated);
+    // Structure payload parameters matching specified model contracts
+    const payload = {
+      l1VendorIdentified: formData.l1VendorIdentified === "yes",
+      vendorName: selectedVendor ? selectedVendor.legalName : "",
+      l1CostLakhs: formData.l1CostLakhs ? parseFloat(formData.l1CostLakhs) : 0,
+      workOrderIssued: formData.workOrderIssued === "yes",
+      workOrderDate:
+        formData.workOrderIssued === "yes" && formData.workOrderDate
+          ? new Date(formData.workOrderDate).toISOString()
+          : new Date().toISOString(),
+    };
 
-    console.log({
-      tender: selectedTender,
-      formData,
-      installments,
-      documents,
+    saveDetailsMutation.mutate({
+      proposalId: selectedTender.proposalId,
+      payload,
     });
-
-    alert("Tender details saved successfully");
-
-    setSelectedTender(null);
   };
 
-  const addInstallment = () => {
-    setInstallments([
-      ...installments,
-      {
-        no: installments.length + 1,
-        date: "",
-        amount: "",
-        remarks: "",
-      },
-    ]);
+  const handleDocumentUpload =
+    (docKey: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files.length > 0) {
+        setDocuments({ ...documents, [docKey]: e.target.files[0] });
+      }
+    };
+
+  // Helper function to render table rows for documents
+  const renderDocumentRow = (docName: string, docKey: string) => {
+    const isUploaded = documents[docKey] !== null;
+
+    return (
+      <tr className="hover:bg-gray-50/50 transition-colors" key={docKey}>
+        <td className="px-6 py-4 font-medium text-gray-700">{docName}</td>
+        <td className="px-6 py-4 text-center">
+          <label className="inline-flex items-center gap-2 bg-[#1E5AA8] text-white px-3 py-1.5 rounded-lg cursor-pointer hover:bg-blue-700 transition-colors text-xs font-medium">
+            <Upload className="w-3.5 h-3.5" />
+            <span>Upload Document</span>
+            <input
+              type="file"
+              className="hidden"
+              onChange={handleDocumentUpload(docKey)}
+            />
+          </label>
+        </td>
+        <td className="px-6 py-4 text-center">
+          {isUploaded ? (
+            <CheckCircle2 className="w-5 h-5 text-green-500 mx-auto" />
+          ) : (
+            <XCircle className="w-5 h-5 text-red-500 mx-auto" />
+          )}
+        </td>
+      </tr>
+    );
   };
 
-  const removeInstallment = (index: number) => {
-    const updated = [...installments];
-    updated.splice(index, 1);
-    setInstallments(updated);
-  };
+  if (isTendersLoading)
+    return <div className="p-4 text-gray-500">Loading tenders...</div>;
+  if (isTendersError)
+    return <div className="p-4 text-red-500">Failed to load tenders.</div>;
+
+  const isSaving =
+    saveDetailsMutation.isPending || uploadDocumentMutation.isPending;
+  const isCompleting = completeTenderMutation.isPending;
 
   return (
-    <div className="space-y-[24px]">
+    <div className="space-y-6">
       <div>
         <h1 className="text-[30px] font-bold text-[#0B1F4D]">Tendering</h1>
         <p className="text-[14px] font-medium text-gray-500 mt-1">
@@ -576,219 +288,304 @@ const [documents, setDocuments] = useState({
       </div>
 
       {/* Tender List */}
-
-      <div className="bg-white rounded-[12px] shadow-sm border border-gray-200 overflow-hidden mb-[24px]">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
         <div className="overflow-x-auto">
           <table className="w-full text-[13px] text-left">
             <thead className="bg-[#F5F7FA] text-[#0B1F4D]">
-              <tr className="h-[56px]">
-                <th className="px-4 font-semibold whitespace-nowrap">Tender ID</th>
-                <th className="px-4 font-semibold whitespace-nowrap">Proposal ID</th>
-                <th className="px-4 font-semibold whitespace-nowrap">Project Name</th>
-                <th className="px-4 font-semibold whitespace-nowrap">L1 Bidder</th>
-                <th className="px-4 font-semibold whitespace-nowrap">L1 Amount</th>
+              <tr className="h-14">
+                <th className="px-4 font-semibold whitespace-nowrap">
+                  Tender ID
+                </th>
+                <th className="px-4 font-semibold whitespace-nowrap">
+                  Project Name
+                </th>
+                <th className="px-4 font-semibold whitespace-nowrap">
+                  L1 Bidder
+                </th>
+                <th className="px-4 font-semibold whitespace-nowrap">
+                  L1 Amount
+                </th>
                 <th className="px-4 font-semibold whitespace-nowrap">Status</th>
+                <th className="px-4 font-semibold whitespace-nowrap">
+                  Actions
+                </th>
               </tr>
             </thead>
 
             <tbody className="divide-y divide-gray-100">
-              {tenders.map((tender) => (
+              {tenders.map((tender: any) => (
                 <tr
-                  key={tender.id}
-                  className="hover:bg-blue-50/50 transition-colors h-[56px] even:bg-gray-50/50"
+                  key={tender.id || tender.proposalId}
+                  className="hover:bg-blue-50/50 transition-colors h-14 even:bg-gray-50/50"
                 >
-                  <td className="px-4 font-medium text-[#0B1F4D] whitespace-nowrap">{tender.id}</td>
-                  <td className="px-4">{tender.proposal}</td>
-                  <td className="px-4 max-w-xs truncate" title={tender.projectName}>{tender.projectName}</td>
-                  <td className="px-4">{tender.l1Bidder}</td>
-                  <td className="px-4">{tender.amount}</td>
-
+                  <td className="px-4 font-medium text-[#0B1F4D] whitespace-nowrap">
+                    {tender.proposalRefNo}
+                  </td>
+                  <td className="px-4 max-w-xs truncate" title={tender.title}>
+                    {tender.title}
+                  </td>
+                  <td className="px-4 text-gray-400">-</td>
+                  <td className="px-4 text-gray-400">-</td>
                   <td className="px-4">
-                    <button
-                      onClick={() => {
-                        if (
-                          tender.status ===
-                          "L1 Pending Approval"
-                        ) {
-                          setSelectedTender(tender);
-                        }
-                      }}
-                      className="px-3 py-1 bg-blue-50 text-blue-700 rounded-md text-xs font-medium border border-blue-100"
+                    <span
+                      className={`px-3 py-1 rounded-md text-xs font-medium border inline-block ${
+                        tender.status === "Pending"
+                          ? "bg-amber-50 text-amber-700 border-amber-100"
+                          : "bg-blue-50 text-blue-700 border-blue-100"
+                      }`}
                     >
                       {tender.status}
-                    </button>
+                    </span>
+                  </td>
+                  <td className="px-4">
+                    {!tender.isEnsured ? (
+                      <button
+                        onClick={() => ensureMutation.mutate(tender.proposalId)}
+                        disabled={ensureMutation.isPending}
+                        className="px-3 py-1.5 bg-[#0B1F4D] cursor-pointer text-white rounded-lg flex items-center justify-center gap-1.5 hover:bg-[#0B1F4D]/90 transition-all text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {ensureMutation.isPending &&
+                        ensureMutation.variables === tender.proposalId
+                          ? "Ensuring..."
+                          : "Ensure"}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setSelectedTender(tender)}
+                        className="px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-100 rounded-lg flex items-center justify-center gap-1.5 hover:bg-blue-100 transition-all text-xs font-medium"
+                      >
+                        <FileText size={14} />
+                        Open Details
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
+              {tenders.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="px-4 py-8 text-center text-gray-500"
+                  >
+                    No tenders in the queue.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
       {/* Tender Form */}
-
       {selectedTender && (
-        <div className="bg-white border border-gray-200 rounded-[12px] p-[24px] shadow-sm">
-
-          <h3 className="font-semibold text-[20px] text-[#0B1F4D] mb-[24px]">
-            Tendering : {selectedTender.proposal} - {selectedTender.projectName}
+        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+          <h3 className="font-semibold text-[20px] text-[#0B1F4D] mb-6">
+            Tendering : {selectedTender.proposalRefNo} - {selectedTender.title}
           </h3>
 
-          {/* Tender Publication */}
-
-<h4 className="font-semibold text-[16px] text-gray-900 mb-[16px]">
-  Tender Publication Details
-</h4>
-
-<div className="mb-[24px]">
-  <input
-    placeholder="Tender Reference Number"
-    className="w-full px-3 h-[40px] border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20"
-    value={formData.tenderRefNo}
-    onChange={(e) =>
-      setFormData({
-        ...formData,
-        tenderRefNo: e.target.value,
-      })
-    }
-  />
-</div>
-
-          {/* Vendor */}
-
-          {/* <h4 className="font-semibold mb-4">
-            L1 Vendor Information
+          <h4 className="font-semibold text-[16px] text-gray-900 mb-4 border-b pb-2">
+            Tender Details
           </h4>
 
-          <div className="grid md:grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                L1 Vendor Identified?
+              </label>
+              <div className="flex gap-6 h-10 items-center">
+                <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="l1VendorIdentified"
+                    value="yes"
+                    checked={formData.l1VendorIdentified === "yes"}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        l1VendorIdentified: e.target.value,
+                      })
+                    }
+                    className="w-4 h-4 text-[#0B1F4D] accent-[#0B1F4D] cursor-pointer"
+                  />
+                  Yes
+                </label>
+                <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="l1VendorIdentified"
+                    value="no"
+                    checked={formData.l1VendorIdentified === "no"}
+                    onChange={(e) => {
+                      setFormData({
+                        ...formData,
+                        l1VendorIdentified: e.target.value,
+                        vendorId: "",
+                        l1CostLakhs: "",
+                      });
+                    }}
+                    className="w-4 h-4 text-[#0B1F4D] accent-[#0B1F4D] cursor-pointer"
+                  />
+                  No
+                </label>
+              </div>
+            </div>
 
-            <input
-              placeholder="Vendor Name"
-              className="border rounded-lg p-2"
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Vendor Name
+              </label>
+              <select
+                value={formData.vendorId}
+                onChange={(e) =>
+                  setFormData({ ...formData, vendorId: e.target.value })
+                }
+                className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20 disabled:bg-gray-50 disabled:text-gray-400"
+                disabled={
+                  formData.l1VendorIdentified === "no" || isVendorsLoading
+                }
+              >
+                <option value="">
+                  {isVendorsLoading ? "Loading vendors..." : "Select a vendor"}
+                </option>
+                {vendors.map((vendor: any) => (
+                  <option key={vendor.id} value={vendor.id}>
+                    {vendor.legalName}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-            <input
-              placeholder="Vendor Registration Number"
-              className="border rounded-lg p-2"
-            />
-
-            <input
-              placeholder="Vendor Contact Person"
-              className="border rounded-lg p-2"
-            />
-
-            <input
-              placeholder="Vendor Contact Number"
-              className="border rounded-lg p-2"
-            />
-          </div> */}
-
-          {/* Work Order */}
-{/* 
-          <h4 className="font-semibold mb-4">
-            Work Order Details
-          </h4>
-
-          <div className="grid md:grid-cols-3 gap-4 mb-6">
-
-            <input type="date" className="border rounded-lg p-2" />
-
-            <input
-              placeholder="Work Order Number"
-              className="border rounded-lg p-2"
-            />
-
-            <input
-              placeholder="Total Tender Cost"
-              className="border rounded-lg p-2"
-            />
-          </div> */}
-
-          {/* Installments */}
-
-          {/* <div className="flex justify-between items-center mb-4">
-            <h4 className="font-semibold">
-              Running Account Bills
-            </h4>
-
-            <button
-              onClick={addInstallment}
-              className="px-3 py-1 bg-primary text-white rounded flex items-center gap-2"
-            >
-              <Plus size={16} />
-              Add
-            </button>
-          </div>
-
-          {installments.map((item, index) => (
-            <div
-              key={index}
-              className="grid grid-cols-12 gap-2 mb-3"
-            >
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                L1 Cost (Lakhs)
+              </label>
               <input
-                value={item.no}
-                disabled
-                className="col-span-1 border rounded p-2"
+                type="number"
+                placeholder="0.00"
+                className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20 disabled:bg-gray-50 disabled:text-gray-400"
+                value={formData.l1CostLakhs}
+                onChange={(e) =>
+                  setFormData({ ...formData, l1CostLakhs: e.target.value })
+                }
+                disabled={formData.l1VendorIdentified === "no"}
               />
+            </div>
 
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Work Order Issued?
+              </label>
+              <div className="flex gap-6 h-10 items-center">
+                <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="workOrderIssued"
+                    value="yes"
+                    checked={formData.workOrderIssued === "yes"}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        workOrderIssued: e.target.value,
+                      })
+                    }
+                    className="w-4 h-4 text-[#0B1F4D] accent-[#0B1F4D] cursor-pointer"
+                  />
+                  Yes
+                </label>
+                <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="workOrderIssued"
+                    value="no"
+                    checked={formData.workOrderIssued === "no"}
+                    onChange={(e) => {
+                      setFormData({
+                        ...formData,
+                        workOrderIssued: e.target.value,
+                        workOrderDate: "",
+                      });
+                    }}
+                    className="w-4 h-4 text-[#0B1F4D] accent-[#0B1F4D] cursor-pointer"
+                  />
+                  No
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Work Order Date
+              </label>
               <input
                 type="date"
-                className="col-span-2 border rounded p-2"
+                className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20 disabled:bg-gray-50 disabled:text-gray-400"
+                value={formData.workOrderDate}
+                onChange={(e) =>
+                  setFormData({ ...formData, workOrderDate: e.target.value })
+                }
+                disabled={formData.workOrderIssued === "no"}
               />
-
-              <input
-                placeholder="Amount"
-                className="col-span-3 border rounded p-2"
-              />
-
-              <input
-                placeholder="Remarks"
-                className="col-span-5 border rounded p-2"
-              />
-
-              <button
-                onClick={() => removeInstallment(index)}
-                className="text-red-500"
-              >
-                <Trash2 size={16} />
-              </button>
             </div>
-          ))} */}
+          </div>
 
-          {/* Supporting Docs */}
-
-          <h4 className="font-semibold text-[16px] text-gray-900 mt-[24px] mb-[16px]">
+          {/* Documents Table Section */}
+          <h4 className="font-semibold text-[16px] text-gray-900 mb-4 border-b pb-2">
             Supporting Documents
           </h4>
 
-          <div className="flex gap-[16px] items-center mb-[24px]">
-            <select className="px-3 h-[40px] border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20">
-              <option>Bid Evaluation Report</option>
-              <option>Work Order Copy</option>
-              <option>Tender Notice</option>
-              <option>Other Documents</option>
-            </select>
-
-            <input
-              type="file"
-              className="text-[14px] file:mr-4 file:py-2 file:px-4 file:rounded-[10px] file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-              onChange={(e) =>
-                setDocuments({
-                  ...documents,
-                  bidEvaluationReport:
-                    e.target.files?.[0] || null,
-                })
-              }
-            />
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-gray-50 text-gray-600 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-3 font-medium">Document Name</th>
+                    <th className="px-6 py-3 font-medium text-center">
+                      Upload Document
+                    </th>
+                    <th className="px-6 py-3 font-medium text-center">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {renderDocumentRow(
+                    "Bid Evaluation Report",
+                    "bidEvaluationReport",
+                  )}
+                  {renderDocumentRow("Work Order Copy", "workOrderCopy")}
+                  {renderDocumentRow("Tender Notice", "tenderNotice")}
+                  {renderDocumentRow("DMRR letter", "dmrrLetter")}
+                </tbody>
+              </table>
+            </div>
           </div>
 
-          <div className="flex justify-end border-t border-gray-200 pt-[16px]">
+          <div className="flex justify-end gap-3 border-t border-gray-200 pt-4">
             <button
               onClick={handleSave}
-              className="px-[16px] h-[40px] bg-[#0B1F4D] text-white rounded-[10px] flex items-center justify-center gap-2 hover:bg-[#0B1F4D]/90 transition-all text-sm font-medium"
+              disabled={isSaving || isCompleting}
+              className="px-6 h-10 bg-[#0B1F4D] cursor-pointer text-white rounded-[10px] flex items-center justify-center gap-2 hover:bg-[#0B1F4D]/90 transition-all text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Save size={18} />
-              Save
+              {isSaving ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Save className="w-4 h-4" />
+              )}
+              {isSaving ? "Saving..." : "Save Details"}
+            </button>
+            <button
+              onClick={() =>
+                completeTenderMutation.mutate(selectedTender.proposalId)
+              }
+              disabled={isCompleting || isSaving}
+              className="px-6 h-10 bg-[#0B1F4D] cursor-pointer text-white rounded-[10px] flex items-center justify-center gap-2 hover:bg-[#0B1F4D]/90 transition-all text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isCompleting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <XCircle className="w-4 h-4" />
+              )}
+              {isCompleting ? "Closing..." : "Mark As Close"}
             </button>
           </div>
         </div>

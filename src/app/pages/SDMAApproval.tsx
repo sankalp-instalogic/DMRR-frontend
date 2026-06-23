@@ -5,53 +5,13 @@ import {
   RefreshCw,
   Plus,
   Trash2,
-  Send,
-  Forward
+  Loader2,
+  Forward,
 } from "lucide-react";
 import { useNavigate } from "react-router";
-
-const initialNewProposals = [
-  {
-    id: "DMRR/2025/MUM/001",
-    projectName: "Flood Protection Wall",
-    district: "Mumbai",
-    department: "PWD",
-    cost: "450 Cr",
-    status: "Pending",
-  },
-  {
-    id: "DMRR/2025/PUN/021",
-    projectName: "River Deepening Project",
-    district: "Pune",
-    department: "Rural Development",
-    cost: "320 Cr",
-    status: "Pending",
-  },
-  {
-    id: "DMRR/2025/NAG/015",
-    projectName: "Storm Water Drainage",
-    district: "Nagpur",
-    department: "Water Resources",
-    cost: "275 Cr",
-    status: "Pending",
-  },
-];
-
-const initialRevisedProposals = [
-  {
-    id: "DMRR/2025/MUM/011",
-    projectName: "Dam Strengthening",
-    district: "Mumbai",
-    department: "PWD",
-    cost: "450 Cr",
-    status: "Revised",
-    lastMeetingDate: "10-06-2025",
-    revisionReason: "Requires financial re-evaluation.",
-    lastMembers: [
-      { srNo: 1, name: "Dr. A. Sharma", designation: "Finance Secretary" },
-    ]
-  },
-];
+import useAxiosPrivate from "../../hooks/useAxiosPrivate";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 interface Member {
   srNo: number;
@@ -59,61 +19,106 @@ interface Member {
   designation: string;
 }
 
+const DecisionEnum = {
+  Approve: 1,
+  Reject: 2,
+  Revision: 3,
+};
+
+const CommitteeType = {
+  PAC: 1,
+  TAC: 2,
+  SEC: 3,
+  AdministrativeApproval: 4,
+  SDMA: 5,
+};
+
 export function SDMAApproval() {
   const navigate = useNavigate();
+  const axiosPrivate = useAxiosPrivate();
+  const queryClient = useQueryClient();
 
   const [activeTab, setActiveTab] = useState("new");
-  const [pendingProposals, setPendingProposals] = useState(initialNewProposals);
-  const [revisionList, setRevisionList] = useState(initialRevisedProposals);
-
   const [selectedProposal, setSelectedProposal] = useState<any>(null);
 
   const [meetingDate, setMeetingDate] = useState("");
   const [meetingTime, setMeetingTime] = useState("");
-  
-  const [members, setMembers] = useState<Member[]>([
-    { srNo: 1, name: "", designation: "" }
-  ]);
-  
-  const [attendanceSheet, setAttendanceSheet] = useState<File | null>(null);
 
-  const [decision, setDecision] = useState("");
+  const [members, setMembers] = useState<Member[]>([
+    { srNo: 1, name: "", designation: "" },
+  ]);
+
+  const [attendanceSheet, setAttendanceSheet] = useState<File | null>(null);
+  const [decision, setDecision] = useState(""); // 'approve' | 'reject' | 'revision'
   const [momFile, setMomFile] = useState<File | null>(null);
   const [comments, setComments] = useState("");
   const [momDate, setMomDate] = useState("");
 
-  const clearForm = () => {
-    setDecision("");
-    setComments("");
-    setMeetingDate("");
-    setMeetingTime("");
-    setMomDate("");
-    setMomFile(null);
-    setAttendanceSheet(null);
-    setMembers([
-      { srNo: 1, name: "", designation: "" }
-    ]);
-  };
+  // --- NEW STATES FOR REVISED SECTION ---
+  const [revisedApprovalDate, setRevisedApprovalDate] = useState("");
+  const [revisedMomFile, setRevisedMomFile] = useState<File | null>(null);
 
-  const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
-    setSelectedProposal(null);
-    clearForm();
-  };
+  // Fetch New Proposals (revised = false) for SDMA (Committee ID = 5)
+  const { data: pendingProposals = [], isLoading: isLoadingPending } = useQuery(
+    {
+      queryKey: ["sdmaProposals", "new"],
+      queryFn: async () => {
+        const response = await axiosPrivate.get(
+          "/api/v1/Committees/5/queue?revised=false"
+        );
+        return response.data;
+      },
+    }
+  );
 
-  const handleProposalSelect = (proposal: any) => {
-    setSelectedProposal(proposal);
-    clearForm();
-  };
+  // Fetch Revised Proposals (revised = true) for SDMA
+  const { data: revisionList = [], isLoading: isLoadingRevised } = useQuery({
+    queryKey: ["sdmaProposals", "revised"],
+    queryFn: async () => {
+      const response = await axiosPrivate.get(
+        "/api/v1/Committees/5/queue?revised=true"
+      );
+      return response.data;
+    },
+  });
+
+  // --- FETCH TIMELINE DATA FOR SELECTED PROPOSAL ---
+  const selectedProposalId = selectedProposal?.proposalId || selectedProposal?.id;
+  
+  const { data: timelineData = [], isLoading: isLoadingTimeline } = useQuery({
+    queryKey: ["proposalTimeline", selectedProposalId],
+    queryFn: async () => {
+      const response = await axiosPrivate.get(
+        `/api/v1/Proposals/${selectedProposalId}/timeline`
+      );
+      return response.data;
+    },
+    enabled: !!selectedProposalId && activeTab === "revised",
+  });
+
+  // Extract SDMA Revision details from timeline data
+  const sdmaRevisionDetails = timelineData.find(
+    (entry: any) => entry.status === "SDMA Revision"
+  );
+
+  // Format the date to YYYY-MM-DD for the input[type="date"]
+  const lastMeetingDate = sdmaRevisionDetails?.meetingDate
+    ? sdmaRevisionDetails.meetingDate.substring(0, 10)
+    : selectedProposal?.lastMeetingDate || "";
+
+  const reasonForRevision =
+    sdmaRevisionDetails?.revisionReson || 
+    selectedProposal?.revisionReason || 
+    selectedProposal?.lastComments || 
+    "No previous comments available.";
+
+  const isLoading = activeTab === "new" ? isLoadingPending : isLoadingRevised;
+  const currentTableData = activeTab === "new" ? pendingProposals : revisionList;
 
   const addRow = () => {
     setMembers([
       ...members,
-      {
-        srNo: members.length + 1,
-        name: "",
-        designation: "",
-      },
+      { srNo: members.length + 1, name: "", designation: "" },
     ]);
   };
 
@@ -128,59 +133,233 @@ export function SDMAApproval() {
     );
   };
 
-  const removeFromList = () => {
-    if (activeTab === "new") {
-      setPendingProposals(pendingProposals.filter((p) => p.id !== selectedProposal.id));
-    } else {
-      setRevisionList(revisionList.filter((p) => p.id !== selectedProposal.id));
-    }
+  const resetForm = () => {
+    setSelectedProposal(null);
+    setDecision("");
+    setMomFile(null);
+    setAttendanceSheet(null);
+    setComments("");
+    setMeetingDate("");
+    setMeetingTime("");
+    setMomDate("");
+    setMembers([{ srNo: 1, name: "", designation: "" }]);
+    // Reset revised states
+    setRevisedApprovalDate("");
+    setRevisedMomFile(null);
   };
 
+  // --- INTEGRATED MUTATION LOGIC (NEW TAB) ---
+  const evaluateMutation = useMutation({
+    mutationFn: async (actionDecision: number) => {
+      if (!selectedProposal) throw new Error("No proposal selected");
+
+      const uploadPromises = [];
+      const proposalId = selectedProposal.proposalId || selectedProposal.id;
+
+      const createUploadConfig = (file: File, docType: number) => {
+        const formData = new FormData();
+        formData.append("ownerType", "1"); // Proposal Type mapping
+        formData.append("ownerId", proposalId);
+        formData.append("documentType", docType.toString());
+        formData.append("file", file);
+
+        return axiosPrivate.post("/api/v1/Documents/upload", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+      };
+
+      // Attendance sheet docType 39
+      if (attendanceSheet) {
+        uploadPromises.push(createUploadConfig(attendanceSheet, 39));
+      }
+
+      // MoM file for SDMA is DocType 7
+      if (actionDecision === DecisionEnum.Approve && momFile) {
+        uploadPromises.push(createUploadConfig(momFile, 7));
+      }
+
+      if (uploadPromises.length > 0) {
+        await Promise.all(uploadPromises);
+      }
+
+      // Format Dates
+      const meetingDateTime =
+        meetingDate && meetingTime
+          ? new Date(`${meetingDate}T${meetingTime}`).toISOString()
+          : new Date().toISOString();
+
+      const finalMomDate =
+        momDate ? new Date(momDate).toISOString() : meetingDateTime;
+
+      // Construct API Payload
+      const payload = {
+        proposalId: proposalId,
+        committee: CommitteeType.SDMA,
+        meetingDate: meetingDateTime,
+        meetingTime: meetingTime,
+        decision: actionDecision,
+        momDate: finalMomDate,
+        rejectionReason: actionDecision === DecisionEnum.Reject ? comments : "",
+        revisionReason:
+          actionDecision === DecisionEnum.Revision ? comments : "",
+        members: members.map((m) => ({
+          memberName: m.name,
+          designation: m.designation,
+        })),
+      };
+
+      await axiosPrivate.post("/api/v1/Committees/evaluation", payload);
+
+      return actionDecision;
+    },
+    onSuccess: (actionDecision) => {
+      queryClient.invalidateQueries({ queryKey: ["sdmaProposals"] });
+
+      const propRef = selectedProposal.proposalRefNo || selectedProposal.id;
+
+      if (actionDecision === DecisionEnum.Approve) {
+        toast.success(`${propRef} forwarded successfully to Tendering & Procurement`);
+        navigate("/tendering");
+      } else if (actionDecision === DecisionEnum.Reject) {
+        toast.success("Proposal Rejected.");
+      } else if (actionDecision === DecisionEnum.Revision) {
+        toast.success("Proposal sent for revision.");
+      }
+
+      resetForm();
+    },
+    onError: (error) => {
+      console.error("Evaluation Failed:", error);
+      toast.error("Failed to process evaluation. Please try again.");
+    },
+  });
+
+  // --- INTEGRATED MUTATION LOGIC (REVISED TAB) ---
+  const revisedEvaluateMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedProposal) throw new Error("No proposal selected");
+      const proposalId = selectedProposal.proposalId || selectedProposal.id;
+
+      // 1. Submit the Text Payload First
+      const payload = {
+        proposalId: proposalId,
+        committee: CommitteeType.SDMA,
+        decision: DecisionEnum.Approve,
+        meetingDate: lastMeetingDate
+          ? new Date(lastMeetingDate).toISOString()
+          : new Date().toISOString(),
+        momDate: revisedApprovalDate
+          ? new Date(revisedApprovalDate).toISOString()
+          : new Date().toISOString(),
+        isRevisedRound: true, 
+        members: [], // Empty members array for revised flow
+      };
+
+      await axiosPrivate.post("/api/v1/Committees/evaluation", payload);
+
+      // 2. Only if evaluation succeeds, upload MOM Document (DocType 7 for SDMA)
+      if (revisedMomFile) {
+        const formData = new FormData();
+        formData.append("ownerType", "1"); // Proposal
+        formData.append("ownerId", proposalId);
+        formData.append("documentType", "7"); // SDMA MoM
+        formData.append("file", revisedMomFile);
+
+        await axiosPrivate.post("/api/v1/Documents/upload", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sdmaProposals"] });
+      const propRef = selectedProposal.proposalRefNo || selectedProposal.id;
+      toast.success(
+        `${propRef} forwarded successfully to Tendering & Procurement`
+      );
+      navigate("/tendering");
+      resetForm();
+    },
+    onError: (error) => {
+      console.error("Revised Evaluation Failed:", error);
+      toast.error("Failed to process revised evaluation. Please try again.");
+    },
+  });
+
+  // --- VALIDATION HANDLERS ---
   const handleForwardToNextStage = () => {
-    if (!meetingDate || !meetingTime || !attendanceSheet || !momDate || !momFile || members.some(m => !m.name || !m.designation)) {
-        alert("Please complete all mandatory fields and upload required files.");
-        return;
+    if (
+      !meetingDate ||
+      !meetingTime ||
+      !attendanceSheet ||
+      !momDate ||
+      !momFile ||
+      members.some((m) => !m.name || !m.designation)
+    ) {
+      toast.error("Please complete all mandatory fields and upload required files.");
+      return;
     }
-    
-    alert(`Proposal forwarded to Tendering & Procurement successfully`);
-    removeFromList();
-    clearForm();
-    setSelectedProposal(null);
-    navigate("/tendering");
+    evaluateMutation.mutate(DecisionEnum.Approve);
   };
 
   const handleReject = () => {
-     if (!meetingDate || !meetingTime || !attendanceSheet || members.some(m => !m.name || !m.designation) || !comments.trim()) {
-        alert("Please complete all mandatory fields, upload required files and enter rejection reasons.");
-        return;
+    if (
+      !meetingDate ||
+      !meetingTime ||
+      !attendanceSheet ||
+      members.some((m) => !m.name || !m.designation) ||
+      !comments.trim()
+    ) {
+      toast.error(
+        "Please complete all mandatory fields, upload required files and enter rejection reasons."
+      );
+      return;
     }
-    alert("Proposal Rejected.");
-    removeFromList();
-    clearForm();
-    setSelectedProposal(null);
+    evaluateMutation.mutate(DecisionEnum.Reject);
   };
 
   const handleRevision = () => {
-     if (!meetingDate || !meetingTime || !attendanceSheet || members.some(m => !m.name || !m.designation) || !comments.trim()) {
-        alert("Please complete all mandatory fields, upload required files and enter observation notes.");
-        return;
+    if (
+      !meetingDate ||
+      !meetingTime ||
+      !attendanceSheet ||
+      members.some((m) => !m.name || !m.designation) ||
+      !comments.trim()
+    ) {
+      toast.error(
+        "Please complete all mandatory fields, upload required files and enter observation notes."
+      );
+      return;
     }
-    alert("Proposal sent for revision.");
-    removeFromList();
-    clearForm();
-    setSelectedProposal(null);
+    evaluateMutation.mutate(DecisionEnum.Revision);
+  };
+
+  const handleForwardRevisedToTendering = () => {
+    if (!revisedApprovalDate || !revisedMomFile) {
+      toast.error("Please select an Approval Date and upload the Document.");
+      return;
+    }
+    revisedEvaluateMutation.mutate();
   };
 
   return (
     <div className="space-y-6">
       <div>
         <h1>SDMA Approval</h1>
-        <p className="text-sm text-muted-foreground">State Disaster Management Authority Final Approval</p>
+        <p className="text-sm text-muted-foreground">
+          State Disaster Management Authority Final Approval
+        </p>
       </div>
 
       <div className="flex gap-4 mt-4">
         <button
-          onClick={() => handleTabChange("new")}
+          onClick={() => {
+            setActiveTab("new");
+            resetForm();
+          }}
           className={`px-5 py-2 rounded-lg font-medium transition-colors ${
             activeTab === "new"
               ? "bg-primary text-white"
@@ -190,7 +369,10 @@ export function SDMAApproval() {
           New Proposals
         </button>
         <button
-          onClick={() => handleTabChange("revised")}
+          onClick={() => {
+            setActiveTab("revised");
+            resetForm();
+          }}
           className={`px-5 py-2 rounded-lg font-medium transition-colors ${
             activeTab === "revised"
               ? "bg-primary text-white"
@@ -208,394 +390,478 @@ export function SDMAApproval() {
               <th className="px-6 py-4 text-left text-sm font-medium">Proposal ID</th>
               <th className="px-6 py-4 text-left text-sm font-medium">Project Name</th>
               <th className="px-6 py-4 text-left text-sm font-medium">District</th>
-              <th className="px-6 py-4 text-left text-sm font-medium">Line Department</th>
-              <th className="px-6 py-4 text-left text-sm font-medium">Estimated Cost</th>
               <th className="px-6 py-4 text-left text-sm font-medium">Status</th>
             </tr>
           </thead>
           <tbody>
-            {(activeTab === "new" ? pendingProposals : revisionList).map((proposal) => (
-              <tr 
-                key={proposal.id} 
-                className={`border-t border-border hover:bg-muted/50 cursor-pointer transition-colors ${selectedProposal?.id === proposal.id ? 'bg-primary/5' : ''}`}
-                onClick={() => handleProposalSelect(proposal)}
-              >
-                <td className="px-6 py-4 text-sm font-medium">{proposal.id}</td>
-                <td className="px-6 py-4 text-sm max-w-xs truncate" title={proposal.projectName}>{proposal.projectName}</td>
-                <td className="px-6 py-4 text-sm">{proposal.district}</td>
-                <td className="px-6 py-4 text-sm">{proposal.department}</td>
-                <td className="px-6 py-4 text-sm font-bold text-accent">₹ {proposal.cost}</td>
-                <td className="px-6 py-4">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${proposal.status === 'Pending' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
-                    {proposal.status}
-                  </span>
+            {isLoading ? (
+              <tr>
+                <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
+                  <Loader2 className="size-6 animate-spin mx-auto mb-2" />
+                  Loading proposals...
                 </td>
               </tr>
-            ))}
+            ) : currentTableData.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
+                  No {activeTab} proposals found.
+                </td>
+              </tr>
+            ) : (
+              currentTableData.map((proposal: any) => (
+                <tr
+                  key={proposal.id || proposal.proposalId}
+                  className={`border-t border-border hover:bg-muted/50 cursor-pointer transition-colors ${
+                    (selectedProposal?.id || selectedProposal?.proposalId) ===
+                    (proposal.id || proposal.proposalId)
+                      ? "bg-primary/5"
+                      : ""
+                  }`}
+                  onClick={() => {
+                    resetForm();
+                    setSelectedProposal(proposal);
+                  }}
+                >
+                  <td className="px-6 py-4 text-sm font-medium">
+                    {proposal.proposalRefNo || proposal.id}
+                  </td>
+                  <td className="px-6 py-4 text-sm max-w-xs truncate" title={proposal.projectName || proposal.title}>
+                    {proposal.projectName || proposal.title}
+                  </td>
+                  <td className="px-6 py-4 text-sm">{proposal.district}</td>
+                  <td className="px-6 py-4">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        proposal.status === "Pending"
+                          ? "bg-blue-100 text-blue-700"
+                          : "bg-orange-100 text-orange-700"
+                      }`}
+                    >
+                      {proposal.status}
+                    </span>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
       {selectedProposal && (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          
           {/* Section 1: For Revised Proposals Only */}
-          {selectedProposal.status === "Revised" && (
-            <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+          {activeTab === "revised" && (
+            <div className="bg-card border border-border rounded-xl p-6 shadow-sm relative">
+              {isLoadingTimeline && (
+                <div className="absolute inset-0 bg-background/50 flex items-center justify-center rounded-xl z-10">
+                  <Loader2 className="size-6 animate-spin text-primary" />
+                </div>
+              )}
               <h3 className="mb-4 text-lg font-bold border-b pb-2">
                 Last Meeting Details
               </h3>
-              
+
               <div className="space-y-6">
-                 <div>
-                    <label className="block text-sm font-medium mb-2">Last Meeting Date</label>
-                    <input
-                        type="text"
-                        value={selectedProposal.lastMeetingDate}
-                        disabled
-                        className="w-full px-4 py-3 bg-muted border border-border rounded-lg"
-                    />
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Last Meeting Date
+                  </label>
+                  <input
+                    type="date"
+                    value={lastMeetingDate}
+                    disabled
+                    className="w-full px-4 py-3 bg-muted border border-border rounded-lg"
+                  />
                 </div>
-                
-                {/* <div className="space-y-3">
-                  <h4 className="font-semibold text-sm">Last Members Present</h4>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Reason for Revision
+                  </label>
+                  <textarea
+                    value={reasonForRevision}
+                    disabled
+                    rows={3}
+                    className="w-full px-4 py-3 bg-muted border border-border rounded-lg"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Section 2: Conditional Evaluation Form */}
+          {activeTab === "revised" ? (
+            <div className="bg-card border border-border rounded-xl p-6 shadow-sm mt-6">
+              <h3 className="mb-4 text-lg font-bold border-b pb-2">
+                Revised SDMA Evaluation : {selectedProposal.proposalRefNo || selectedProposal.id}
+              </h3>
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Approval Date (MoM Date)
+                    </label>
+                    <input
+                      type="date"
+                      value={revisedApprovalDate}
+                      onChange={(e) => setRevisedApprovalDate(e.target.value)}
+                      disabled={revisedEvaluateMutation.isPending}
+                      className="w-full px-4 py-3 border border-border rounded-lg bg-background"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Committee Decision
+                    </label>
+                    <input
+                      type="text"
+                      value="Approved"
+                      readOnly
+                      className="w-full cursor-no-drop px-4 py-3 border border-border rounded-lg bg-muted text-green-700 font-semibold"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Upload Document (SDMA MoM)
+                  </label>
+                  <input
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    onChange={(e) =>
+                      setRevisedMomFile(e.target.files?.[0] || null)
+                    }
+                    disabled={revisedEvaluateMutation.isPending}
+                    className="w-full px-4 py-3 border border-border rounded-lg bg-background file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+                  />
+                  {revisedMomFile && (
+                    <p className="text-sm text-green-600 mt-2 font-medium">
+                      ✓ File selected: {revisedMomFile.name}
+                    </p>
+                  )}
+                </div>
+                <div className="flex justify-between mt-6 pt-6 border-t">
+                  <button
+                    onClick={resetForm}
+                    disabled={revisedEvaluateMutation.isPending}
+                    className="px-6 py-3 border border-border rounded-lg hover:bg-muted transition-colors font-medium text-sm text-foreground disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleForwardRevisedToTendering}
+                    disabled={revisedEvaluateMutation.isPending}
+                    className="px-6 py-3 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors font-medium text-sm animate-in fade-in zoom-in duration-300 disabled:opacity-50 shadow-sm"
+                  >
+                    {revisedEvaluateMutation.isPending ? (
+                      <Loader2 className="size-5 animate-spin" />
+                    ) : (
+                      <Forward className="size-5" />
+                    )}
+                    Forward to Tendering & Procurement
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+              <h3 className="mb-4 text-lg font-bold border-b pb-2">
+                SDMA Approval Evaluation : {selectedProposal.proposalRefNo || selectedProposal.id}
+              </h3>
+
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Meeting Date
+                    </label>
+                    <input
+                      type="date"
+                      value={meetingDate}
+                      onChange={(e) => setMeetingDate(e.target.value)}
+                      disabled={evaluateMutation.isPending}
+                      className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Meeting Time
+                    </label>
+                    <input
+                      type="time"
+                      value={meetingTime}
+                      onChange={(e) => setMeetingTime(e.target.value)}
+                      disabled={evaluateMutation.isPending}
+                      className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <h4 className="font-semibold text-sm">Members Present</h4>
+                    <button
+                      type="button"
+                      onClick={addRow}
+                      disabled={evaluateMutation.isPending}
+                      className="px-3 py-2 bg-primary text-white text-sm rounded-lg flex items-center gap-2 disabled:opacity-50"
+                    >
+                      <Plus className="size-4" />
+                      Add Member
+                    </button>
+                  </div>
+
                   <table className="w-full border border-border rounded-lg overflow-hidden">
                     <thead className="bg-muted">
                       <tr>
                         <th className="p-3 border text-left text-sm font-medium">Sr No</th>
                         <th className="p-3 border text-left text-sm font-medium">Name</th>
                         <th className="p-3 border text-left text-sm font-medium">Designation</th>
+                        <th className="p-3 border text-center text-sm font-medium">Action</th>
                       </tr>
                     </thead>
+
                     <tbody>
-                      {selectedProposal.lastMembers.map((member: any, index: number) => (
+                      {members.map((member, index) => (
                         <tr key={index}>
-                          <td className="border p-3 text-sm">{member.srNo}</td>
-                          <td className="border p-3 text-sm">{member.name}</td>
-                          <td className="border p-3 text-sm">{member.designation}</td>
+                          <td className="border p-2 text-center text-sm">
+                            {member.srNo}
+                          </td>
+                          <td className="border p-2">
+                            <input
+                              type="text"
+                              value={member.name}
+                              disabled={evaluateMutation.isPending}
+                              onChange={(e) => {
+                                const updated = [...members];
+                                updated[index].name = e.target.value;
+                                setMembers(updated);
+                              }}
+                              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary/20"
+                              placeholder="Enter member name"
+                            />
+                          </td>
+                          <td className="border p-2">
+                            <input
+                              type="text"
+                              value={member.designation}
+                              disabled={evaluateMutation.isPending}
+                              onChange={(e) => {
+                                const updated = [...members];
+                                updated[index].designation = e.target.value;
+                                setMembers(updated);
+                              }}
+                              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary/20"
+                              placeholder="Enter designation"
+                            />
+                          </td>
+                          <td className="border p-2 text-center">
+                            {members.length > 1 && (
+                              <button
+                                onClick={() => removeRow(index)}
+                                disabled={evaluateMutation.isPending}
+                                className="text-red-600 hover:text-red-700 transition-colors disabled:opacity-50"
+                              >
+                                <Trash2 className="size-5 mx-auto" />
+                              </button>
+                            )}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
-                 */}
-                 <div>
-                    <label className="block text-sm font-medium mb-2">Reason for Revision</label>
-                    <textarea
-                        value={selectedProposal.revisionReason}
-                        disabled
-                        rows={3}
-                        className="w-full px-4 py-3 bg-muted border border-border rounded-lg"
-                    />
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Upload Attendance Sheet
+                  </label>
+                  <input
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    disabled={evaluateMutation.isPending}
+                    onChange={(e) => setAttendanceSheet(e.target.files?.[0] || null)}
+                    className="w-full px-4 py-3 border border-border rounded-lg bg-background file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+                  />
+                  {attendanceSheet && (
+                    <p className="text-sm text-green-600 mt-2">
+                      ✓ File selected: {attendanceSheet.name}
+                    </p>
+                  )}
                 </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    SDMA Recommendation
+                  </label>
+                  <div className="flex gap-4">
+                    <button
+                      onClick={() => setDecision("approve")}
+                      disabled={evaluateMutation.isPending}
+                      className={`flex-1 px-4 py-3 rounded-lg border font-medium transition-all ${
+                        decision === "approve"
+                          ? "bg-green-100 border-green-600 text-green-700 shadow-sm"
+                          : "border-border hover:bg-muted disabled:opacity-50"
+                      }`}
+                    >
+                      <CheckCircle2 className="size-5 mx-auto mb-1" />
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => setDecision("reject")}
+                      disabled={evaluateMutation.isPending}
+                      className={`flex-1 px-4 py-3 rounded-lg border font-medium transition-all ${
+                        decision === "reject"
+                          ? "bg-red-100 border-red-600 text-red-700 shadow-sm"
+                          : "border-border hover:bg-muted disabled:opacity-50"
+                      }`}
+                    >
+                      <XCircle className="size-5 mx-auto mb-1" />
+                      Reject
+                    </button>
+                    <button
+                      onClick={() => setDecision("revision")}
+                      disabled={evaluateMutation.isPending}
+                      className={`flex-1 px-4 py-3 rounded-lg border font-medium transition-all ${
+                        decision === "revision"
+                          ? "bg-orange-100 border-orange-500 text-orange-700 shadow-sm"
+                          : "border-border hover:bg-muted disabled:opacity-50"
+                      }`}
+                    >
+                      <RefreshCw className="size-5 mx-auto mb-1" />
+                      Revision
+                    </button>
+                  </div>
+                </div>
+
+                {/* APPROVED */}
+                {decision === "approve" && (
+                  <div className="animate-in fade-in slide-in-from-top-4 duration-300 space-y-4 p-4 bg-green-50/50 rounded-xl border border-green-100">
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-green-800">
+                        Date of Minutes of Meeting
+                      </label>
+                      <input
+                        type="date"
+                        value={momDate}
+                        disabled={evaluateMutation.isPending}
+                        onChange={(e) => setMomDate(e.target.value)}
+                        className="w-full px-4 py-3 border border-green-200 rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-green-500/20"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-green-800">
+                        Upload MoM file
+                      </label>
+                      <input
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        disabled={evaluateMutation.isPending}
+                        onChange={(e) => setMomFile(e.target.files?.[0] || null)}
+                        className="w-full px-4 py-3 border border-green-200 rounded-lg bg-background file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-100 file:text-green-700 hover:file:bg-green-200"
+                      />
+                      {momFile && (
+                        <p className="text-sm text-green-600 mt-2 font-medium">
+                          ✓ File selected: {momFile.name}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* REJECT */}
+                {decision === "reject" && (
+                  <div className="animate-in fade-in slide-in-from-top-4 duration-300 p-4 bg-red-50/50 rounded-xl border border-red-100">
+                    <label className="block text-sm font-medium mb-2 text-red-800">
+                      Reason for Rejection
+                    </label>
+                    <textarea
+                      rows={4}
+                      placeholder="Enter explicit reason for rejection..."
+                      value={comments}
+                      disabled={evaluateMutation.isPending}
+                      onChange={(e) => setComments(e.target.value)}
+                      className="w-full px-4 py-3 border border-red-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 bg-background disabled:opacity-50"
+                    />
+                  </div>
+                )}
+
+                {/* REVISE */}
+                {decision === "revision" && (
+                  <div className="animate-in fade-in slide-in-from-top-4 duration-300 p-4 bg-orange-50/50 rounded-xl border border-orange-100">
+                    <label className="block text-sm font-medium mb-2 text-orange-800">
+                      Observation / Revision Notes
+                    </label>
+                    <textarea
+                      rows={4}
+                      placeholder="Provide observation notes for necessary revisions..."
+                      value={comments}
+                      disabled={evaluateMutation.isPending}
+                      onChange={(e) => setComments(e.target.value)}
+                      className="w-full px-4 py-3 border border-orange-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 bg-background disabled:opacity-50"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-between items-center mt-8 pt-6 border-t">
+                <button
+                  onClick={resetForm}
+                  disabled={evaluateMutation.isPending}
+                  className="px-6 py-3 border border-border rounded-lg hover:bg-muted transition-colors font-medium text-sm text-foreground disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+
+                {decision === "approve" && momFile && (
+                  <button
+                    onClick={handleForwardToNextStage}
+                    disabled={evaluateMutation.isPending}
+                    className="px-6 py-3 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors font-medium text-sm animate-in fade-in zoom-in duration-300 disabled:opacity-50 shadow-sm"
+                  >
+                    {evaluateMutation.isPending ? (
+                      <Loader2 className="size-5 animate-spin" />
+                    ) : (
+                      <Forward className="size-5" />
+                    )}
+                    Forward to Tendering & Procurement
+                  </button>
+                )}
+
+                {decision === "reject" && comments.trim().length > 0 && (
+                  <button
+                    onClick={handleReject}
+                    disabled={evaluateMutation.isPending}
+                    className="px-6 py-3 bg-red-600 text-white rounded-lg flex items-center gap-2 hover:bg-red-700 transition-colors font-medium text-sm animate-in fade-in zoom-in duration-300 disabled:opacity-50 shadow-sm"
+                  >
+                    {evaluateMutation.isPending ? (
+                      <Loader2 className="size-5 animate-spin" />
+                    ) : (
+                      <XCircle className="size-5" />
+                    )}
+                    Reject Proposal
+                  </button>
+                )}
+
+                {decision === "revision" && comments.trim().length > 0 && (
+                  <button
+                    onClick={handleRevision}
+                    disabled={evaluateMutation.isPending}
+                    className="px-6 py-3 bg-orange-500 text-white rounded-lg flex items-center gap-2 hover:bg-orange-600 transition-colors font-medium text-sm animate-in fade-in zoom-in duration-300 disabled:opacity-50 shadow-sm"
+                  >
+                    {evaluateMutation.isPending ? (
+                      <Loader2 className="size-5 animate-spin" />
+                    ) : (
+                      <RefreshCw className="size-5" />
+                    )}
+                    Send for Revision
+                  </button>
+                )}
               </div>
             </div>
           )}
-
-          {/* Section 2: Latest Evaluation */}
-{activeTab === "revised" ? (
-          <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
-            <h3 className="mb-4 text-lg font-bold border-b pb-2">
-              Revised SDMA Evaluation
-            </h3>
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Approval Date</label>
-                  <input type="date" className="w-full px-4 py-3 border border-border rounded-lg bg-background" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Committee Decision</label>
-                  <input type="text" value="Approved" readOnly className="w-full px-4 py-3 border border-border rounded-lg bg-muted text-green-700 font-semibold" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Upload Document</label>
-                <input type="file" accept=".pdf,.doc,.docx" className="w-full px-4 py-3 border border-border rounded-lg bg-background" />
-              </div>
-              <div className="flex justify-end mt-6">
-                <button onClick={() => { alert("Proposal Approved. Workflow Completed."); removeFromList(); setSelectedProposal(null); }} className="px-6 py-3 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors font-medium text-sm">
-                  <CheckCircle2 className="size-5" /> Approve Proposal
-                </button>
-              </div>
-            </div>
-          </div>
-) : (
-  <>
-          <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
-            <h3 className="mb-4 text-lg font-bold border-b pb-2">
-              SDMA Approval Evaluation : {selectedProposal.id} - {selectedProposal.projectName}
-            </h3>
-
-            <div className="space-y-6">
-               <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-sm font-medium mb-2">Meeting Date</label>
-                    <input
-                        type="date"
-                        value={meetingDate}
-                        onChange={(e) => setMeetingDate(e.target.value)}
-                        className="w-full px-4 py-3 border border-border rounded-lg"
-                    />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium mb-2">Meeting Time</label>
-                    <input
-                        type="time"
-                        value={meetingTime}
-                        onChange={(e) => setMeetingTime(e.target.value)}
-                        className="w-full px-4 py-3 border border-border rounded-lg"
-                    />
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <h4 className="font-semibold text-sm">
-                    Members Present
-                  </h4>
-
-                  <button
-                    type="button"
-                    onClick={addRow}
-                    className="px-3 py-2 bg-primary text-white text-sm rounded-lg flex items-center gap-2"
-                  >
-                    <Plus className="size-4" />
-                    Add Member
-                  </button>
-                </div>
-
-                <table className="w-full border border-border rounded-lg overflow-hidden">
-                  <thead className="bg-muted">
-                    <tr>
-                      <th className="p-3 border text-left text-sm font-medium">Sr No</th>
-                      <th className="p-3 border text-left text-sm font-medium">Name</th>
-                      <th className="p-3 border text-left text-sm font-medium">Designation</th>
-                      <th className="p-3 border text-center text-sm font-medium">Action</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {members.map((member, index) => (
-                      <tr key={index}>
-                        <td className="border p-2 text-center text-sm">
-                          {member.srNo}
-                        </td>
-
-                        <td className="border p-2">
-                          <input
-                            type="text"
-                            value={member.name}
-                            onChange={(e) => {
-                              const updated = [...members];
-                              updated[index].name = e.target.value;
-                              setMembers(updated);
-                            }}
-                            className="w-full px-3 py-2 border rounded"
-                            placeholder="Enter member name"
-                          />
-                        </td>
-
-                        <td className="border p-2">
-                          <input
-                            type="text"
-                            value={member.designation}
-                            onChange={(e) => {
-                              const updated = [...members];
-                              updated[index].designation = e.target.value;
-                              setMembers(updated);
-                            }}
-                            className="w-full px-3 py-2 border rounded"
-                            placeholder="Enter designation"
-                          />
-                        </td>
-
-                        <td className="border p-2 text-center">
-                          {members.length > 1 && (
-                            <button
-                              onClick={() => removeRow(index)}
-                              className="text-red-600 hover:text-red-700 transition-colors"
-                            >
-                              <Trash2 className="size-5 mx-auto" />
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              <div>
-                  <label className="block text-sm font-medium mb-2">Upload Attendance Sheet</label>
-                  <input
-                      type="file"
-                      accept=".pdf,.doc,.docx"
-                      onChange={(e) => {
-                         setAttendanceSheet(e.target.files?.[0] || null)
-                      }}
-                      className="w-full px-4 py-3 border border-border rounded-lg bg-background"
-                  />
-                   {attendanceSheet && (
-                        <p className="text-sm text-green-600 mt-2">
-                          ✓ File uploaded successfully
-                        </p>
-                  )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                    SDMA Recommendation
-                </label>
-                <div className="flex gap-4">
-                  <button
-                  onClick={() => setDecision("approve")}
-                  className={`flex-1 px-4 py-3 rounded-lg border font-medium transition-all ${
-                    decision === "approve"
-                      ? "bg-green-100 border-green-600 text-green-700"
-                      : "border-border hover:bg-muted"
-                  }`}
-                  >
-                  <CheckCircle2 className="size-5 mx-auto mb-1" />
-                  Approve
-                  </button>
-
-                  <button
-                  onClick={() => setDecision("reject")}
-                  className={`flex-1 px-4 py-3 rounded-lg border font-medium transition-all ${
-                    decision === "reject"
-                      ? "bg-red-100 border-red-600 text-red-700"
-                      : "border-border hover:bg-muted"
-                  }`}
-                  >
-                  <XCircle className="size-5 mx-auto mb-1" />
-                  Reject
-                  </button>
-
-                  <button
-                    onClick={() => setDecision("revision")}
-                    className={`flex-1 px-4 py-3 rounded-lg border font-medium transition-all ${
-                      decision === "revision"
-                        ? "bg-orange-100 border-orange-500 text-orange-700"
-                        : "border-border hover:bg-muted"
-                    }`}
-                  >
-                    <RefreshCw className="size-5 mx-auto mb-1" />
-                    Revision
-                  </button>
-                </div>
-              </div>
-
-              {/* APPROVED */}
-              {decision === "approve" && (
-                <div className="animate-in fade-in slide-in-from-top-4 duration-300 space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Date of Minutes of Meeting
-                    </label>
-                    <input
-                      type="date"
-                      value={momDate}
-                      onChange={(e) => setMomDate(e.target.value)}
-                      className="w-full px-4 py-3 border border-border rounded-lg bg-background"
-                    />
-                  </div>
-                   <div>
-                     <label className="block text-sm font-medium mb-2">
-                          Upload MoM file
-                      </label>
-                      <input
-                          type="file"
-                          accept=".pdf,.doc,.docx"
-                          onChange={(e) => setMomFile(e.target.files?.[0] || null)}
-                          className="w-full px-4 py-3 border border-border rounded-lg bg-background"
-                      />
-                      {momFile && (
-                          <p className="text-sm text-green-600 mt-2">
-                             Uploaded: {momFile.name}
-                          </p>
-                      )}
-                   </div>
-                </div>
-              )}
-
-              {/* REJECT */}
-              {decision === "reject" && (
-                <div className="animate-in fade-in slide-in-from-top-4 duration-300">
-                  <label className="block text-sm font-medium mb-2">
-                    Reason for Rejection
-                  </label>
-                  <textarea
-                    rows={4}
-                    placeholder="Enter reason for rejection"
-                    value={comments}
-                    onChange={(e) => setComments(e.target.value)}
-                    className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 bg-background"
-                  />
-                </div>
-              )}
-
-              {/* REVISE */}
-              {decision === "revision" && (
-                <div className="animate-in fade-in slide-in-from-top-4 duration-300">
-                  <label className="block text-sm font-medium mb-2">
-                    Observation / Comments
-                  </label>
-                  <textarea
-                    rows={4}
-                    placeholder="Provide observation notes"
-                    value={comments}
-                    onChange={(e) => setComments(e.target.value)}
-                    className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 bg-background"
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex justify-between items-center mt-6">
-            <button
-               onClick={() => {
-                 setSelectedProposal(null);
-                 clearForm();
-               }}
-               className="px-6 py-3 border border-border rounded-lg hover:bg-muted transition-colors font-medium text-sm text-foreground"
-            >
-                Cancel
-            </button>
-
-            {decision === "approve" && momFile && (
-                <button
-                  onClick={handleForwardToNextStage}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors font-medium text-sm animate-in fade-in zoom-in duration-300"
-                >
-                  <Forward className="size-5" />
-                  Forward to Finance Department
-                </button>
-            )}
-
-            {decision === "reject" && comments.trim().length > 0 && (
-              <button
-                onClick={handleReject}
-                className="px-6 py-3 bg-red-600 text-white rounded-lg flex items-center gap-2 hover:bg-red-700 transition-colors font-medium text-sm animate-in fade-in zoom-in duration-300"
-              >
-                <XCircle className="size-5" />
-                Reject Proposal
-              </button>
-            )}
-
-            {decision === "revision" && comments.trim().length > 0 && (
-              <button
-                onClick={handleRevision}
-                className="px-6 py-3 bg-orange-500 text-white rounded-lg flex items-center gap-2 hover:bg-orange-600 transition-colors font-medium text-sm animate-in fade-in zoom-in duration-300"
-              >
-                <RefreshCw className="size-5" />
-                Send for Revision
-              </button>
-            )}
-          </div>
-  </>
-)}
         </div>
       )}
     </div>

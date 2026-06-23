@@ -85,7 +85,7 @@ export const router = createBrowserRouter([
           // Proposal For Mitigation - Structural
           { path: "proposal-initiation", Component: ProposalInitiationWizard },
           { path: "proposal-list", Component: ProposalList },
-          { path: "proposal-detail", Component: ProposalDetail },
+          { path: "proposal-detail/:id", Component: ProposalDetail },
           { path: "stage-update", Component: StageUpdate },
           { path: "document-upload", Component: DocumentUploadScreen },
           { path: "document-viewer", Component: DocumentViewerScreen },
