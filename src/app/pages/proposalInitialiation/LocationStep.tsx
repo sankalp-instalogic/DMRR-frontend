@@ -1,6 +1,7 @@
 import { MapPin } from "lucide-react";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 import { useQuery } from "@tanstack/react-query";
+import { Select } from "antd"; // <-- Added Ant Design import
 
 interface Step1Data {
   disasterType: string;
@@ -28,7 +29,6 @@ export function LocationStep({ data, setData }: LocationStepProps) {
     queryKey: ["disasterTypes"],
     queryFn: async () => {
       const response = await axiosPrivate.get("/api/v1/masters/disaster-types");
-      // Safely fallback to an empty array if items is missing/null
       return response.data?.items || [];
     },
   });
@@ -47,7 +47,7 @@ export function LocationStep({ data, setData }: LocationStepProps) {
   // 3. Fetch Talukas based on selected District ID
   const {
     data: talukas = [],
-    isFetching: isFetchingTalukas, // isFetching handles subsequent refetches better than isLoading
+    isFetching: isFetchingTalukas,
   } = useQuery<MasterItem[]>({
     queryKey: ["talukas", data.district],
     queryFn: async () => {
@@ -71,24 +71,20 @@ export function LocationStep({ data, setData }: LocationStepProps) {
         <label className="block text-sm font-medium mb-2">
           Disaster Type <span className="text-red-600">*</span>
         </label>
-        <select
-          value={data.disasterType}
-          onChange={(e) => setData({ ...data, disasterType: e.target.value })}
+        <Select
+          className="w-full"
+          size="large"
+          placeholder="Select Disaster Type"
+          // Antd placeholders only show if value is undefined, not an empty string
+          value={data.disasterType || undefined} 
+          onChange={(value) => setData({ ...data, disasterType: value })}
           disabled={isLoadingDisasters}
-          className="w-full cursor-pointer px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
-        >
-          <option value="">
-            {isLoadingDisasters
-              ? "Loading disasters..."
-              : "Select Disaster Type"}
-          </option>
-          {/* Optional chaining ?.map added for safety */}
-          {disasterTypes?.map((type) => (
-            <option key={type.id} value={type.id}>
-              {type.name}
-            </option>
-          ))}
-        </select>
+          loading={isLoadingDisasters}
+          options={disasterTypes.map((type) => ({
+            value: type.id,
+            label: type.name,
+          }))}
+        />
       </div>
 
       {/* District Dropdown */}
@@ -96,28 +92,25 @@ export function LocationStep({ data, setData }: LocationStepProps) {
         <label className="block text-sm font-medium mb-2">
           District <span className="text-red-600">*</span>
         </label>
-        <select
-          value={data.district}
-          onChange={(e) =>
+        <Select
+          className="w-full"
+          size="large"
+          placeholder="Select District"
+          value={data.district || undefined}
+          onChange={(value) =>
             setData({
               ...data,
-              district: e.target.value,
+              district: value,
               taluka: "", // Reset taluka when district changes
             })
           }
           disabled={isLoadingDistricts}
-          className="w-full cursor-pointer px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
-        >
-          <option value="">
-            {isLoadingDistricts ? "Loading districts..." : "Select District"}
-          </option>
-          {Array.isArray(districts) &&
-            districts.map((district) => (
-              <option key={district.id} value={district.id}>
-                {district.name}
-              </option>
-            ))}
-        </select>
+          loading={isLoadingDistricts}
+          options={districts.map((district) => ({
+            value: district.id,
+            label: district.name,
+          }))}
+        />
       </div>
 
       {/* Taluka Dropdown */}
@@ -125,30 +118,21 @@ export function LocationStep({ data, setData }: LocationStepProps) {
         <label className="block text-sm font-medium mb-2">
           Taluka <span className="text-red-600">*</span>
         </label>
-        <select
-          value={data.taluka}
-          onChange={(e) => setData({ ...data, taluka: e.target.value })}
-          className={`w-full px-4 py-3 border border-border rounded-lg ${
-            !data.district || isFetchingTalukas
-              ? "bg-background cursor-not-allowed"
-              : "cursor-pointer"
-          } focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50`}
+        <Select
+          className="w-full"
+          size="large"
+          placeholder={
+            !data.district ? "Select a district first" : "Select Taluka"
+          }
+          value={data.taluka || undefined}
+          onChange={(value) => setData({ ...data, taluka: value })}
           disabled={!data.district || isFetchingTalukas}
-        >
-          <option value="">
-            {!data.district
-              ? "Select a district first"
-              : isFetchingTalukas
-                ? "Loading talukas..."
-                : "Select Taluka"}
-          </option>
-          {data.district &&
-            talukas?.map((taluka) => (
-              <option key={taluka.id} value={taluka.id}>
-                {taluka.name}
-              </option>
-            ))}
-        </select>
+          loading={isFetchingTalukas}
+          options={talukas.map((taluka) => ({
+            value: taluka.id,
+            label: taluka.name,
+          }))}
+        />
       </div>
     </div>
   );

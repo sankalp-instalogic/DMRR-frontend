@@ -1,8 +1,10 @@
-import { useState } from "react";
-import { useNavigate } from "react-router";
+import { useState, useMemo } from "react";
 import { ShoppingCart, IndianRupee, Building2 } from "lucide-react";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 import { useQuery } from "@tanstack/react-query";
+import { Select } from "antd";
+import type { ColDef } from "ag-grid-community";
+import { Table } from "../../components/Table"; // Adjust the path to where your Table component is saved
 
 // --- TypeScript Interfaces ---
 export interface ProcurementItem {
@@ -23,7 +25,6 @@ export interface ProcurementResponse {
   hasNextPage?: boolean;
 }
 
-// Added interface for the Dashboard API response
 export interface DashboardResponse {
   totalProcuredItems: number;
   budgetApproved: number;
@@ -32,9 +33,8 @@ export interface DashboardResponse {
 }
 
 export function ProcurementDashboard() {
-  const navigate = useNavigate();
   const axiosPrivate = useAxiosPrivate();
-  
+
   // Filter States
   const [financialYear, setFinancialYear] = useState<string>("");
   const [district, setDistrict] = useState<string>("");
@@ -42,11 +42,18 @@ export function ProcurementDashboard() {
 
   // Pagination States
   const [page, setPage] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(10);
+  const pageSize = 10;
 
   // Fetch Table Data
-  const { data, isLoading, isError } = useQuery<ProcurementResponse, Error>({
-    queryKey: ["procurements", page, pageSize, financialYear, district, department],
+  const { data, isError } = useQuery<ProcurementResponse, Error>({
+    queryKey: [
+      "procurements",
+      page,
+      pageSize,
+      financialYear,
+      district,
+      department,
+    ],
     queryFn: async () => {
       const response = await axiosPrivate.get("/api/v1/Procurements", {
         params: {
@@ -58,26 +65,31 @@ export function ProcurementDashboard() {
       });
       return response.data;
     },
-    // keepPreviousData is deprecated in latest react-query, but keeping it as per your original code
-    keepPreviousData: true, 
   });
 
   // Fetch Dashboard KPI Data
-  const { data: dashboardData, isLoading: isDashboardLoading } = useQuery<DashboardResponse, Error>({
+  const { data: dashboardData, isLoading: isDashboardLoading } = useQuery<
+    DashboardResponse,
+    Error
+  >({
     queryKey: ["procurementDashboard", financialYear, district, department],
     queryFn: async () => {
-      const response = await axiosPrivate.get("/api/v1/Procurements/dashboard", {
-        params: {
-          // You can pass your filters here if your dashboard endpoint supports them
-          // financialYear: financialYear || undefined,
-          // districtId: district || undefined,
+      const response = await axiosPrivate.get(
+        "/api/v1/Procurements/dashboard",
+        {
+          params: {
+            // financialYear: financialYear || undefined,
+            // districtId: district || undefined,
+          },
         },
-      });
+      );
       return response.data;
     },
   });
 
   const procurements: ProcurementItem[] = data?.items || [];
+  const totalCount = data?.totalCount || 0;
+  const totalPages = Math.ceil(totalCount / pageSize) || 1;
 
   // Helper for formatting currency
   const formatCurrency = (amount: number = 0) => {
@@ -125,6 +137,62 @@ export function ProcurementDashboard() {
     }
   };
 
+  // AG Grid Column Definitions
+  const columnDefs = useMemo<ColDef[]>(
+    () => [
+      {
+        field: "procurementRefNo",
+        headerName: "Procurement ID",
+        minWidth: 150,
+      },
+      { field: "financialYear", headerName: "Financial Year", minWidth: 130 },
+      { field: "itemName", headerName: "Item Name", minWidth: 200, flex: 1 },
+      {
+        field: "demandFrom",
+        headerName: "Demand From",
+        valueFormatter: (params) => params.value || "-",
+      },
+      {
+        field: "vendor",
+        headerName: "Vendor Name",
+        valueFormatter: (params) => params.value || "Pending",
+      },
+      {
+        field: "awardCostInclGstLakhs",
+        headerName: "Award Cost (Lakhs)",
+        valueFormatter: (params) => `₹${params.value?.toFixed(2) || "0.00"}`,
+      },
+      {
+        field: "deliveryPct",
+        headerName: "Delivery %",
+        minWidth: 150,
+        cellRenderer: (params: any) => (
+          <div className="flex items-center gap-2 h-full">
+            <div className="w-full bg-gray-200 rounded-full h-1.5 max-w-15">
+              <div
+                className="bg-primary h-1.5 rounded-full"
+                style={{ width: `${params.value}%` }}
+              ></div>
+            </div>
+            <span className="text-xs text-muted-foreground">
+              {params.value}%
+            </span>
+          </div>
+        ),
+      },
+      {
+        field: "status",
+        headerName: "Status",
+        cellRenderer: (params: any) => (
+          <div className="flex items-center h-full">
+            {getStatusBadge(params.value)}
+          </div>
+        ),
+      },
+    ],
+    [],
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -145,53 +213,61 @@ export function ProcurementDashboard() {
             <label className="block text-sm font-medium mb-1">
               Financial Year
             </label>
-            <select
+            <Select
               value={financialYear}
-              onChange={(e) => setFinancialYear(e.target.value)}
-              className="w-full px-3 py-2 bg-input-background border border-border rounded-lg"
-            >
-              <option value="">All Years</option>
-              <option value="2025-26">2025-26</option>
-              <option value="2024-25">2024-25</option>
-            </select>
+              onChange={(value) => setFinancialYear(value)}
+              className="w-full h-10"
+              options={[
+                { value: "", label: "All Years" },
+                { value: "2025-26", label: "2025-26" },
+                { value: "2024-25", label: "2024-25" },
+              ]}
+            />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">District</label>
-            <select
+            <Select
               value={district}
-              onChange={(e) => setDistrict(e.target.value)}
-              className="w-full px-3 py-2 bg-input-background border border-border rounded-lg"
-            >
-              <option value="">All Districts</option>
-              <option value="Mumbai">Mumbai</option>
-              <option value="Pune">Pune</option>
-              <option value="Nagpur">Nagpur</option>
-            </select>
+              onChange={(value) => setDistrict(value)}
+              className="w-full h-10"
+              options={[
+                { value: "", label: "All Districts" },
+                { value: "Mumbai", label: "Mumbai" },
+                { value: "Pune", label: "Pune" },
+                { value: "Nagpur", label: "Nagpur" },
+              ]}
+            />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">
               Line Department
             </label>
-            <select
+            <Select
               value={department}
-              onChange={(e) => setDepartment(e.target.value)}
-              className="w-full px-3 py-2 bg-input-background border border-border rounded-lg"
-            >
-              <option value="">All Departments</option>
-              <option value="Rural Development">Rural Development</option>
-              <option value="Health">Health</option>
-              <option value="Disaster Management">Disaster Management</option>
-            </select>
+              onChange={(value) => setDepartment(value)}
+              className="w-full h-10"
+              options={[
+                { value: "", label: "All Departments" },
+                { value: "Rural Development", label: "Rural Development" },
+                { value: "Health", label: "Health" },
+                { value: "Disaster Management", label: "Disaster Management" },
+              ]}
+            />
           </div>
         </div>
         <div className="flex justify-end gap-3">
-          <button 
-            onClick={() => { setFinancialYear(""); setDistrict(""); setDepartment(""); setPage(1); }}
+          <button
+            onClick={() => {
+              setFinancialYear("");
+              setDistrict("");
+              setDepartment("");
+              setPage(1);
+            }}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
           >
             Reset Filter
           </button>
-          <button 
+          <button
             onClick={() => setPage(1)}
             className="px-4 py-2 text-sm font-medium text-white bg-[#0B1F4D] hover:bg-opacity-90 rounded-lg transition-colors"
           >
@@ -202,6 +278,7 @@ export function ProcurementDashboard() {
 
       {/* KPI Section */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {/* KPI Cards Remain Unchanged */}
         <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
           <div className="flex items-start justify-between mb-3">
             <div className="bg-blue-100 text-blue-600 p-2 rounded-lg">
@@ -209,9 +286,13 @@ export function ProcurementDashboard() {
             </div>
           </div>
           <div className="text-2xl font-bold mb-1">
-            {isDashboardLoading ? "..." : (dashboardData?.totalProcuredItems?.toLocaleString() || "0")}
+            {isDashboardLoading
+              ? "..."
+              : dashboardData?.totalProcuredItems?.toLocaleString() || "0"}
           </div>
-          <div className="text-xs text-muted-foreground">Total Procured Items</div>
+          <div className="text-xs text-muted-foreground">
+            Total Procured Items
+          </div>
         </div>
 
         <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
@@ -221,7 +302,9 @@ export function ProcurementDashboard() {
             </div>
           </div>
           <div className="text-2xl font-bold mb-1">
-            {isDashboardLoading ? "..." : formatCurrency(dashboardData?.budgetApproved)}
+            {isDashboardLoading
+              ? "..."
+              : formatCurrency(dashboardData?.budgetApproved)}
           </div>
           <div className="text-xs text-muted-foreground">Budget Approved</div>
         </div>
@@ -233,7 +316,9 @@ export function ProcurementDashboard() {
             </div>
           </div>
           <div className="text-2xl font-bold mb-1">
-            {isDashboardLoading ? "..." : formatCurrency(dashboardData?.budgetSpent)}
+            {isDashboardLoading
+              ? "..."
+              : formatCurrency(dashboardData?.budgetSpent)}
           </div>
           <div className="text-xs text-muted-foreground">Budget Spent</div>
         </div>
@@ -245,7 +330,9 @@ export function ProcurementDashboard() {
             </div>
           </div>
           <div className="text-lg font-bold mb-1 line-clamp-1">
-            {isDashboardLoading ? "..." : (dashboardData?.topBeneficiaryDepartment || "N/A")}
+            {isDashboardLoading
+              ? "..."
+              : dashboardData?.topBeneficiaryDepartment || "N/A"}
           </div>
           <div className="text-xs text-muted-foreground">
             Highest Beneficiary Department
@@ -253,118 +340,28 @@ export function ProcurementDashboard() {
         </div>
       </div>
 
-      {/* Procurement Table */}
-      <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden flex flex-col">
-        <div className="p-5 border-b border-border flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-[#0B1F4D]">
-            Procurement Records
-          </h2>
-          <select 
-            value={pageSize} 
-            onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
-            className="text-sm border border-border rounded-md px-2 py-1"
-          >
-            <option value={10}>10 per page</option>
-            <option value={20}>20 per page</option>
-            <option value={50}>50 per page</option>
-          </select>
-        </div>
-        
-        {/* Horizontal Scroll Wrapper */}
-        <div className="overflow-x-auto w-full">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-muted text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3 font-medium whitespace-nowrap">Procurement ID</th>
-                <th className="px-4 py-3 font-medium whitespace-nowrap">Financial Year</th>
-                <th className="px-4 py-3 font-medium whitespace-nowrap">Item Name</th>
-                <th className="px-4 py-3 font-medium whitespace-nowrap">Demand From</th>
-                <th className="px-4 py-3 font-medium whitespace-nowrap">Vendor Name</th>
-                <th className="px-4 py-3 font-medium whitespace-nowrap">Award Cost (Lakhs)</th>
-                <th className="px-4 py-3 font-medium whitespace-nowrap">Delivery %</th>
-                <th className="px-4 py-3 font-medium whitespace-nowrap">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {isLoading ? (
-                <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
-                    Loading procurement records...
-                  </td>
-                </tr>
-              ) : isError ? (
-                <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-red-500">
-                    Failed to load records. Please try again.
-                  </td>
-                </tr>
-              ) : procurements.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
-                    No procurement records found.
-                  </td>
-                </tr>
-              ) : (
-                procurements.map((row: ProcurementItem) => (
-                  <tr
-                    key={row.id}
-                    className="hover:bg-muted/50 transition-colors"
-                  >
-                    <td className="px-4 py-3 font-medium text-[#0B1F4D] whitespace-nowrap">
-                      {row.procurementRefNo}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">{row.financialYear}</td>
-                    <td className="px-4 py-3 whitespace-nowrap min-w-[200px]">{row.itemName}</td>
-                    <td className="px-4 py-3 whitespace-nowrap">{row.demandFrom || "-"}</td>
-                    <td className="px-4 py-3 whitespace-nowrap">{row.vendor || "Pending"}</td>
-                    <td className="px-4 py-3 font-medium whitespace-nowrap">
-                      ₹{row.awardCostInclGstLakhs?.toFixed(2) || "0.00"}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap min-w-[120px]">
-                      <div className="flex items-center gap-2">
-                        <div className="w-full bg-gray-200 rounded-full h-1.5 max-w-[60px]">
-                          <div
-                            className="bg-primary h-1.5 rounded-full"
-                            style={{ width: `${row.deliveryPct}%` }}
-                          ></div>
-                        </div>
-                        <span className="text-xs text-muted-foreground">
-                          {row.deliveryPct}%
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">{getStatusBadge(row.status)}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-        
-        {/* Pagination Controls */}
-        <div className="p-4 border-t border-border flex items-center justify-between bg-gray-50">
-          <span className="text-sm text-muted-foreground">
-            Showing Page {page}
-          </span>
-          <div className="flex gap-2">
-            <button
-              disabled={page === 1}
-              onClick={() => setPage((old) => Math.max(old - 1, 1))}
-              className="px-3 py-1 text-sm bg-white border border-border rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Previous
-            </button>
-            <button
-              onClick={() => setPage((old) => old + 1)}
-              disabled={data?.hasNextPage === false}
-              className="px-3 py-1 text-sm bg-white border border-border rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-
+      {/* Procurement Table Header */}
+      <div className="flex justify-between items-center mt-6 mb-2">
+        <h2 className="text-lg font-semibold text-[#0B1F4D]">
+          Procurement Records
+        </h2>
       </div>
+
+      {/* Render the Custom AG Grid Table Component */}
+      {isError ? (
+        <div className="p-8 text-center text-red-500 bg-white border border-border rounded-xl">
+          Failed to load records. Please try again.
+        </div>
+      ) : (
+        <Table
+          rowData={procurements}
+          columnDefs={columnDefs}
+          totalCount={totalCount}
+          page={page}
+          totalPages={totalPages}
+          onPageChange={(newPage) => setPage(newPage)}
+        />
+      )}
     </div>
   );
 }

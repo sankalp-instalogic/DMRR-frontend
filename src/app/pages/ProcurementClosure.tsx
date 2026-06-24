@@ -1,8 +1,12 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Search, Loader2 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate"; // Adjust path as needed
 import toast from "react-hot-toast";
+import { Table } from "../components/Table";
+import type { ColDef } from "ag-grid-community"; // Added for typing
+import { cn } from "../components/ui/utils";
+import { buttonVariants } from "../components/ui/button";
 
 export function ProcurementClosure() {
   const axiosPrivate = useAxiosPrivate();
@@ -17,17 +21,16 @@ export function ProcurementClosure() {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [isCompleted, setIsCompleted] = useState("");
 
-
   interface CompletionDataState {
-  completionCertificate: File | null;
-  socialAuditFiles: File[];
-}
+    completionCertificate: File | null;
+    socialAuditFiles: File[];
+  }
 
-// Cleaned up state: only keeping certificate and audit files
-const [completionData, setCompletionData] = useState<CompletionDataState>({
-  completionCertificate: null,
-  socialAuditFiles: [],
-});
+  // Cleaned up state: only keeping certificate and audit files
+  const [completionData, setCompletionData] = useState<CompletionDataState>({
+    completionCertificate: null,
+    socialAuditFiles: [],
+  });
 
   // --- API Queries ---
   const {
@@ -83,6 +86,7 @@ const [completionData, setCompletionData] = useState<CompletionDataState>({
     },
   });
 
+  // Mutations remain identical...
   const completeStageMutation = useMutation({
     mutationFn: async (id: string) => {
       const response = await axiosPrivate.post(
@@ -112,29 +116,40 @@ const [completionData, setCompletionData] = useState<CompletionDataState>({
       return response.data;
     },
     onSuccess: () => {
-      // Invalidate the 'procurements' query so the table refetches automatically
       queryClient.invalidateQueries({ queryKey: ["procurements"] });
     },
     onError: (error) => {
       console.error("Error marking procurement for closure:", error);
-      // You can also add a toast notification here
     },
   });
 
   const uploadDocumentMutation = useMutation({
-    mutationFn: async ({ file, ownerId, ownerType, documentType }: { file: File, ownerId: string, ownerType: number, documentType: number }) => {
+    mutationFn: async ({
+      file,
+      ownerId,
+      ownerType,
+      documentType,
+    }: {
+      file: File;
+      ownerId: string;
+      ownerType: number;
+      documentType: number;
+    }) => {
       const formData = new FormData();
-      // "file" is the standard key, but adjust if your backend expects "File" or "Document"
-      formData.append("file", file); 
+      formData.append("file", file);
       formData.append("ownerId", ownerId);
       formData.append("ownerType", ownerType.toString());
       formData.append("documentType", documentType.toString());
 
-      const response = await axiosPrivate.post("/api/v1/Documents/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
+      const response = await axiosPrivate.post(
+        "/api/v1/Documents/upload",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         },
-      });
+      );
       return response.data;
     },
     onError: (error) => {
@@ -197,7 +212,6 @@ const [completionData, setCompletionData] = useState<CompletionDataState>({
   // --- Handlers ---
   const handleSelectForClosure = (item: any, type: string) => {
     setSelectedItem({ ...item, itemType: type });
-    // Reset form when a new item is clicked
     setIsCompleted("");
     setCompletionData({
       completionCertificate: null,
@@ -205,29 +219,23 @@ const [completionData, setCompletionData] = useState<CompletionDataState>({
     });
   };
 
-const handleSaveClosure = async () => {
+  const handleSaveClosure = async () => {
     if (!selectedItem) return;
 
-    // Get the correct ID based on the object structure
     const itemId = selectedItem.id || selectedItem.procurementId;
     const isTender = selectedItem.itemType === "tender";
-    
-    // Determine the ownerType for document uploads
     const ownerType = isTender ? 15 : 2;
 
     try {
-      // 1. Call the respective Status Change / Closure API First
       if (isTender) {
         await completeStageMutation.mutateAsync(itemId);
       } else {
         await markForClosureMutation.mutateAsync(itemId);
       }
 
-      // 2. If Project is Completed, upload the files
       if (isCompleted === "Yes") {
         const uploadPromises = [];
 
-        // Upload Completion Certificate (documentType: 38)
         if (completionData.completionCertificate) {
           uploadPromises.push(
             uploadDocumentMutation.mutateAsync({
@@ -235,12 +243,14 @@ const handleSaveClosure = async () => {
               ownerId: itemId,
               ownerType: ownerType,
               documentType: 38,
-            })
+            }),
           );
         }
 
-        // Upload Social Audit Files (documentType: 18)
-        if (completionData.socialAuditFiles && completionData.socialAuditFiles.length > 0) {
+        if (
+          completionData.socialAuditFiles &&
+          completionData.socialAuditFiles.length > 0
+        ) {
           for (const file of completionData.socialAuditFiles) {
             uploadPromises.push(
               uploadDocumentMutation.mutateAsync({
@@ -248,41 +258,93 @@ const handleSaveClosure = async () => {
                 ownerId: itemId,
                 ownerType: ownerType,
                 documentType: 18,
-              })
+              }),
             );
           }
         }
 
-        // Wait for all documents to finish uploading
         if (uploadPromises.length > 0) {
           await Promise.all(uploadPromises);
           toast.success("All documents uploaded successfully");
         }
       }
 
-      // 3. Reset form and UI states
       toast.success(
-        `Closure completed for ${selectedItem.tenderRefNo || selectedItem.procurementRefNo || "the selected item"}`
+        `Closure completed for ${selectedItem.tenderRefNo || selectedItem.procurementRefNo || "the selected item"}`,
       );
       setSelectedItem(null);
       setIsCompleted("");
-      setCompletionData({
-        completionCertificate: null,
-        socialAuditFiles: [],
-      });
+      setCompletionData({ completionCertificate: null, socialAuditFiles: [] });
 
-      // 4. Invalidate specific queries based on what was closed to refresh tables
       if (isTender) {
         queryClient.invalidateQueries({ queryKey: ["procurement-tenders"] });
       } else {
         queryClient.invalidateQueries({ queryKey: ["procurements"] });
       }
-
     } catch (error) {
       console.error("Error during closure workflow:", error);
       toast.error("An error occurred during the closure process.");
     }
   };
+
+  // --- AG Grid Column Definitions ---
+  const tenderColumnDefs: ColDef[] = useMemo(
+    () => [
+      { field: "tenderTitle", headerName: "Tender Title", flex: 2 },
+      { field: "tenderRefNo", headerName: "Tender Ref No", flex: 1 },
+      { field: "tenderCode", headerName: "Tender ID", flex: 1 },
+      {
+        field: "organisationChain",
+        headerName: "Organizational Chain",
+        flex: 1,
+      },
+      {
+        field: "status",
+        headerName: "Status",
+        flex: 1,
+        cellRenderer: (params: any) => (
+          <span
+            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusStyles(params.value)}`}
+          >
+            {params.value || "Unknown"}
+          </span>
+        ),
+      },
+    ],
+    [],
+  );
+
+  const procurementColumnDefs: ColDef[] = useMemo(
+    () => [
+      {
+        field: "procurementRefNo",
+        headerName: "Procurement Ref No",
+        flex: 1,
+        valueGetter: (p) => p.data.procurementRefNo || "N/A",
+      },
+      { field: "financialYear", headerName: "Financial Year", flex: 1 },
+      { field: "itemName", headerName: "Item Name", flex: 2 },
+      {
+        headerName: "Demand From",
+        flex: 1,
+        valueGetter: (params) => getDemandLocationName(params.data),
+      },
+      {
+        field: "totalQuantity",
+        headerName: "Total Quantity",
+        flex: 1,
+        valueGetter: (p) => p.data.totalQuantity ?? 0,
+      },
+      {
+        field: "awardCostInclGstLakhs",
+        headerName: "Award Cost (Lakhs)",
+        flex: 1,
+        valueFormatter: (params) =>
+          `₹${params.value?.toLocaleString("en-IN") || "0"}`,
+      },
+    ],
+    [districts, departments],
+  );
 
   return (
     <div className="space-y-6">
@@ -314,82 +376,36 @@ const handleSaveClosure = async () => {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-muted/50 text-muted-foreground border-b border-border">
-              <tr>
-                <th className="px-6 py-3 font-medium">Tender Title</th>
-                <th className="px-6 py-3 font-medium">Tender Ref No</th>
-                <th className="px-6 py-3 font-medium">Tender ID</th>
-                <th className="px-6 py-3 font-medium">Organizational Chain</th>
-                <th className="px-6 py-3 font-medium">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {isTendersLoading ? (
-                <tr>
-                  <td
-                    colSpan={5}
-                    className="px-6 py-8 text-center text-muted-foreground"
-                  >
-                    <Loader2 className="size-6 animate-spin mx-auto mb-2 text-[#1E5AA8]" />
-                    <p>Loading tenders...</p>
-                  </td>
-                </tr>
-              ) : isTendersError ? (
-                <tr>
-                  <td
-                    colSpan={5}
-                    className="px-6 py-8 text-center text-red-500"
-                  >
-                    Failed to load tenders. Please try again later.
-                  </td>
-                </tr>
-              ) : filteredTenders.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={5}
-                    className="px-6 py-8 text-center text-muted-foreground"
-                  >
-                    No tenders found.
-                  </td>
-                </tr>
-              ) : (
-                filteredTenders.map((tender: any) => (
-                  <tr
-                    key={tender.id || tender.procurementId}
-                    onClick={() => handleSelectForClosure(tender, "tender")}
-                    className={`cursor-pointer transition-colors ${
-                      selectedItem?.id === (tender.id || tender.procurementId)
-                        ? "bg-blue-50/80 border-l-4 border-[#1E5AA8]"
-                        : "hover:bg-muted/50 border-l-4 border-transparent"
-                    }`}
-                  >
-                    <td className="px-6 py-4 font-medium text-[#0B1F4D] whitespace-nowrap">
-                      {tender.tenderTitle}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {tender.tenderRefNo}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {tender.tenderCode}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {tender.organisationChain}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusStyles(tender.status)}`}
-                      >
-                        {tender.status || "Unknown"}
-                      </span>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        {isTendersLoading ? (
+          <div className="flex flex-col items-center justify-center p-8 text-muted-foreground">
+            <Loader2 className="size-6 animate-spin mb-2 text-[#1E5AA8]" />
+            <p>Loading tenders...</p>
+          </div>
+        ) : isTendersError ? (
+          <div className="p-8 text-center text-red-500">
+            Failed to load tenders. Please try again later.
+          </div>
+        ) : filteredTenders.length === 0 ? (
+          <div className="p-8 text-center text-muted-foreground">
+            No tenders found.
+          </div>
+        ) : (
+          <Table
+            rowData={filteredTenders}
+            columnDefs={tenderColumnDefs}
+            totalCount={filteredTenders.length}
+            page={1}
+            totalPages={1}
+            onPageChange={() => {}} // Client-side search handles this array
+            onRowClicked={(e) => handleSelectForClosure(e.data, "tender")}
+            rowClassRules={{
+              "bg-blue-50/80 border-l-4 border-[#1E5AA8]": (params) =>
+                selectedItem?.id ===
+                (params.data.id || params.data.procurementId),
+              "cursor-pointer hover:bg-muted/50": () => true, // Gives the table a nice hover effect
+            }}
+          />
+        )}
       </div>
 
       {/* --- TABLE 2: PROCUREMENT RECORDS --- */}
@@ -400,109 +416,35 @@ const handleSaveClosure = async () => {
           </h2>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-muted/50 text-muted-foreground border-b border-border">
-              <tr>
-                <th className="px-6 py-3 font-medium">Procurement Ref No</th>
-                <th className="px-6 py-3 font-medium">Financial Year</th>
-                <th className="px-6 py-3 font-medium">Item Name</th>
-                <th className="px-6 py-3 font-medium">Demand From</th>
-                <th className="px-6 py-3 font-medium">Total Quantity</th>
-                <th className="px-6 py-3 font-medium">Award Cost (Lakhs)</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {isProcurementLoading ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="px-6 py-8 text-center text-muted-foreground"
-                  >
-                    <Loader2 className="size-6 animate-spin mx-auto mb-2 text-[#1E5AA8]" />
-                    <p>Loading procurement data...</p>
-                  </td>
-                </tr>
-              ) : isProcurementError ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="px-6 py-8 text-center text-red-500 font-medium"
-                  >
-                    Failed to fetch procurement records. Please try again.
-                  </td>
-                </tr>
-              ) : procurementItems.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="px-6 py-8 text-center text-muted-foreground"
-                  >
-                    No procurement records found.
-                  </td>
-                </tr>
-              ) : (
-                procurementItems.map((row: any) => (
-                  <tr
-                    key={row.id}
-                    onClick={() => handleSelectForClosure(row, "procurement")}
-                    className={`cursor-pointer transition-colors ${
-                      selectedItem?.id === row.id
-                        ? "bg-blue-50/80 border-l-4 border-[#1E5AA8]"
-                        : "hover:bg-muted/50 border-l-4 border-transparent"
-                    }`}
-                  >
-                    <td className="px-6 py-4 font-medium text-[#0B1F4D]">
-                      {row.procurementRefNo || "N/A"}
-                    </td>
-                    <td className="px-6 py-4">{row.financialYear}</td>
-                    <td className="px-6 py-4">{row.itemName}</td>
-                    <td className="px-6 py-4">{getDemandLocationName(row)}</td>
-                    <td className="px-6 py-4">{row.totalQuantity ?? 0}</td>
-                    <td className="px-6 py-4 font-medium">
-                      ₹
-                      {row.awardCostInclGstLakhs?.toLocaleString("en-IN") ||
-                        "0"}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Procurements Pagination */}
-        {!isProcurementLoading &&
-          !isProcurementError &&
-          procurementItems.length > 0 && (
-            <div className="p-4 border-t border-border flex items-center justify-between text-sm text-muted-foreground bg-gray-50/50">
-              <span>
-                Showing {(page - 1) * pageSize + 1} to{" "}
-                {Math.min(page * pageSize, totalItems)} of {totalItems} records
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                  className="px-3 py-1 border border-border rounded-md hover:bg-muted disabled:opacity-50 transition-colors bg-white"
-                  disabled={page === 1}
-                >
-                  Previous
-                </button>
-                <button className="px-3 py-1 bg-[#1E5AA8] text-white rounded-md font-medium">
-                  {page}
-                </button>
-                <button
-                  onClick={() =>
-                    setPage((prev) => Math.min(prev + 1, totalPages))
-                  }
-                  className="px-3 py-1 border border-border rounded-md hover:bg-muted disabled:opacity-50 transition-colors bg-white cursor-pointer"
-                  disabled={page === totalPages}
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          )}
+        {isProcurementLoading ? (
+          <div className="flex flex-col items-center justify-center p-8 text-muted-foreground">
+            <Loader2 className="size-6 animate-spin mb-2 text-[#1E5AA8]" />
+            <p>Loading procurement data...</p>
+          </div>
+        ) : isProcurementError ? (
+          <div className="p-8 text-center text-red-500 font-medium">
+            Failed to fetch procurement records. Please try again.
+          </div>
+        ) : procurementItems.length === 0 ? (
+          <div className="p-8 text-center text-muted-foreground">
+            No procurement records found.
+          </div>
+        ) : (
+          <Table
+            rowData={procurementItems}
+            columnDefs={procurementColumnDefs}
+            totalCount={totalItems}
+            page={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            onRowClicked={(e) => handleSelectForClosure(e.data, "procurement")}
+            rowClassRules={{
+              "bg-blue-50/80 border-l-4 border-[#1E5AA8]": (params) =>
+                selectedItem?.id === params.data.id,
+              "cursor-pointer hover:bg-muted/50": () => true,
+            }}
+          />
+        )}
       </div>
 
       {/* --- CLOSURE FORM SECTION --- */}
@@ -592,13 +534,13 @@ const handleSaveClosure = async () => {
           <div className="mt-8 flex justify-end gap-3">
             <button
               onClick={() => setSelectedItem(null)}
-              className="px-6 py-2.5 border border-border text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+              className={cn(buttonVariants({ variant: "outline" }),"cursor-pointer")}
             >
               Cancel
             </button>
             <button
               onClick={handleSaveClosure}
-              className="px-6 py-2.5 bg-[#1E5AA8] hover:bg-blue-700 text-white rounded-lg font-medium shadow-sm transition-colors"
+              className={cn(buttonVariants({ variant: "default" }),"cursor-pointer")}
             >
               Save Closure Data
             </button>

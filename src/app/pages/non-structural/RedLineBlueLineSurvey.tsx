@@ -56,7 +56,7 @@ export function RedLineBlueLineSurvey() {
   const [selectedSurvey, setSelectedSurvey] = useState<Survey | null>(null);
 
   const [page, setPage] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(10);
+  const pageSize = 10;
 
   const axiosPrivate = useAxiosPrivate();
   const queryClient = useQueryClient();
@@ -464,28 +464,6 @@ export function RedLineBlueLineSurvey() {
             <Plus className="size-4" /> New Survey
           </button>
         </div>
-
-        {/* Page Size Selector preserved from previous table layout */}
-        {activeTab === "list" && (
-          <div className="flex items-center gap-2">
-            <span className="text-[13px] text-gray-500 font-medium">
-              Rows per page:
-            </span>
-            <select
-              value={pageSize}
-              onChange={(e) => {
-                setPageSize(Number(e.target.value));
-                setPage(1);
-              }}
-              className="text-[13px] border border-gray-200 rounded px-2 py-1.5 bg-white outline-none focus:border-[#0B1F4D]"
-            >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-            </select>
-          </div>
-        )}
       </div>
 
       {activeTab === "list" && (

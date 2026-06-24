@@ -54,7 +54,7 @@ export function ResearchAndGrants() {
   const [selectedGrant, setSelectedGrant] = useState<Grant | null>(null);
 
   const [page, setPage] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(10);
+  const pageSize = 10;
 
   const axiosPrivate = useAxiosPrivate();
   const queryClient = useQueryClient();
@@ -145,7 +145,7 @@ export function ResearchAndGrants() {
         uploadData,
         {
           headers: { "Content-Type": "multipart/form-data" },
-        }
+        },
       );
       return response.data;
     },
@@ -209,7 +209,7 @@ export function ResearchAndGrants() {
         `/api/v1/Documents/${doc.id}/download`,
         {
           responseType: "blob",
-        }
+        },
       );
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -228,31 +228,36 @@ export function ResearchAndGrants() {
   // --- AG GRID COLUMNS ---
   const columnDefs = useMemo<ColDef[]>(
     () => [
-      { headerName: "Grant Code", field: "grantCode" },
-      { headerName: "Research/Grant Given To", field: "givenTo" },
+      { headerName: "Grant Code", flex: 1, field: "grantCode" },
+      { headerName: "Research/Grant Given To", flex: 1, field: "givenTo" },
       {
         headerName: "Date of Issue",
         field: "issuedDate",
+        flex: 1,
         valueFormatter: (params) => formatDate(params.value),
       },
       {
         headerName: "Allocated Amount",
         field: "allocatedAmount",
+        flex: 1,
         valueFormatter: (params) => formatCurrency(params.value),
       },
       {
         headerName: "Utilized Amount",
         field: "utilizedAmount",
+        flex: 1,
         valueFormatter: (params) => formatCurrency(params.value),
       },
       {
         headerName: "Date of Completion",
         field: "completionDate",
+        flex: 1,
         valueFormatter: (params) => formatDate(params.value),
       },
       {
         headerName: "Action",
         field: "id",
+        flex: 1,
         sortable: false,
         filter: false,
         width: 120,
@@ -267,7 +272,7 @@ export function ResearchAndGrants() {
         ),
       },
     ],
-    []
+    [],
   );
 
   // ==========================
@@ -417,27 +422,6 @@ export function ResearchAndGrants() {
             New Grant
           </button>
         </div>
-
-        {activeTab === "list" && (
-          <div className="flex items-center gap-2">
-            <span className="text-[13px] text-gray-500 font-medium">
-              Rows per page:
-            </span>
-            <select
-              value={pageSize}
-              onChange={(e) => {
-                setPageSize(Number(e.target.value));
-                setPage(1);
-              }}
-              className="text-[13px] border border-gray-200 rounded px-2 py-1.5 bg-white outline-none focus:border-[#0B1F4D]"
-            >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-            </select>
-          </div>
-        )}
       </div>
 
       {/* ==========================
@@ -558,7 +542,7 @@ export function ResearchAndGrants() {
                     value={field.value ? dayjs(field.value) : null}
                     onChange={(date, dateString) => {
                       field.onChange(
-                        typeof dateString === "string" ? dateString : ""
+                        typeof dateString === "string" ? dateString : "",
                       );
                     }}
                   />
@@ -616,7 +600,7 @@ export function ResearchAndGrants() {
                     value={field.value ? dayjs(field.value) : null}
                     onChange={(date, dateString) => {
                       field.onChange(
-                        typeof dateString === "string" ? dateString : ""
+                        typeof dateString === "string" ? dateString : "",
                       );
                     }}
                   />

@@ -7,6 +7,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { Input } from "antd"; // <-- Added antd import
 import useAxiosPrivate from "../../../../hooks/useAxiosPrivate";
 
 // Constants pulled from the reference component
@@ -37,7 +38,7 @@ export function TenderDetails() {
     queryKey: ["tender", id],
     queryFn: async () => {
       const response = await axiosPrivate.get(
-        `/api/v1/procurement-tenders/${id}`,
+        `/api/v1/procurement-tenders/${id}`
       );
       return response.data;
     },
@@ -63,7 +64,7 @@ export function TenderDetails() {
       // Change to .put() or .patch() if your API requires it.
       const response = await axiosPrivate.post(
         `/api/v1/procurement-tenders/${id}/stages/complete`,
-        { stageName: "Completed", documentId: null },
+        { stageName: "Completed", documentId: null }
       );
       return response.data;
     },
@@ -88,7 +89,7 @@ export function TenderDetails() {
       (doc: any) =>
         doc.documentTypeName === normalizedStageName ||
         doc.documentTypeName === stageName ||
-        doc.documentType?.toString() === DOCUMENT_TYPES[stageName],
+        doc.documentType?.toString() === DOCUMENT_TYPES[stageName]
     );
   };
 
@@ -100,7 +101,7 @@ export function TenderDetails() {
         `/api/v1/Documents/${doc.id}/download`,
         {
           responseType: "blob",
-        },
+        }
       );
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -151,48 +152,44 @@ export function TenderDetails() {
               <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Organization Chain
               </label>
-              <input
-                type="text"
+              <Input
                 value={tenderData?.organizationChain || ""}
-                readOnly
+                disabled
                 placeholder={isTenderLoading ? "Loading..." : "N/A"}
-                className="w-full px-3 py-2 bg-muted/30 border border-border rounded-lg text-sm focus:outline-none"
+                className="w-full bg-muted/30 rounded-lg text-sm"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Tender Title
               </label>
-              <input
-                type="text"
+              <Input
                 value={tenderData?.tenderTitle || ""}
-                readOnly
+                disabled
                 placeholder={isTenderLoading ? "Loading..." : "N/A"}
-                className="w-full px-3 py-2 bg-muted/30 border border-border rounded-lg text-sm focus:outline-none"
+                className="w-full bg-muted/30 rounded-lg text-sm"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Tender Ref No
               </label>
-              <input
-                type="text"
+              <Input
                 value={tenderData?.tenderRefNo || ""}
-                readOnly
+                disabled
                 placeholder={isTenderLoading ? "Loading..." : "N/A"}
-                className="w-full px-3 py-2 bg-muted/30 border border-border rounded-lg text-sm focus:outline-none"
+                className="w-full bg-muted/30 rounded-lg text-sm"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Tender Code / ID
               </label>
-              <input
-                type="text"
+              <Input
                 value={tenderData?.tenderCode || id || ""}
-                readOnly
+                disabled
                 placeholder={isTenderLoading ? "Loading..." : "N/A"}
-                className="w-full px-3 py-2 bg-muted/30 border border-border rounded-lg text-sm focus:outline-none"
+                className="w-full bg-muted/30 rounded-lg text-sm"
               />
             </div>
           </div>

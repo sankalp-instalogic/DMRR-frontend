@@ -1,6 +1,9 @@
+import React from "react";
 import { Building2 } from "lucide-react";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 import { useQuery } from "@tanstack/react-query";
+import { Input, Select, DatePicker } from "antd";
+import dayjs from "dayjs"; // Ant Design v5 uses dayjs for dates
 
 interface Step2Data {
   lineDepartment: string;
@@ -24,31 +27,26 @@ export function OfficersStep({ data, setData }: OfficersStepProps) {
   const { data: lineDepartments = [], isLoading: isLoadingDepts } = useQuery({
     queryKey: ["lineDepartments"],
     queryFn: async () => {
-      const response = await axiosPrivate.get(
-        "/api/v1/masters/line-departments",
-      );
-      return response.data.items; // Adjust if your data is nested (e.g., response.data.data)
+      const response = await axiosPrivate.get("/api/v1/masters/line-departments");
+      return response.data.items;
     },
   });
 
   const { data: proposalSources = [], isLoading: isLoadingSources } = useQuery({
     queryKey: ["proposalSources"],
     queryFn: async () => {
-      const response = await axiosPrivate.get(
-        "/api/v1/lookups/proposal-sources",
-      );
+      const response = await axiosPrivate.get("/api/v1/lookups/proposal-sources");
       return response.data;
     },
   });
 
-  const { data: receivingAuthorities = [], isLoading: isLoadingAuthorities } =
-    useQuery({
-      queryKey: ["receivingAuthorities"],
-      queryFn: async () => {
-        const response = await axiosPrivate.get("/api/v1/lookups/authorities");
-        return response.data;
-      },
-    });
+  const { data: receivingAuthorities = [], isLoading: isLoadingAuthorities } = useQuery({
+    queryKey: ["receivingAuthorities"],
+    queryFn: async () => {
+      const response = await axiosPrivate.get("/api/v1/lookups/authorities");
+      return response.data;
+    },
+  });
 
   const { data: officers = [], isLoading: isLoadingOfficers } = useQuery({
     queryKey: ["officers"],
@@ -70,29 +68,22 @@ export function OfficersStep({ data, setData }: OfficersStepProps) {
         <label className="block text-sm font-medium mb-2">
           Line Department <span className="text-red-600">*</span>
         </label>
-        <select
-          value={data.lineDepartment}
-          onChange={(e) => setData({ ...data, lineDepartment: e.target.value })}
+        <Select
+          size="large"
+          className="w-full"
+          placeholder="Select Line Department"
+          value={data.lineDepartment || undefined}
+          onChange={(value) => setData({ ...data, lineDepartment: value })}
           disabled={isLoadingDepts}
-          className="w-full cursor-pointer px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+          loading={isLoadingDepts}
         >
-          <option value="">
-            {isLoadingDepts
-              ? "Loading Departments..."
-              : "Select Line Department"}
-          </option>
-          {/* Note: Assuming API returns objects with `id` and `name`. 
-              If it returns strings, use: lineDepartments.map(dept => <option key={dept} value={dept}>{dept}</option>) */}
           {Array.isArray(lineDepartments) &&
             lineDepartments.map((dept: any) => (
-              <option
-                key={dept.id || dept.name || dept}
-                value={dept.id || dept}
-              >
+              <Select.Option key={dept.id || dept.name || dept} value={dept.id || dept}>
                 {dept.name || dept}
-              </option>
+              </Select.Option>
             ))}
-        </select>
+        </Select>
       </div>
 
       {/* Received Proposal From */}
@@ -100,27 +91,22 @@ export function OfficersStep({ data, setData }: OfficersStepProps) {
         <label className="block text-sm font-medium mb-2">
           Received Proposal From <span className="text-red-600">*</span>
         </label>
-        <select
-          value={data.proposalReceivedFrom}
-          onChange={(e) =>
-            setData({ ...data, proposalReceivedFrom: e.target.value })
-          }
+        <Select
+          size="large"
+          className="w-full"
+          placeholder="Select Source"
+          value={data.proposalReceivedFrom || undefined}
+          onChange={(value) => setData({ ...data, proposalReceivedFrom: value })}
           disabled={isLoadingSources}
-          className="w-full cursor-pointer px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+          loading={isLoadingSources}
         >
-          <option value="">
-            {isLoadingSources ? "Loading Sources..." : "Select Source"}
-          </option>
           {Array.isArray(proposalSources) &&
             proposalSources.map((source: any) => (
-              <option
-                key={source.id || source.name || source}
-                value={source.id || source}
-              >
+              <Select.Option key={source.id || source.name || source} value={source.id || source}>
                 {source.name || source}
-              </option>
+              </Select.Option>
             ))}
-        </select>
+        </Select>
       </div>
 
       {/* Proposal Received Date */}
@@ -128,13 +114,13 @@ export function OfficersStep({ data, setData }: OfficersStepProps) {
         <label className="block text-sm font-medium mb-2">
           Proposal Received Date <span className="text-red-600">*</span>
         </label>
-        <input
-          type="date"
-          value={data.proposalReceivedDate}
-          onChange={(e) =>
-            setData({ ...data, proposalReceivedDate: e.target.value })
+        <DatePicker
+          size="large"
+          className="w-full"
+          value={data.proposalReceivedDate ? dayjs(data.proposalReceivedDate) : null}
+          onChange={(date, dateString) =>
+            setData({ ...data, proposalReceivedDate: dateString as string })
           }
-          className="w-full cursor-text px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
         />
       </div>
 
@@ -143,12 +129,12 @@ export function OfficersStep({ data, setData }: OfficersStepProps) {
         <label className="block text-sm font-medium mb-2">
           Name of Source <span className="text-red-600">*</span>
         </label>
-        <input
-          type="text"
+        <Input
+          size="large"
+          className="w-full"
+          placeholder="Enter MLA/Citizen Name"
           value={data.sourceName}
           onChange={(e) => setData({ ...data, sourceName: e.target.value })}
-          className="w-full cursor-text px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
-          placeholder="Enter MLA/Citizen Name"
         />
       </div>
 
@@ -157,29 +143,22 @@ export function OfficersStep({ data, setData }: OfficersStepProps) {
         <label className="block text-sm font-medium mb-2">
           Receiving Authority <span className="text-red-600">*</span>
         </label>
-        <select
-          value={data.receivingAuthority}
-          onChange={(e) =>
-            setData({ ...data, receivingAuthority: e.target.value })
-          }
+        <Select
+          size="large"
+          className="w-full"
+          placeholder="Select Authority"
+          value={data.receivingAuthority || undefined}
+          onChange={(value) => setData({ ...data, receivingAuthority: value })}
           disabled={isLoadingAuthorities}
-          className="w-full cursor-pointer px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+          loading={isLoadingAuthorities}
         >
-          <option value="">
-            {isLoadingAuthorities
-              ? "Loading Authorities..."
-              : "Select Authority"}
-          </option>
           {Array.isArray(receivingAuthorities) &&
             receivingAuthorities.map((auth: any) => (
-              <option
-                key={auth.id || auth.name || auth}
-                value={auth.id || auth}
-              >
+              <Select.Option key={auth.id || auth.name || auth} value={auth.id || auth}>
                 {auth.name || auth}
-              </option>
+              </Select.Option>
             ))}
-        </select>
+        </Select>
       </div>
 
       {/* Date of Receipt by Authority */}
@@ -187,13 +166,13 @@ export function OfficersStep({ data, setData }: OfficersStepProps) {
         <label className="block text-sm font-medium mb-2">
           Date of Receipt by Authority <span className="text-red-600">*</span>
         </label>
-        <input
-          type="date"
-          value={data.authorityReceivedDate}
-          onChange={(e) =>
-            setData({ ...data, authorityReceivedDate: e.target.value })
+        <DatePicker
+          size="large"
+          className="w-full"
+          value={data.authorityReceivedDate ? dayjs(data.authorityReceivedDate) : null}
+          onChange={(date, dateString) =>
+            setData({ ...data, authorityReceivedDate: dateString as string })
           }
-          className="w-full cursor-text px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
         />
       </div>
 
@@ -202,26 +181,21 @@ export function OfficersStep({ data, setData }: OfficersStepProps) {
         <label className="block text-sm font-medium mb-2">
           Officer In Charge <span className="text-red-600">*</span>
         </label>
-        <select
-          value={data.officerInCharge}
-          onChange={(e) =>
-            setData({ ...data, officerInCharge: e.target.value })
-          }
+        <Select
+          size="large"
+          className="w-full"
+          placeholder="Select Officer"
+          value={data.officerInCharge || undefined}
+          onChange={(value) => setData({ ...data, officerInCharge: value })}
           disabled={isLoadingOfficers}
-          className="w-full cursor-pointer px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+          loading={isLoadingOfficers}
         >
-          <option value="">
-            {isLoadingOfficers ? "Loading Officers..." : "Select Officer"}
-          </option>
           {officers.map((officer: any) => (
-            <option
-              key={officer.id || officer.name || officer}
-              value={officer.id || officer}
-            >
+            <Select.Option key={officer.id || officer.name || officer} value={officer.id || officer}>
               {officer.name || officer}
-            </option>
+            </Select.Option>
           ))}
-        </select>
+        </Select>
       </div>
     </div>
   );

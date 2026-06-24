@@ -1,3 +1,5 @@
+import React from "react";
+import { Input } from "antd";
 import {
   AlertCircle,
   CheckCircle2,
@@ -35,8 +37,10 @@ export function DocumentsStep(props: DocumentsStepProps) {
           Cost of Project (₹ Lakhs)
         </label>
 
-        <input
+        {/* Ant Design Input replaces native input here */}
+        <Input
           type="number"
+          size="large"
           placeholder="Optional"
           value={props.data.projectCost}
           onChange={(e) =>
@@ -45,7 +49,7 @@ export function DocumentsStep(props: DocumentsStepProps) {
               projectCost: e.target.value,
             })
           }
-          className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+          className="w-full rounded-lg"
         />
       </div>
 
@@ -83,7 +87,7 @@ export function DocumentsStep(props: DocumentsStepProps) {
                   </p>
                   <p className="text-xs text-green-700">
                     {(props.data.proposalDemandFile.size / 1024 / 1024).toFixed(
-                      2,
+                      2
                     )}{" "}
                     MB
                   </p>

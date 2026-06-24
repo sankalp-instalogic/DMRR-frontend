@@ -1,22 +1,32 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router";
 import { Plus, Search, Eye, Loader2 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import useAxiosPrivate from "../../../../hooks/useAxiosPrivate";
+import type { ColDef } from "ag-grid-community";
+import { Table } from "../../../components/Table"; // Adjust import path to your custom Table component
+import { cn } from "../../../../utils/utils";
+import { buttonVariants } from "../../../components/ui/button";
 
 export function TendersList() {
   const navigate = useNavigate();
   const axiosPrivate = useAxiosPrivate();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [page, setPage] = useState(1);
-  const [pageSize] = useState(10);
   const queryClient = useQueryClient();
 
-  // Fetch data using React Query
+  // Search & Pagination states
+  const [searchTerm, setSearchTerm] = useState("");
+  const [tenderPage, setTenderPage] = useState(1);
+  const [tenderPageSize] = useState(10);
+
+  const [procurementPage, setProcurementPage] = useState(1);
+  const [procurementPageSize] = useState(10);
+
+  // --- QUERIES ---
+
   const {
     data: tenders = [],
-    isLoading,
-    isError,
+    isLoading: isTendersLoading,
+    isError: isTendersError,
   } = useQuery({
     queryKey: ["procurement-tenders"],
     queryFn: async () => {
@@ -30,22 +40,18 @@ export function TendersList() {
     isLoading: isProcurementLoading,
     isError: isProcurementError,
   } = useQuery({
-    queryKey: ["procurements", page],
+    queryKey: ["procurements", procurementPage],
     queryFn: async () => {
       const response = await axiosPrivate.get("/api/v1/Procurements", {
         params: {
-          Page: page,
-          PageSize: pageSize,
+          Page: procurementPage,
+          PageSize: procurementPageSize,
           status: "Approved - Tendering",
         },
       });
       return response.data;
     },
   });
-
-  const procurementItems = procurementResponse?.items ?? [];
-  const totalItems = procurementResponse?.totalCount ?? 0;
-  const totalPages = procurementResponse?.totalPages ?? 1;
 
   const { data: districtsData } = useQuery({
     queryKey: ["districts-dropdown"],
@@ -62,13 +68,13 @@ export function TendersList() {
     queryFn: async () => {
       const response = await axiosPrivate.get(
         "/api/v1/masters/line-departments",
-        {
-          params: { page: 1, pageSize: 100 },
-        },
+        { params: { page: 1, pageSize: 100 } },
       );
       return response.data;
     },
   });
+
+  // --- DATA PREPARATION ---
 
   const districts = districtsData?.items ?? [];
   const departments = deptData?.items ?? [];
@@ -85,7 +91,6 @@ export function TendersList() {
     return row.demandFrom || "N/A";
   };
 
-  // Helper function for dynamic badge colors
   const getStatusStyles = (status: string) => {
     const s = status?.toLowerCase() || "";
     if (
@@ -105,28 +110,38 @@ export function TendersList() {
     if (s.includes("draft") || s.includes("pending")) {
       return "bg-amber-100 text-amber-700 border-amber-200";
     }
-    // Default fallback styling
     return "bg-blue-50 text-blue-700 border-blue-200";
   };
 
-  // Local search filtering & excluding completed status
-  const filteredTenders = tenders
-    .filter((tender: any) => {
-      // 1. Exclude Completed tenders
-      if (tender.status === "Completed") return false;
+  // Local filtering for Tenders
+  const filteredTenders = useMemo(() => {
+    return tenders
+      .filter((tender: any) => tender.status !== "Completed")
+      .filter((tender: any) => {
+        const searchLower = searchTerm.toLowerCase();
+        return (
+          tender.tenderTitle?.toLowerCase().includes(searchLower) ||
+          tender.tenderRefNo?.toLowerCase().includes(searchLower) ||
+          tender.tenderCode?.toLowerCase().includes(searchLower) ||
+          tender.organizationChain?.toLowerCase().includes(searchLower)
+        );
+      });
+  }, [tenders, searchTerm]);
 
-      // 2. Apply search filter
-      const searchLower = searchTerm.toLowerCase();
-      return (
-        tender.tenderTitle?.toLowerCase().includes(searchLower) ||
-        tender.tenderRefNo?.toLowerCase().includes(searchLower) ||
-        tender.tenderCode?.toLowerCase().includes(searchLower) ||
-        tender.organizationChain?.toLowerCase().includes(searchLower)
-      );
-    })
-    .filter((item: any) => item.status !== "Completed");
+  // Local pagination calculation for Tenders
+  const tenderTotalCount = filteredTenders.length;
+  const tenderTotalPages = Math.ceil(tenderTotalCount / tenderPageSize) || 1;
+  const paginatedTenders = filteredTenders.slice(
+    (tenderPage - 1) * tenderPageSize,
+    tenderPage * tenderPageSize,
+  );
 
-  // Handler for closing a procurement record
+  const procurementItems = procurementResponse?.items ?? [];
+  const procurementTotalCount = procurementResponse?.totalCount ?? 0;
+  const procurementTotalPages = procurementResponse?.totalPages ?? 1;
+
+  // --- MUTATION ---
+
   const markForClosureMutation = useMutation({
     mutationFn: async (procurementId: string) => {
       const response = await axiosPrivate.post(
@@ -140,14 +155,110 @@ export function TendersList() {
       return response.data;
     },
     onSuccess: () => {
-      // Invalidate the 'procurements' query so the table refetches automatically
       queryClient.invalidateQueries({ queryKey: ["procurements"] });
     },
     onError: (error) => {
       console.error("Error marking procurement for closure:", error);
-      // You can also add a toast notification here
     },
   });
+
+  // --- COLUMN DEFINITIONS ---
+
+  const tenderColDefs = useMemo<ColDef[]>(
+    () => [
+      {
+        field: "tenderTitle",
+        headerName: "Tender Title",
+        flex: 1,
+        minWidth: 200,
+      },
+      { field: "tenderRefNo", headerName: "Tender Ref No" },
+      { field: "tenderCode", headerName: "Tender ID" },
+      { field: "organisationChain", headerName: "Organizational Chain" },
+      {
+        field: "status",
+        headerName: "Status",
+        cellRenderer: (params: any) => (
+          <span
+            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusStyles(
+              params.value,
+            )}`}
+          >
+            {params.value || "Unknown"}
+          </span>
+        ),
+      },
+      {
+        headerName: "View",
+        width: 100,
+        sortable: false,
+        filter: false,
+        cellRenderer: (params: any) => (
+          <button
+            onClick={() =>
+              navigate(
+                `/procurement-tendering/tenders/${params.data.id || params.data.procurementId}`,
+              )
+            }
+            className="p-2 inline-flex justify-center hover:bg-muted rounded-lg text-muted-foreground hover:text-[#0B1F4D] transition-colors"
+            title="View Details"
+          >
+            <Eye className="size-4" />
+          </button>
+        ),
+      },
+    ],
+    [navigate],
+  );
+
+  const procurementColDefs = useMemo<ColDef[]>(
+    () => [
+      {
+        field: "procurementRefNo",
+        headerName: "Procurement Ref No",
+        valueFormatter: (p) => p.value || "N/A",
+      },
+      { field: "financialYear", headerName: "Financial Year" },
+      { field: "itemName", headerName: "Item Name", flex: 1, minWidth: 200 },
+      {
+        headerName: "Demand From",
+        valueGetter: (params) => getDemandLocationName(params.data),
+      },
+      {
+        field: "totalQuantity",
+        headerName: "Total Quantity",
+        valueFormatter: (p) => p.value ?? 0,
+      },
+      {
+        field: "awardCostInclGstLakhs",
+        headerName: "Award Cost (Lakhs)",
+        valueFormatter: (p) => `₹${p.value?.toLocaleString("en-IN") || "0"}`,
+      },
+      {
+        headerName: "Action",
+        width: 180,
+        sortable: false,
+        filter: false,
+        cellRenderer: (params: any) => {
+          const row = params.data;
+          const isPending =
+            markForClosureMutation.isPending &&
+            markForClosureMutation.variables === row.id;
+          return (
+            <button
+              onClick={() => markForClosureMutation.mutate(row.id)}
+              disabled={isPending}
+              className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-blue-700 hover:shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Mark for Closure"
+            >
+              {isPending ? "Processing..." : "Mark for Closure"}
+            </button>
+          );
+        },
+      },
+    ],
+    [districts, departments, markForClosureMutation],
+  );
 
   return (
     <div className="space-y-6">
@@ -161,7 +272,7 @@ export function TendersList() {
         <div className="flex items-center gap-3">
           <Link
             to="/procurement-tendering/new"
-            className="flex items-center gap-2 bg-[#1E5AA8] text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+            className={cn(buttonVariants({ variant: "default" }))}
           >
             <Plus className="size-4" />
             <span className="font-medium">New Tender</span>
@@ -170,8 +281,8 @@ export function TendersList() {
       </div>
 
       {/* --- TABLE 1: ALL TENDERS --- */}
-      <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
-        <div className="p-4 border-b border-border flex justify-between items-center bg-gray-50/50">
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
           <h2 className="text-lg font-semibold text-[#0B1F4D]">All Tenders</h2>
           <div className="relative w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -179,253 +290,61 @@ export function TendersList() {
               type="text"
               placeholder="Search tenders..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setTenderPage(1); // Reset to first page on new search
+              }}
               className="w-full pl-9 pr-4 py-2 bg-white border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E5AA8]/20"
             />
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-muted/50 text-muted-foreground border-b border-border">
-              <tr>
-                <th className="px-6 py-3 font-medium">Tender Title</th>
-                <th className="px-6 py-3 font-medium">Tender Ref No</th>
-                <th className="px-6 py-3 font-medium">Tender ID</th>
-                <th className="px-6 py-3 font-medium">Organizational Chain</th>
-                <th className="px-6 py-3 font-medium">Status</th>
-                <th className="px-6 py-3 font-medium text-center">View</th>
-              </tr>
-            </thead>
-
-            <tbody className="divide-y divide-border">
-              {isLoading ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="px-6 py-8 text-center text-muted-foreground"
-                  >
-                    <Loader2 className="size-6 animate-spin mx-auto mb-2 text-[#1E5AA8]" />
-                    <p>Loading tenders...</p>
-                  </td>
-                </tr>
-              ) : isError ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="px-6 py-8 text-center text-red-500"
-                  >
-                    Failed to load tenders. Please try again later.
-                  </td>
-                </tr>
-              ) : filteredTenders.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="px-6 py-8 text-center text-muted-foreground"
-                  >
-                    No tenders found.
-                  </td>
-                </tr>
-              ) : (
-                filteredTenders.map((tender: any) => (
-                  <tr
-                    key={tender.id || tender.procurementId}
-                    className="hover:bg-muted/50 transition-colors"
-                  >
-                    <td className="px-6 py-4 font-medium text-[#0B1F4D] whitespace-nowrap">
-                      {tender.tenderTitle}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {tender.tenderRefNo}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {tender.tenderCode}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {tender.organisationChain}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {/* --- STATUS BADGE ADDED HERE --- */}
-                      <span
-                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusStyles(
-                          tender.status,
-                        )}`}
-                      >
-                        {tender.status || "Unknown"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center whitespace-nowrap">
-                      <button
-                        onClick={() =>
-                          navigate(
-                            `/procurement-tendering/tenders/${tender.id}`,
-                          )
-                        }
-                        className="p-2 inline-flex justify-center hover:bg-muted rounded-lg text-muted-foreground hover:text-[#0B1F4D] transition-colors"
-                        title="View Details"
-                      >
-                        <Eye className="size-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Tenders Pagination Footer */}
-        {!isLoading && !isError && filteredTenders.length !== 0 && (
-          <div className="p-4 border-t border-border flex items-center justify-between text-sm text-muted-foreground bg-gray-50/50">
-            <span>
-              Showing {filteredTenders.length > 0 ? 1 : 0} to{" "}
-              {filteredTenders.length} of {tenders.length} tenders
-            </span>
-            <div className="flex items-center gap-2">
-              <button
-                className="px-3 py-1 border border-border rounded-md hover:bg-muted disabled:opacity-50 transition-colors"
-                disabled
-              >
-                Previous
-              </button>
-              <button className="px-3 py-1 bg-[#1E5AA8] text-white rounded-md font-medium">
-                1
-              </button>
-              <button
-                className="px-3 py-1 border border-border rounded-md hover:bg-muted disabled:opacity-50 transition-colors"
-                disabled
-              >
-                Next
-              </button>
-            </div>
+        {isTendersLoading ? (
+          <div className="flex flex-col items-center justify-center p-8 bg-white rounded-xl border border-border text-muted-foreground">
+            <Loader2 className="size-6 animate-spin mb-2 text-[#1E5AA8]" />
+            <p>Loading tenders...</p>
           </div>
+        ) : isTendersError ? (
+          <div className="p-8 text-center bg-white rounded-xl border border-border text-red-500">
+            Failed to load tenders. Please try again later.
+          </div>
+        ) : (
+          <Table
+            rowData={paginatedTenders}
+            columnDefs={tenderColDefs}
+            totalCount={tenderTotalCount}
+            page={tenderPage}
+            totalPages={tenderTotalPages}
+            onPageChange={setTenderPage}
+          />
         )}
       </div>
 
       {/* --- TABLE 2: PROCUREMENT RECORDS --- */}
-      <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
-        <div className="p-4 border-b border-border bg-gray-50/50">
-          <h2 className="text-lg font-semibold text-[#0B1F4D]">
-            Pending Procurement Records
-          </h2>
-        </div>
+      <div className="space-y-4 mt-8">
+        <h2 className="text-lg font-semibold text-[#0B1F4D]">
+          Pending Procurement Records
+        </h2>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-muted/50 text-muted-foreground border-b border-border">
-              <tr>
-                <th className="px-6 py-3 font-medium">Procurement Ref No</th>
-                <th className="px-6 py-3 font-medium">Financial Year</th>
-                <th className="px-6 py-3 font-medium">Item Name</th>
-                <th className="px-6 py-3 font-medium">Demand From</th>
-                <th className="px-6 py-3 font-medium">Total Quantity</th>
-                <th className="px-6 py-3 font-medium">Award Cost (Lakhs)</th>
-                <th className="px-6 py-3 font-medium text-center">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {isProcurementLoading ? (
-                <tr>
-                  <td
-                    colSpan={7}
-                    className="px-6 py-8 text-center text-muted-foreground"
-                  >
-                    <Loader2 className="size-6 animate-spin mx-auto mb-2 text-[#1E5AA8]" />
-                    <p>Loading procurement data...</p>
-                  </td>
-                </tr>
-              ) : isProcurementError ? (
-                <tr>
-                  <td
-                    colSpan={7}
-                    className="px-6 py-8 text-center text-red-500 font-medium"
-                  >
-                    Failed to fetch procurement records. Please try again.
-                  </td>
-                </tr>
-              ) : procurementItems.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={7}
-                    className="px-6 py-8 text-center text-muted-foreground"
-                  >
-                    No procurement records found.
-                  </td>
-                </tr>
-              ) : (
-                procurementItems.map((row: any) => (
-                  <tr
-                    key={row.id}
-                    className="hover:bg-muted/50 transition-colors"
-                  >
-                    <td className="px-6 py-4 font-medium text-[#0B1F4D]">
-                      {row.procurementRefNo || "N/A"}
-                    </td>
-                    <td className="px-6 py-4">{row.financialYear}</td>
-                    <td className="px-6 py-4">{row.itemName}</td>
-                    <td className="px-6 py-4">{getDemandLocationName(row)}</td>
-                    <td className="px-6 py-4">{row.totalQuantity ?? 0}</td>
-                    <td className="px-6 py-4 font-medium">
-                      ₹
-                      {row.awardCostInclGstLakhs?.toLocaleString("en-IN") ||
-                        "0"}
-                    </td>
-                    <td className="px-6 py-4 text-center whitespace-nowrap">
-                      <button
-                        onClick={() => markForClosureMutation.mutate(row.id)}
-                        disabled={
-                          markForClosureMutation.isPending &&
-                          markForClosureMutation.variables === row.id
-                        }
-                        className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-blue-700 hover:shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Mark for Closure"
-                      >
-                        {markForClosureMutation.isPending &&
-                        markForClosureMutation.variables === row.id
-                          ? "Processing..."
-                          : "Mark for Closure"}
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Procurements Server-Side Pagination Footer */}
-        {!isProcurementLoading &&
-          !isProcurementError &&
-          procurementItems.length > 0 && (
-            <div className="p-4 border-t border-border flex items-center justify-between text-sm text-muted-foreground bg-gray-50/50">
-              <span>
-                Showing {(page - 1) * pageSize + 1} to{" "}
-                {Math.min(page * pageSize, totalItems)} of {totalItems} tenders
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                  className="px-3 py-1 border border-border rounded-md hover:bg-muted disabled:opacity-50 transition-colors bg-white"
-                  disabled={page === 1}
-                >
-                  Previous
-                </button>
-                <button className="px-3 py-1 bg-[#1E5AA8] text-white rounded-md font-medium">
-                  {page}
-                </button>
-                <button
-                  onClick={() =>
-                    setPage((prev) => Math.min(prev + 1, totalPages))
-                  }
-                  className="px-3 py-1 border border-border rounded-md hover:bg-muted disabled:opacity-50 transition-colors cursor-pointer bg-white"
-                  disabled={page === totalPages}
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          )}
+        {isProcurementLoading ? (
+          <div className="flex flex-col items-center justify-center p-8 bg-white rounded-xl border border-border text-muted-foreground">
+            <Loader2 className="size-6 animate-spin mb-2 text-[#1E5AA8]" />
+            <p>Loading procurement data...</p>
+          </div>
+        ) : isProcurementError ? (
+          <div className="p-8 text-center bg-white rounded-xl border border-border text-red-500">
+            Failed to fetch procurement records. Please try again.
+          </div>
+        ) : (
+          <Table
+            rowData={procurementItems}
+            columnDefs={procurementColDefs}
+            totalCount={procurementTotalCount}
+            page={procurementPage}
+            totalPages={procurementTotalPages}
+            onPageChange={setProcurementPage}
+          />
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { Shield } from "lucide-react";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 import { useQuery } from "@tanstack/react-query";
+import { Select } from "antd";
 
 // 1. Define the interface for the API response
 interface NdmaGuideline {
@@ -42,27 +43,20 @@ export function NdmaReferenceStep({ data, setData }: NdmaReferenceStepProps) {
           NDMA Guideline Reference <span className="text-red-600">*</span>
         </label>
         
-        <select
-          value={data.ndmaGuideline}
-          onChange={(e) => setData({ ...data, ndmaGuideline: e.target.value })}
+        <Select
+          value={data.ndmaGuideline || undefined} // antd requires undefined to show the placeholder
+          onChange={(value) => setData({ ...data, ndmaGuideline: value })}
           disabled={isLoading || isError}
-          className="w-full cursor-pointer px-4 py-3 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <option value="">
-            {isLoading 
-              ? "Loading guidelines..." 
-              : isError 
-              ? "Error loading guidelines" 
-              : "Select NDMA Guideline"}
-          </option>
-          
-          {/* 3. Map through the objects, using id for value and code/name for display */}
-          {guidelines.map((guideline) => (
-            <option key={guideline.id} value={guideline.id}>
-              {guideline.code} - {guideline.name}
-            </option>
-          ))}
-        </select>
+          loading={isLoading}
+          size="large" // Matches your previous py-3 tailwind padding
+          className="w-full"
+          placeholder={isError ? "Error loading guidelines" : "Select NDMA Guideline"}
+          status={isError ? "error" : undefined}
+          options={guidelines.map((guideline) => ({
+            value: guideline.id,
+            label: `${guideline.code} - ${guideline.name}`,
+          }))}
+        />
         
         {isError && (
           <p className="text-sm text-red-500 mt-1">

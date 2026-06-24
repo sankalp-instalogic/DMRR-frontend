@@ -62,7 +62,7 @@ export function Tenders() {
 
   // Pagination State
   const [page, setPage] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(10);
+  const pageSize = 10;
 
   const axiosPrivate = useAxiosPrivate();
   const queryClient = useQueryClient();
@@ -98,10 +98,30 @@ export function Tenders() {
   const allUploaded = watchedDocs.every((doc) => doc !== null);
 
   const uploadStages = [
-    { name: "Technical Bid Opening", key: "docTechnicalBidOpening" as const, type: "30", file: watchedDocs[0] },
-    { name: "Technical Evaluation", key: "docTechnicalEvaluation" as const, type: "31", file: watchedDocs[1] },
-    { name: "Financial Bid Opening", key: "docFinancialBidOpening" as const, type: "32", file: watchedDocs[2] },
-    { name: "Financial Evaluation", key: "docFinancialEvaluation" as const, type: "33", file: watchedDocs[3] },
+    {
+      name: "Technical Bid Opening",
+      key: "docTechnicalBidOpening" as const,
+      type: "30",
+      file: watchedDocs[0],
+    },
+    {
+      name: "Technical Evaluation",
+      key: "docTechnicalEvaluation" as const,
+      type: "31",
+      file: watchedDocs[1],
+    },
+    {
+      name: "Financial Bid Opening",
+      key: "docFinancialBidOpening" as const,
+      type: "32",
+      file: watchedDocs[2],
+    },
+    {
+      name: "Financial Evaluation",
+      key: "docFinancialEvaluation" as const,
+      type: "33",
+      file: watchedDocs[3],
+    },
   ];
 
   // ==========================================
@@ -150,7 +170,7 @@ export function Tenders() {
       (doc: any) =>
         doc.documentTypeName === normalizedStageName ||
         doc.documentTypeName === stageName ||
-        doc.documentType?.toString() === DOCUMENT_TYPES[stageName]
+        doc.documentType?.toString() === DOCUMENT_TYPES[stageName],
     );
   };
 
@@ -180,7 +200,7 @@ export function Tenders() {
         uploadData,
         {
           headers: { "Content-Type": "multipart/form-data" },
-        }
+        },
       );
       return response.data;
     },
@@ -188,13 +208,19 @@ export function Tenders() {
 
   // Add Tender Mutation
   const addMutation = useMutation({
-    mutationFn: async ({ payload, formFiles }: { payload: Tender; formFiles: TenderForm }) => {
+    mutationFn: async ({
+      payload,
+      formFiles,
+    }: {
+      payload: Tender;
+      formFiles: TenderForm;
+    }) => {
       const response = await axiosPrivate.post(
         "/api/v1/data-tenders",
         payload,
         {
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
       return { responseData: response.data, formFiles };
     },
@@ -255,7 +281,7 @@ export function Tenders() {
     try {
       const response = await axiosPrivate.get(
         `/api/v1/Documents/${doc.id}/download`,
-        { responseType: "blob" }
+        { responseType: "blob" },
       );
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -295,7 +321,7 @@ export function Tenders() {
         ),
       },
     ],
-    []
+    [],
   );
 
   // ==========================================
@@ -365,23 +391,37 @@ export function Tenders() {
             <table className="w-full text-[13px] text-left">
               <thead className="bg-[#F5F7FA] text-[#0B1F4D]">
                 <tr className="h-14">
-                  <th className="px-4 font-semibold whitespace-nowrap">Stages</th>
-                  <th className="px-4 font-semibold whitespace-nowrap text-center">Status</th>
-                  <th className="px-4 font-semibold whitespace-nowrap text-center">Download</th>
+                  <th className="px-4 font-semibold whitespace-nowrap">
+                    Stages
+                  </th>
+                  <th className="px-4 font-semibold whitespace-nowrap text-center">
+                    Status
+                  </th>
+                  <th className="px-4 font-semibold whitespace-nowrap text-center">
+                    Download
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {/* PROCESS 1 */}
                 <tr className="bg-[#F5F7FA] border-y border-gray-200">
-                  <td colSpan={3} className="px-4 py-3 font-semibold text-[#0B1F4D]">
+                  <td
+                    colSpan={3}
+                    className="px-4 py-3 font-semibold text-[#0B1F4D]"
+                  >
                     Process 1
                   </td>
                 </tr>
                 {stageList.slice(0, 2).map((stage, index) => {
                   const doc = getDocumentForStage(stage);
                   return (
-                    <tr key={`p1-${index}`} className="hover:bg-blue-50/50 transition-colors h-14 even:bg-gray-50/50">
-                      <td className="px-8 font-medium text-[#0B1F4D] whitespace-nowrap">{stage}</td>
+                    <tr
+                      key={`p1-${index}`}
+                      className="hover:bg-blue-50/50 transition-colors h-14 even:bg-gray-50/50"
+                    >
+                      <td className="px-8 font-medium text-[#0B1F4D] whitespace-nowrap">
+                        {stage}
+                      </td>
                       <td className="px-4 text-center">
                         {doc ? (
                           <CheckCircle2 className="size-5 text-green-600 mx-auto" />
@@ -404,15 +444,23 @@ export function Tenders() {
 
                 {/* PROCESS 2 */}
                 <tr className="bg-[#F5F7FA] border-y border-gray-200">
-                  <td colSpan={3} className="px-4 py-3 font-semibold text-[#0B1F4D]">
+                  <td
+                    colSpan={3}
+                    className="px-4 py-3 font-semibold text-[#0B1F4D]"
+                  >
                     Process 2
                   </td>
                 </tr>
                 {stageList.slice(2).map((stage, index) => {
                   const doc = getDocumentForStage(stage);
                   return (
-                    <tr key={`p2-${index}`} className="hover:bg-blue-50/50 transition-colors h-14 even:bg-gray-50/50">
-                      <td className="px-8 font-medium text-[#0B1F4D] whitespace-nowrap">{stage}</td>
+                    <tr
+                      key={`p2-${index}`}
+                      className="hover:bg-blue-50/50 transition-colors h-14 even:bg-gray-50/50"
+                    >
+                      <td className="px-8 font-medium text-[#0B1F4D] whitespace-nowrap">
+                        {stage}
+                      </td>
                       <td className="px-4 text-center">
                         {doc ? (
                           <CheckCircle2 className="size-5 text-green-600 mx-auto" />
@@ -478,27 +526,6 @@ export function Tenders() {
             New Tender
           </button>
         </div>
-
-        {activeTab === "tenders" && (
-          <div className="flex items-center gap-2">
-            <span className="text-[13px] text-gray-500 font-medium">
-              Rows per page:
-            </span>
-            <select
-              value={pageSize}
-              onChange={(e) => {
-                setPageSize(Number(e.target.value));
-                setPage(1);
-              }}
-              className="text-[13px] border border-gray-200 rounded px-2 py-1.5 bg-white outline-none focus:border-[#0B1F4D]"
-            >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-            </select>
-          </div>
-        )}
       </div>
 
       {/* ==========================
@@ -627,9 +654,15 @@ export function Tenders() {
               <table className="w-full text-[13px] text-left">
                 <thead className="bg-[#F5F7FA] text-[#0B1F4D]">
                   <tr className="h-14">
-                    <th className="px-4 font-semibold whitespace-nowrap">Stages</th>
-                    <th className="px-4 font-semibold whitespace-nowrap text-center">Upload</th>
-                    <th className="px-4 font-semibold whitespace-nowrap text-center">Status</th>
+                    <th className="px-4 font-semibold whitespace-nowrap">
+                      Stages
+                    </th>
+                    <th className="px-4 font-semibold whitespace-nowrap text-center">
+                      Upload
+                    </th>
+                    <th className="px-4 font-semibold whitespace-nowrap text-center">
+                      Status
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -703,7 +736,9 @@ export function Tenders() {
               }
               className="flex items-center gap-1.5 px-4 h-10 cursor-pointer bg-[#0B1F4D] text-white rounded-[10px] font-medium hover:bg-[#0B1F4D]/90 transition-colors text-[14px] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {addMutation.isPending || uploadMutation.isPending || isSubmitting ? (
+              {addMutation.isPending ||
+              uploadMutation.isPending ||
+              isSubmitting ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : (
                 <Save className="size-4" />

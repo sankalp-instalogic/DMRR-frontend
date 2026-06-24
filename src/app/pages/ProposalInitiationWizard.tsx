@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { CheckCircle2, ArrowRight, ArrowLeft, Save, Send } from "lucide-react";
+import { CheckCircle2, ArrowRight, ArrowLeft, Send } from "lucide-react";
 import toast from "react-hot-toast";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 
@@ -66,19 +66,6 @@ export function ProposalInitiationWizard() {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
-  };
-
-  const handleSaveDraft = () => {
-    const draftData = {
-      step1Data,
-      step2Data,
-      step3Data,
-      step4Data,
-      currentStep,
-      savedAt: new Date().toISOString(),
-    };
-    localStorage.setItem("proposalDraft", JSON.stringify(draftData));
-    alert("Draft saved successfully!");
   };
 
   const handleRunNdmaValidation = () => {
@@ -337,7 +324,7 @@ export function ProposalInitiationWizard() {
               className={`px-6 py-3 rounded-lg font-medium transition-opacity flex items-center gap-2 ${
                 !isStepValid(currentStep)
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-primary text-primary-foreground hover:opacity-90"
+                  : "bg-primary text-primary-foreground hover:opacity-90 cursor-pointer"
               }`}
             >
               Next
@@ -354,7 +341,7 @@ export function ProposalInitiationWizard() {
                 ndmaValidationStatus !== "success" ||
                 isSubmitting
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-green-600 text-white hover:opacity-90"
+                  : "bg-green-600 text-white hover:opacity-90 cursor-pointer"
               }`}
             >
               <Send className="size-4" />

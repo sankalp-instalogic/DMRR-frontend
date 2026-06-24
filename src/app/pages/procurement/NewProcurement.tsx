@@ -1,35 +1,61 @@
-import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Save, X, Plus, Trash2 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useForm, Controller, useFieldArray } from "react-hook-form";
+import { Input, Select, DatePicker, InputNumber } from "antd";
+import dayjs from "dayjs";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 
 interface DetailRow {
-  id: number;
-  quantity: string;
+  quantity: string | number;
   location: string;
+}
+
+interface ProcurementFormValues {
+  financialYear: string | undefined;
+  itemName: string;
+  demandType: "Districts" | "Other Departments" | "";
+  selectedDistrictId: string | undefined; // Update this
+  selectedDeptId: string | undefined; // Update this
+  rows: DetailRow[];
+  awardCost: string | number;
+  savingAA: string | number;
+  deliveryDeadline: dayjs.Dayjs | null;
 }
 
 export function NewProcurement() {
   const navigate = useNavigate();
   const axiosPrivate = useAxiosPrivate();
 
-  // --- FORM STATE ---
-  const [financialYear, setFinancialYear] = useState("");
-  const [itemName, setItemName] = useState("");
-  const [demandType, setDemandType] = useState<"Districts" | "Other Departments" | "">("");
-  const [selectedDistrictId, setSelectedDistrictId] = useState("");
-  const [selectedDeptId, setSelectedDeptId] = useState("");
-  const [rows, setRows] = useState<DetailRow[]>([
-    { id: 1, quantity: "", location: "" },
-  ]);
-  const [awardCost, setAwardCost] = useState("");
-  const [savingAA, setSavingAA] = useState(""); // Captures Total Items Qty as per existing UI label
-  const [deliveryDeadline, setDeliveryDeadline] = useState("");
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  // --- REACT HOOK FORM SETUP ---
+  const {
+    control,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<ProcurementFormValues>({
+    defaultValues: {
+      financialYear: undefined,
+      itemName: "",
+      demandType: "",
+      selectedDistrictId: undefined, // Change from "" to undefined
+      selectedDeptId: undefined, // Change from "" to undefined
+      rows: [{ quantity: "", location: "" }],
+      awardCost: "",
+      savingAA: "",
+      deliveryDeadline: null,
+    },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "rows",
+  });
+
+  const demandType = watch("demandType");
 
   // --- API QUERIES ---
-  // Fetch Districts List
   const { data: districtsData, isLoading: isDistrictsLoading } = useQuery({
     queryKey: ["districts-dropdown"],
     queryFn: async () => {
@@ -40,13 +66,15 @@ export function NewProcurement() {
     },
   });
 
-  // Fetch Line Departments List
   const { data: deptData, isLoading: isDepartmentsLoading } = useQuery({
     queryKey: ["departments-dropdown"],
     queryFn: async () => {
-      const response = await axiosPrivate.get("/api/v1/masters/line-departments", {
-        params: { page: 1, pageSize: 100 },
-      });
+      const response = await axiosPrivate.get(
+        "/api/v1/masters/line-departments",
+        {
+          params: { page: 1, pageSize: 100 },
+        },
+      );
       return response.data;
     },
   });
@@ -66,82 +94,39 @@ export function NewProcurement() {
     },
   });
 
-  // --- TABLE ACTIONS ---
-  const addRow = () => {
-    setRows((prev) => [
-      ...prev,
-      { id: Date.now(), quantity: "", location: "" },
-    ]);
-  };
-
-  const removeRow = (id: number) => {
-    if (rows.length > 1) setRows((prev) => prev.filter((r) => r.id !== id));
-  };
-
-  const updateRow = (id: number, field: keyof DetailRow, value: string) => {
-    setRows((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, [field]: value } : r)),
-    );
-  };
-
-  // --- VALIDATION ---
-  const validate = () => {
-    const e: Record<string, string> = {};
-    if (!financialYear) e.financialYear = "Required";
-    if (!itemName.trim()) e.itemName = "Required";
-    if (!demandType) e.demandType = "Required";
-    if (demandType === "Districts" && !selectedDistrictId)
-      e.selectedDistrictId = "Required";
-    if (demandType === "Other Departments" && !selectedDeptId)
-      e.selectedDeptId = "Required";
-    
-    rows.forEach((r, i) => {
-      if (!r.quantity.trim()) e[`qty_${i}`] = "Required";
-      if (!r.location.trim()) e[`loc_${i}`] = "Required";
-    });
-    
-    if (!awardCost.trim()) e.awardCost = "Required";
-    if (!deliveryDeadline) e.deliveryDeadline = "Required";
-    
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  };
-
-  // --- SAVE / HANDLER ---
-  const handleSave = () => {
-    if (!validate()) return;
-
+  // --- FORM SUBMISSION ---
+  const onSubmit = (data: ProcurementFormValues) => {
     // Mapping items for payload
-    const itemsPayload = rows.map((r) => ({
-      quantity: Number(r.quantity) || 0, // Fallback to 0 if input string contains characters
+    const itemsPayload = data.rows.map((r) => ({
+      quantity: Number(r.quantity) || 0,
       location: r.location,
     }));
 
-    // Summing quantities up or falling back to the total quantity provided
-    const totalQuantity = itemsPayload.reduce((acc, curr) => acc + curr.quantity, 0);
+    const totalQuantity = itemsPayload.reduce(
+      (acc, curr) => acc + curr.quantity,
+      0,
+    );
 
-    // Build POST request schema layout
     const payload = {
-      financialYear,
-      itemName,
-      demandFrom: demandType === "Districts" ? "1" : "2",
-      beneficiaryDistrictId: demandType === "Districts" ? selectedDistrictId : null,
-      beneficiaryDepartmentId: demandType === "Other Departments" ? selectedDeptId : null,
-      aaValueLakhs: 0, // Fallback placeholder standard value
-      awardCostInclGstLakhs: Number(awardCost) || 0,
-      quantity: totalQuantity || Number(savingAA) || 0,
-      deliveryDeadline: new Date(deliveryDeadline).toISOString(),
-      deliveryLocation: rows[0]?.location || "", // Root location fallback to primary first item location
+      financialYear: data.financialYear,
+      itemName: data.itemName,
+      demandFrom: data.demandType === "Districts" ? "1" : "2",
+      beneficiaryDistrictId:
+        data.demandType === "Districts" ? data.selectedDistrictId : null,
+      beneficiaryDepartmentId:
+        data.demandType === "Other Departments" ? data.selectedDeptId : null,
+      aaValueLakhs: 0,
+      awardCostInclGstLakhs: Number(data.awardCost) || 0,
+      quantity: totalQuantity || Number(data.savingAA) || 0,
+      deliveryDeadline: data.deliveryDeadline
+        ? data.deliveryDeadline.toISOString()
+        : null,
+      deliveryLocation: data.rows[0]?.location || "",
       items: itemsPayload,
     };
 
     createProcurementMutation.mutate(payload);
   };
-
-  const fieldClass = (key: string) =>
-    `w-full px-3 py-2 bg-input-background border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${
-      errors[key] ? "border-red-400" : "border-border"
-    }`;
 
   return (
     <div className="space-y-6">
@@ -164,19 +149,27 @@ export function NewProcurement() {
               <label className="block text-sm font-medium mb-1">
                 Financial Year <span className="text-destructive">*</span>
               </label>
-              <select
-                value={financialYear}
-                onChange={(e) => setFinancialYear(e.target.value)}
-                className={fieldClass("financialYear")}
-              >
-                <option value="">Select Financial Year</option>
-                <option value="2025-26">2025-26</option>
-                <option value="2024-25">2024-25</option>
-                <option value="2023-24">2023-24</option>
-              </select>
+              <Controller
+                name="financialYear"
+                control={control}
+                rules={{ required: "Required" }}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    className="w-full h-10"
+                    placeholder="Select Financial Year"
+                    status={errors.financialYear ? "error" : undefined}
+                    options={[
+                      { label: "2025-26", value: "2025-26" },
+                      { label: "2024-25", value: "2024-25" },
+                      { label: "2023-24", value: "2023-24" },
+                    ]}
+                  />
+                )}
+              />
               {errors.financialYear && (
                 <p className="text-xs text-destructive mt-1">
-                  {errors.financialYear}
+                  {errors.financialYear.message}
                 </p>
               )}
             </div>
@@ -186,16 +179,22 @@ export function NewProcurement() {
               <label className="block text-sm font-medium mb-1">
                 Name of Item <span className="text-destructive">*</span>
               </label>
-              <input
-                type="text"
-                placeholder="Enter item name"
-                value={itemName}
-                onChange={(e) => setItemName(e.target.value)}
-                className={fieldClass("itemName")}
+              <Controller
+                name="itemName"
+                control={control}
+                rules={{ required: "Required" }}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    className="h-10"
+                    placeholder="Enter item name"
+                    status={errors.itemName ? "error" : undefined}
+                  />
+                )}
               />
               {errors.itemName && (
                 <p className="text-xs text-destructive mt-1">
-                  {errors.itemName}
+                  {errors.itemName.message}
                 </p>
               )}
             </div>
@@ -211,9 +210,9 @@ export function NewProcurement() {
                     key={type}
                     type="button"
                     onClick={() => {
-                      setDemandType(type);
-                      setSelectedDistrictId("");
-                      setSelectedDeptId("");
+                      setValue("demandType", type, { shouldValidate: true });
+                      setValue("selectedDistrictId", undefined); // Change from "" to undefined
+                      setValue("selectedDeptId", undefined); // Change from "" to undefined
                     }}
                     className={`px-5 py-2.5 rounded-lg border text-sm font-medium transition-colors ${
                       demandType === type
@@ -225,63 +224,84 @@ export function NewProcurement() {
                   </button>
                 ))}
               </div>
+
+              {/* Hidden field for DemandType validation */}
+              <Controller
+                name="demandType"
+                control={control}
+                rules={{ required: "Demand Type is Required" }}
+                render={() => <></>}
+              />
               {errors.demandType && (
                 <p className="text-xs text-destructive mb-2">
-                  {errors.demandType}
+                  {errors.demandType.message}
                 </p>
               )}
 
               {demandType === "Districts" && (
-                <div>
+                <div className="mt-4">
                   <label className="block text-sm font-medium mb-1">
                     Select District <span className="text-destructive">*</span>
                   </label>
-                  <select
-                    value={selectedDistrictId}
-                    onChange={(e) => setSelectedDistrictId(e.target.value)}
-                    className={fieldClass("selectedDistrictId")}
-                    disabled={isDistrictsLoading}
-                  >
-                    <option value="">
-                      {isDistrictsLoading ? "Loading Districts..." : "Select District"}
-                    </option>
-                    {districts.map((d: any) => (
-                      <option key={d.id} value={d.id}>
-                        {d.name}
-                      </option>
-                    ))}
-                  </select>
+                  <Controller
+                    name="selectedDistrictId"
+                    control={control}
+                    rules={{ required: "District is Required" }}
+                    render={({ field }) => (
+                      <Select
+                        {...field}
+                        className="w-full h-10 md:w-1/2"
+                        placeholder={
+                          isDistrictsLoading ? "Loading..." : "Select District"
+                        }
+                        disabled={isDistrictsLoading}
+                        status={errors.selectedDistrictId ? "error" : undefined}
+                        options={districts.map((d: any) => ({
+                          label: d.name,
+                          value: d.id,
+                        }))}
+                      />
+                    )}
+                  />
                   {errors.selectedDistrictId && (
                     <p className="text-xs text-destructive mt-1">
-                      {errors.selectedDistrictId}
+                      {errors.selectedDistrictId.message}
                     </p>
                   )}
                 </div>
               )}
 
               {demandType === "Other Departments" && (
-                <div>
+                <div className="mt-4">
                   <label className="block text-sm font-medium mb-1">
-                    Select Department <span className="text-destructive">*</span>
+                    Select Department{" "}
+                    <span className="text-destructive">*</span>
                   </label>
-                  <select
-                    value={selectedDeptId}
-                    onChange={(e) => setSelectedDeptId(e.target.value)}
-                    className={fieldClass("selectedDeptId")}
-                    disabled={isDepartmentsLoading}
-                  >
-                    <option value="">
-                      {isDepartmentsLoading ? "Loading Departments..." : "Select Department"}
-                    </option>
-                    {departments.map((d: any) => (
-                      <option key={d.id} value={d.id}>
-                        {d.name} {d.code ? `(${d.code})` : ""}
-                      </option>
-                    ))}
-                  </select>
+                  <Controller
+                    name="selectedDeptId"
+                    control={control}
+                    rules={{ required: "Department is Required" }}
+                    render={({ field }) => (
+                      <Select
+                        {...field}
+                        className="w-full h-10 md:w-1/2"
+                        placeholder={
+                          isDepartmentsLoading
+                            ? "Loading..."
+                            : "Select Department"
+                        }
+                        disabled={isDepartmentsLoading}
+                        status={errors.selectedDeptId ? "error" : undefined}
+                        options={departments.map((d: any) => ({
+                          label: `${d.name} ${d.code ? `(${d.code})` : ""}`,
+                          value: d.id,
+                        }))}
+                      />
+                    )}
+                  />
                   {errors.selectedDeptId && (
                     <p className="text-xs text-destructive mt-1">
-                      {errors.selectedDeptId}
+                      {errors.selectedDeptId.message}
                     </p>
                   )}
                 </div>
@@ -301,43 +321,63 @@ export function NewProcurement() {
             <table className="w-full text-sm border border-border rounded-lg overflow-hidden">
               <thead className="bg-muted text-muted-foreground border-b border-border">
                 <tr>
-                  <th className="px-4 py-3 text-left font-medium w-16">Sr No</th>
-                  <th className="px-4 py-3 text-left font-medium">Item Quantity</th>
+                  <th className="px-4 py-3 text-left font-medium w-16">
+                    Sr No
+                  </th>
+                  <th className="px-4 py-3 text-left font-medium">
+                    Item Quantity
+                  </th>
                   <th className="px-4 py-3 text-left font-medium">Location</th>
-                  <th className="px-4 py-3 text-center font-medium w-16">Action</th>
+                  <th className="px-4 py-3 text-center font-medium w-16">
+                    Action
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {rows.map((row, idx) => (
-                  <tr key={row.id}>
-                    <td className="px-4 py-2 text-muted-foreground">{idx + 1}</td>
+                {fields.map((field, idx) => (
+                  <tr key={field.id}>
+                    <td className="px-4 py-2 text-muted-foreground">
+                      {idx + 1}
+                    </td>
                     <td className="px-4 py-2">
-                      <input
-                        type="text"
-                        placeholder="e.g. 50"
-                        value={row.quantity}
-                        onChange={(e) => updateRow(row.id, "quantity", e.target.value)}
-                        className={`w-full px-3 py-1.5 bg-input-background border rounded-lg text-sm ${
-                          errors[`qty_${idx}`] ? "border-red-400" : "border-border"
-                        }`}
+                      <Controller
+                        name={`rows.${idx}.quantity` as const}
+                        control={control}
+                        rules={{ required: "Required" }}
+                        render={({ field }) => (
+                          <InputNumber
+                            {...field}
+                            className="w-full"
+                            style={{ width: "100%" }}
+                            placeholder="e.g. 50"
+                            status={
+                              errors.rows?.[idx]?.quantity ? "error" : undefined
+                            }
+                          />
+                        )}
                       />
                     </td>
                     <td className="px-4 py-2">
-                      <input
-                        type="text"
-                        placeholder="e.g. Pune District HQ"
-                        value={row.location}
-                        onChange={(e) => updateRow(row.id, "location", e.target.value)}
-                        className={`w-full px-3 py-1.5 bg-input-background border rounded-lg text-sm ${
-                          errors[`loc_${idx}`] ? "border-red-400" : "border-border"
-                        }`}
+                      <Controller
+                        name={`rows.${idx}.location` as const}
+                        control={control}
+                        rules={{ required: "Required" }}
+                        render={({ field }) => (
+                          <Input
+                            {...field}
+                            placeholder="e.g. Pune District HQ"
+                            status={
+                              errors.rows?.[idx]?.location ? "error" : undefined
+                            }
+                          />
+                        )}
                       />
                     </td>
                     <td className="px-4 py-2 text-center">
                       <button
                         type="button"
-                        onClick={() => removeRow(row.id)}
-                        disabled={rows.length === 1}
+                        onClick={() => remove(idx)}
+                        disabled={fields.length === 1}
                         className="p-1.5 text-red-500 hover:bg-red-50 rounded disabled:opacity-30 transition-colors"
                         title="Remove row"
                       >
@@ -349,9 +389,10 @@ export function NewProcurement() {
               </tbody>
             </table>
           </div>
+
           <button
             type="button"
-            onClick={addRow}
+            onClick={() => append({ quantity: "", location: "" })}
             className="px-4 py-2 border border-dashed border-[#0B1F4D] text-[#0B1F4D] rounded-lg text-sm hover:bg-blue-50 flex items-center gap-2 transition-colors mb-6"
           >
             <Plus className="size-4" />
@@ -362,49 +403,71 @@ export function NewProcurement() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-medium mb-1">
-                Award Cost Including GST (₹) <span className="text-destructive">*</span>
+                Award Cost Including GST (₹){" "}
+                <span className="text-destructive">*</span>
               </label>
-              <input
-                type="number"
-                placeholder="Enter amount"
-                value={awardCost}
-                onChange={(e) => setAwardCost(e.target.value)}
-                className={fieldClass("awardCost")}
+              <Controller
+                name="awardCost"
+                control={control}
+                rules={{ required: "Required" }}
+                render={({ field }) => (
+                  <InputNumber
+                    {...field}
+                    className="w-full"
+                    style={{ width: "100%" }}
+                    placeholder="Enter amount"
+                    status={errors.awardCost ? "error" : undefined}
+                  />
+                )}
               />
               {errors.awardCost && (
                 <p className="text-xs text-destructive mt-1">
-                  {errors.awardCost}
+                  {errors.awardCost.message}
                 </p>
               )}
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Total Items Qty</label>
-              <input
-                type="number"
-                placeholder="Enter Total Items Qty"
-                value={savingAA}
-                onChange={(e) => setSavingAA(e.target.value)}
-                className={fieldClass("savingAA")}
-              />
-            </div>
+
             <div>
               <label className="block text-sm font-medium mb-1">
-                Delivery Deadline as per Contract <span className="text-destructive">*</span>
+                Total Items Qty
               </label>
-              <input
-                type="date"
-                value={deliveryDeadline}
-                onChange={(e) => setDeliveryDeadline(e.target.value)}
-                className={fieldClass("deliveryDeadline")}
+              <Controller
+                name="savingAA"
+                control={control}
+                render={({ field }) => (
+                  <InputNumber
+                    {...field}
+                    className="w-full"
+                    style={{ width: "100%" }}
+                    placeholder="Enter Total Items Qty"
+                  />
+                )}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Delivery Deadline <span className="text-destructive">*</span>
+              </label>
+              <Controller
+                name="deliveryDeadline"
+                control={control}
+                rules={{ required: "Required" }}
+                render={({ field }) => (
+                  <DatePicker
+                    {...field}
+                    className="w-full"
+                    status={errors.deliveryDeadline ? "error" : undefined}
+                  />
+                )}
               />
               {errors.deliveryDeadline && (
                 <p className="text-xs text-destructive mt-1">
-                  {errors.deliveryDeadline}
+                  {errors.deliveryDeadline.message}
                 </p>
               )}
             </div>
           </div>
-
         </div>
 
         {/* Buttons */}
@@ -419,7 +482,7 @@ export function NewProcurement() {
           </button>
           <button
             type="button"
-            onClick={handleSave}
+            onClick={handleSubmit(onSubmit)}
             disabled={createProcurementMutation.isPending}
             className="px-6 py-2 bg-[#0B1F4D] text-white font-medium rounded-lg hover:bg-opacity-90 flex items-center gap-2 transition-colors disabled:opacity-50"
           >

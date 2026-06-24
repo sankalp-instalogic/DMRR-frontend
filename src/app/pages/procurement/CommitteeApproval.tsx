@@ -1,15 +1,19 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router";
 import {
   ArrowLeft,
   CheckCircle,
   XCircle,
-  Upload,
+  Upload as UploadIcon, // Aliased to prevent conflict with Antd's Upload
   ArrowRight,
   Loader2,
 } from "lucide-react";
+import { DatePicker, Input, Upload as AntUpload } from "antd";
+import dayjs from "dayjs";
+import type { ColDef } from "ag-grid-community";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"; // Added useQuery
+import { Table } from "../../components/Table"; // Adjust the import path to where your custom Table is located
 
 interface CommitteeItem {
   id: string;
@@ -28,7 +32,7 @@ export interface CommitteeApprovalProps {
   forwardLabel: string;
   forwardPath: string;
   items: CommitteeItem[];
-  committeeType: number; // <-- Added this to map to your API Enums (1 for PSC, 2 for TAC, etc.)
+  committeeType: number;
 }
 
 export function DetailScreen({
@@ -74,13 +78,13 @@ export function DetailScreen({
   const getDocumentType = (type: number) => {
     switch (type) {
       case 1:
-        return "34"; // ProposalScrutiny (PSC) -> PCSApprovalLetter
+        return "34";
       case 2:
-        return "35"; // TechnicalAppraisal (TAC) -> PACApprovalLetter
+        return "35";
       case 3:
-        return "36"; // SEC -> SECApprovalLetter
+        return "36";
       case 4:
-        return "37"; // AdministrativeApproval -> AdministratiionApprovalLetter
+        return "37";
       default:
         return "";
     }
@@ -111,7 +115,7 @@ export function DetailScreen({
       const uploadData = new FormData();
       uploadData.append("file", file);
       uploadData.append("ownerId", ownerId);
-      uploadData.append("ownerType", "2"); // Hardcoded as requested
+      uploadData.append("ownerType", "2");
       uploadData.append("documentType", documentType);
 
       const response = await axiosPrivate.post(
@@ -143,7 +147,6 @@ export function DetailScreen({
     try {
       let uploadedDocumentId = null;
 
-      // 1. If approved, upload the document FIRST
       if (decision === "Approve" && approvalDoc) {
         const docType = getDocumentType(committeeType);
         if (docType) {
@@ -152,14 +155,10 @@ export function DetailScreen({
             ownerId: item.id,
             documentType: docType,
           });
-
-          // Capture the returned ID from the upload response
-          // Note: Adjust "uploadResponse.id" if your API returns the ID under a different key (e.g., uploadResponse.data.id)
           uploadedDocumentId = uploadResponse?.id;
         }
       }
 
-      // 2. Prepare the payload, including the newly acquired documentId
       const payload = {
         approved: decision === "Approve",
         decisionDate:
@@ -170,7 +169,6 @@ export function DetailScreen({
         documentId: uploadedDocumentId,
       };
 
-      // 3. Submit the text data
       await decisionMutation.mutateAsync(payload);
 
       queryClient.invalidateQueries({
@@ -378,13 +376,14 @@ export function DetailScreen({
                   <label className="block text-sm font-medium mb-1">
                     Date of Approval <span className="text-destructive">*</span>
                   </label>
-                  <input
-                    type="date"
-                    value={dateOfApproval}
-                    onChange={(e) => setDateOfApproval(e.target.value)}
-                    className={`w-full px-3 py-2 bg-input-background border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${
-                      errors.date ? "border-red-400" : "border-border"
-                    }`}
+                  {/* Antd DatePicker */}
+                  <DatePicker
+                    className="w-full h-10"
+                    status={errors.date ? "error" : ""}
+                    value={dateOfApproval ? dayjs(dateOfApproval) : null}
+                    onChange={(date, dateString) =>
+                      setDateOfApproval(dateString as string)
+                    }
                   />
                   {errors.date && (
                     <p className="text-xs text-destructive mt-1">
@@ -397,25 +396,29 @@ export function DetailScreen({
                     Upload Approval Document{" "}
                     <span className="text-destructive">*</span>
                   </label>
-                  <label
-                    className={`cursor-pointer flex items-center justify-center gap-2 w-full px-3 py-2 bg-input-background border border-dashed rounded-lg hover:bg-muted text-sm text-muted-foreground transition-colors ${
-                      errors.doc ? "border-red-400" : "border-border"
-                    }`}
+                  {/* Antd Upload with original visual style wrapped inside */}
+                  <AntUpload
+                    beforeUpload={(file) => {
+                      setApprovalDoc(file as File);
+                      return false; // Prevent automatic upload
+                    }}
+                    showUploadList={false}
+                    maxCount={1}
+                    className="w-full"
                   >
-                    <Upload className="size-4" />
-                    <span className="truncate max-w-50">
-                      {approvalDoc
-                        ? approvalDoc.name
-                        : "Click to upload document"}
-                    </span>
-                    <input
-                      type="file"
-                      className="hidden"
-                      onChange={(e) =>
-                        setApprovalDoc(e.target.files?.[0] ?? null)
-                      }
-                    />
-                  </label>
+                    <div
+                      className={`cursor-pointer flex items-center justify-center gap-2 w-full h-10 px-3 py-2 bg-input-background border border-dashed rounded-lg hover:bg-muted text-sm text-muted-foreground transition-colors ${
+                        errors.doc ? "border-red-400" : "border-border"
+                      }`}
+                    >
+                      <UploadIcon className="size-4" />
+                      <span className="truncate max-w-50">
+                        {approvalDoc
+                          ? approvalDoc.name
+                          : "Click to upload document"}
+                      </span>
+                    </div>
+                  </AntUpload>
                   {errors.doc && (
                     <p className="text-xs text-destructive mt-1">
                       {errors.doc}
@@ -431,14 +434,13 @@ export function DetailScreen({
               <label className="block text-sm font-medium mb-1">
                 Reason for Rejection <span className="text-destructive">*</span>
               </label>
-              <textarea
+              {/* Antd Text Area */}
+              <Input.TextArea
                 rows={4}
                 placeholder="Enter reason for rejection..."
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
-                className={`w-full px-3 py-2 bg-input-background border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none ${
-                  errors.reason ? "border-red-400" : "border-border"
-                }`}
+                status={errors.reason ? "error" : ""}
               />
               {errors.reason && (
                 <p className="text-xs text-destructive mt-1">{errors.reason}</p>
@@ -482,9 +484,65 @@ export function CommitteeApproval({
   forwardLabel,
   forwardPath,
   items,
-  committeeType, // <-- Destructure the new prop
+  committeeType,
 }: CommitteeApprovalProps) {
   const [selectedItem, setSelectedItem] = useState<CommitteeItem | null>(null);
+
+  // States for the new custom paginated table
+  const [page, setPage] = useState(1);
+  const pageSize = 10; // Configure as necessary
+  const totalPages = Math.ceil(items.length / pageSize) || 1;
+
+  // AG Grid Column Definitions
+  const colDefs = useMemo<ColDef[]>(
+    () => [
+      { headerName: "Procurement ID", flex: 1, field: "refNo" },
+      { headerName: "Financial Year", flex: 1, field: "year" },
+      { headerName: "Item Name", flex: 1, field: "item" },
+      { headerName: "Demand From", flex: 1, field: "demandFrom" },
+      { headerName: "Award Cost", flex: 1, field: "awardCost" },
+      {
+        headerName: "Status",
+        field: "status",
+        flex: 1,
+        cellRenderer: (params: any) => (
+          <div className="flex items-center justify-center h-full">
+            <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">
+              {params.value}
+            </span>
+          </div>
+        ),
+      },
+      {
+        headerName: "Action",
+        headerClass: 'center-header' ,
+        cellRenderer: (params: any) => (
+          <div className="flex items-center justify-center h-full">
+            <button
+              onClick={() => setSelectedItem(params.data)}
+              className="p-2 text-muted-foreground cursor-pointer hover:text-[#0B1F4D] hover:bg-muted rounded-md transition-colors inline-flex items-center justify-center"
+              title="View Details"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+              </svg>
+            </button>
+          </div>
+        ),
+      },
+    ],
+    [],
+  );
 
   console.log("CommitteeApproval items:", items); // Debugging log
 
@@ -495,7 +553,7 @@ export function CommitteeApproval({
         title={title}
         forwardLabel={forwardLabel}
         forwardPath={forwardPath}
-        committeeType={committeeType} // <-- Pass it down to DetailScreen
+        committeeType={committeeType}
         onBack={() => setSelectedItem(null)}
       />
     );
@@ -508,100 +566,15 @@ export function CommitteeApproval({
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>
 
-      <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-muted text-muted-foreground border-b border-border">
-              <tr>
-                <th className="px-4 py-4 font-medium whitespace-nowrap">
-                  Procurement ID
-                </th>
-                <th className="px-4 py-4 font-medium whitespace-nowrap">
-                  Financial Year
-                </th>
-                <th className="px-4 py-4 font-medium whitespace-nowrap">
-                  Item Name
-                </th>
-                <th className="px-4 py-4 font-medium whitespace-nowrap">
-                  Demand From
-                </th>
-                <th className="px-4 py-4 font-medium whitespace-nowrap">
-                  Award Cost
-                </th>
-                <th className="px-4 py-4 font-medium whitespace-nowrap text-center">
-                  Status
-                </th>
-                <th className="px-4 py-4 font-medium whitespace-nowrap text-center">
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {items.map((row) => (
-                <tr
-                  key={row.id}
-                  className="hover:bg-muted/50 transition-colors"
-                >
-                  <td className="px-4 py-3 font-medium text-[#0B1F4D] whitespace-nowrap">
-                    {row.refNo}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">{row.year}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">{row.item}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    {row.demandFrom}
-                  </td>
-                  <td className="px-4 py-3 font-medium whitespace-nowrap">
-                    {row.awardCost}
-                  </td>
-
-                  <td className="px-4 py-3 text-center">
-                    <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">
-                      {row.status}
-                    </span>
-                  </td>
-
-                  <td className="px-4 py-3 text-center">
-                    <button
-                      onClick={() => setSelectedItem(row)}
-                      className="p-2 text-muted-foreground cursor-pointer hover:text-[#0B1F4D] hover:bg-muted rounded-md transition-colors inline-flex items-center justify-center"
-                      title="View Details"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
-                      </svg>
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {items.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={7}
-                    className="px-4 py-8 text-center text-muted-foreground"
-                  >
-                    No pending procurements.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-        <div className="px-4 py-3 border-t border-border flex items-center justify-between bg-muted/20">
-          <span className="text-sm text-muted-foreground">
-            Showing {items.length} entries
-          </span>
-        </div>
-      </div>
+      {/* Replaced HTML Table with your Custom Table Component */}
+      <Table
+        rowData={items}
+        columnDefs={colDefs}
+        totalCount={items.length}
+        page={page}
+        totalPages={totalPages}
+        onPageChange={(newPage) => setPage(newPage)}
+      />
     </div>
   );
 }
