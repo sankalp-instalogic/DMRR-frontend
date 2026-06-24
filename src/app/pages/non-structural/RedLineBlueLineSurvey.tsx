@@ -1,17 +1,30 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Plus, Eye, Download, ArrowLeft } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm, Controller } from "react-hook-form";
+import {
+  Input,
+  Select,
+  DatePicker,
+  InputNumber,
+  Upload,
+  Button as AntButton,
+} from "antd";
+import { UploadOutlined } from "@ant-design/icons";
+import dayjs from "dayjs";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
+import { Table } from "../../components/Table";
+import type { ColDef } from "ag-grid-community";
 
 interface Survey {
   id?: string;
   surveyCode: string;
   title: string;
   districtId: string;
-  grIssuedDate: string;
+  grIssuedDate: string | null;
   allocatedBudget: number | string;
   utilizedBudget: number | string;
-  completionDate: string;
+  completionDate: string | null;
   grDocument?: File | null;
   completionCertificate?: File | null;
 }
@@ -24,7 +37,7 @@ interface PaginatedResponse {
   totalPages: number;
 }
 
-const formatDate = (dateString: string) => {
+const formatDate = (dateString: string | null) => {
   if (!dateString) return "-";
   return dateString.split("T")[0];
 };
@@ -48,19 +61,29 @@ export function RedLineBlueLineSurvey() {
   const axiosPrivate = useAxiosPrivate();
   const queryClient = useQueryClient();
 
-  const initialFormState: Survey = {
-    surveyCode: "",
-    title: "",
-    districtId: "",
-    grIssuedDate: "",
-    allocatedBudget: "",
-    utilizedBudget: "",
-    completionDate: "",
-    grDocument: null,
-    completionCertificate: null,
-  };
+  // --- REACT HOOK FORM SETUP ---
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { isSubmitting },
+    watch,
+  } = useForm<Survey>({
+    defaultValues: {
+      surveyCode: "",
+      title: "",
+      districtId: undefined,
+      grIssuedDate: null,
+      allocatedBudget: "",
+      utilizedBudget: "",
+      completionDate: null,
+      grDocument: null,
+      completionCertificate: null,
+    },
+  });
 
-  const [formData, setFormData] = useState<Survey>(initialFormState);
+  const grDocumentFile = watch("grDocument");
+  const completionCertificateFile = watch("completionCertificate");
 
   // --- QUERIES ---
   const { data, isLoading, isError, isFetching } = useQuery<PaginatedResponse>({
@@ -83,7 +106,6 @@ export function RedLineBlueLineSurvey() {
     },
   });
 
-  // Fetch Documents for selected survey
   const { data: documentsData, isLoading: isDocumentsLoading } = useQuery({
     queryKey: ["documents", selectedSurvey?.id],
     queryFn: async () => {
@@ -100,30 +122,25 @@ export function RedLineBlueLineSurvey() {
   const totalPages = data?.totalPages || 0;
   const districtsList = districtsData?.items || [];
 
-  const districtMap =
-    isDistrictsLoading || !districtsData?.items
-      ? {}
-      : Object.fromEntries(
-          districtsData.items.map((district: any) => [
-            district.id,
-            district.name,
-          ]),
-        );
+  // Memoize districtMap so AG Grid columns don't unnecessarily re-render
+  const districtMap = useMemo(() => {
+    if (isDistrictsLoading || !districtsData?.items) return {};
+    return Object.fromEntries(
+      districtsData.items.map((district: any) => [district.id, district.name]),
+    );
+  }, [districtsData, isDistrictsLoading]);
 
-  // UPDATED: Helper to find document by documentTypeName
   const getDocumentByType = (typeName: string) => {
-    // Check if the response is an array directly or inside an 'items' property
-    const docs = Array.isArray(documentsData) ? documentsData : documentsData?.items || [];
+    const docs = Array.isArray(documentsData)
+      ? documentsData
+      : documentsData?.items || [];
     return docs.find((doc: any) => doc.documentTypeName === typeName);
   };
 
-  // UPDATED: Match against the actual string names from your JSON
-  const grDocument = getDocumentByType("GRCopy");
-  const completionDoc = getDocumentByType("CompletionReport");
+  const grDocumentInfo = getDocumentByType("GRCopy");
+  const completionDocInfo = getDocumentByType("CompletionReport");
 
   // --- MUTATIONS ---
-
-  // Upload Document Mutation
   const uploadMutation = useMutation({
     mutationFn: async ({
       file,
@@ -143,23 +160,18 @@ export function RedLineBlueLineSurvey() {
       const response = await axiosPrivate.post(
         "/api/v1/Documents/upload",
         uploadData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        },
+        { headers: { "Content-Type": "multipart/form-data" } },
       );
       return response.data;
     },
   });
 
-  // Add Survey Data Mutation
   const addMutation = useMutation({
     mutationFn: async (newData: any) => {
       const response = await axiosPrivate.post(
         "/api/v1/surveys/rlbl",
         newData,
-        {
-          headers: { "Content-Type": "application/json" },
-        },
+        { headers: { "Content-Type": "application/json" } },
       );
       return response.data;
     },
@@ -167,25 +179,22 @@ export function RedLineBlueLineSurvey() {
       if (responseData?.id) {
         const uploadPromises = [];
 
-        // Note: You may need to update '25' to the exact UUID (12d863df-353b-413e-84df-da0bbafccbb2) 
-        // if your upload endpoint strictly requires the `documentTypeId` instead of numeric map.
-        if (formData.grDocument) {
+        if (grDocumentFile) {
           uploadPromises.push(
             uploadMutation.mutateAsync({
-              file: formData.grDocument,
+              file: grDocumentFile,
               ownerId: responseData.id,
-              documentType: "25", 
+              documentType: "25",
             }),
           );
         }
 
-        // Note: Similarly, update '19' to (eee38b1f-47cf-49fe-adee-d047f9295110) if needed.
-        if (formData.completionCertificate) {
+        if (completionCertificateFile) {
           uploadPromises.push(
             uploadMutation.mutateAsync({
-              file: formData.completionCertificate,
+              file: completionCertificateFile,
               ownerId: responseData.id,
-              documentType: "18", 
+              documentType: "18",
             }),
           );
         }
@@ -200,7 +209,7 @@ export function RedLineBlueLineSurvey() {
       }
 
       queryClient.invalidateQueries({ queryKey: ["rlbl-surveys"] });
-      setFormData(initialFormState);
+      reset();
       setActiveTab("list");
     },
     onError: (err) => {
@@ -209,7 +218,7 @@ export function RedLineBlueLineSurvey() {
   });
 
   // --- HANDLERS ---
-  const handleSave = () => {
+  const onSubmit = (formData: Survey) => {
     const { grDocument, completionCertificate, ...textData } = formData;
 
     const payload = {
@@ -228,10 +237,11 @@ export function RedLineBlueLineSurvey() {
   const handleDownload = async (doc: any) => {
     if (!doc?.id) return;
     try {
-      const response = await axiosPrivate.get(`/api/v1/Documents/${doc.id}/download`, {
-        responseType: "blob",
-      });
-      
+      const response = await axiosPrivate.get(
+        `/api/v1/Documents/${doc.id}/download`,
+        { responseType: "blob" },
+      );
+
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
@@ -244,6 +254,57 @@ export function RedLineBlueLineSurvey() {
       console.error("Failed to download document:", error);
     }
   };
+
+  // --- AG GRID COLUMNS ---
+  const columnDefs = useMemo<ColDef[]>(
+    () => [
+      { headerName: "Survey Code", field: "surveyCode" },
+      { headerName: "Title", field: "title" },
+      {
+        headerName: "District",
+        field: "districtId",
+        valueGetter: (params) =>
+          districtMap[params.data.districtId] || params.data.districtId,
+      },
+      {
+        headerName: "Date of GR Issued",
+        field: "grIssuedDate",
+        valueFormatter: (params) => formatDate(params.value),
+      },
+      {
+        headerName: "Allocated Budget",
+        field: "allocatedBudget",
+        valueFormatter: (params) => formatCurrency(params.value),
+      },
+      {
+        headerName: "Utilized Budget",
+        field: "utilizedBudget",
+        valueFormatter: (params) => formatCurrency(params.value),
+      },
+      {
+        headerName: "Date of Completion",
+        field: "completionDate",
+        valueFormatter: (params) => formatDate(params.value),
+      },
+      {
+        headerName: "Action",
+        field: "id",
+        sortable: false,
+        filter: false,
+        width: 120,
+        cellRenderer: (params: any) => (
+          <button
+            onClick={() => setSelectedSurvey(params.data)}
+            className="inline-flex cursor-pointer items-center gap-1.5 px-4 h-8 bg-white border border-[#0B1F4D] text-[#0B1F4D] rounded-[10px] hover:bg-blue-50 transition-colors text-[14px] font-medium mt-1.5"
+          >
+            <Eye className="size-4" />
+            View
+          </button>
+        ),
+      },
+    ],
+    [districtMap],
+  );
 
   if (selectedSurvey) {
     return (
@@ -326,12 +387,17 @@ export function RedLineBlueLineSurvey() {
 
             <div>
               <label className="text-[16px] font-semibold text-[#0B1F4D] block mb-4">
-                GR Issued {isDocumentsLoading && <span className="text-sm text-gray-400 font-normal ml-2">(Loading...)</span>}
+                GR Issued{" "}
+                {isDocumentsLoading && (
+                  <span className="text-sm text-gray-400 font-normal ml-2">
+                    (Loading...)
+                  </span>
+                )}
               </label>
               <div className="flex gap-3">
-                <button 
-                  onClick={() => handleDownload(grDocument)}
-                  disabled={!grDocument || isDocumentsLoading}
+                <button
+                  onClick={() => handleDownload(grDocumentInfo)}
+                  disabled={!grDocumentInfo || isDocumentsLoading}
                   className="flex cursor-pointer items-center gap-1.5 bg-[#0B1F4D] text-white px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-[#0B1F4D]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Download className="size-4" /> Download
@@ -341,12 +407,17 @@ export function RedLineBlueLineSurvey() {
 
             <div>
               <label className="text-[16px] font-semibold text-[#0B1F4D] block mb-4">
-                Completion Certificate {isDocumentsLoading && <span className="text-sm text-gray-400 font-normal ml-2">(Loading...)</span>}
+                Completion Certificate{" "}
+                {isDocumentsLoading && (
+                  <span className="text-sm text-gray-400 font-normal ml-2">
+                    (Loading...)
+                  </span>
+                )}
               </label>
               <div className="flex gap-3">
-                <button 
-                  onClick={() => handleDownload(completionDoc)}
-                  disabled={!completionDoc || isDocumentsLoading}
+                <button
+                  onClick={() => handleDownload(completionDocInfo)}
+                  disabled={!completionDocInfo || isDocumentsLoading}
                   className="flex cursor-pointer items-center gap-1.5 bg-[#0B1F4D] text-white px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-[#0B1F4D]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Download className="size-4" /> Download
@@ -370,368 +441,302 @@ export function RedLineBlueLineSurvey() {
         </p>
       </div>
 
-      <div className="flex gap-2">
-        <button
-          onClick={() => setActiveTab("list")}
-          className={`px-4 py-2 cursor-pointer font-medium text-[14px] transition-colors rounded-[10px] ${
-            activeTab === "list"
-              ? "bg-[#0B1F4D] text-white"
-              : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
-          }`}
-        >
-          Survey List
-        </button>
+      <div className="flex items-center justify-between">
+        <div className="flex gap-2">
+          <button
+            onClick={() => setActiveTab("list")}
+            className={`px-4 py-2 cursor-pointer font-medium text-[14px] transition-colors rounded-[10px] ${
+              activeTab === "list"
+                ? "bg-[#0B1F4D] text-white"
+                : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+            }`}
+          >
+            Survey List
+          </button>
+          <button
+            onClick={() => setActiveTab("new")}
+            className={`flex cursor-pointer items-center gap-2 px-4 py-2 font-medium text-[14px] transition-colors rounded-[10px] ${
+              activeTab === "new"
+                ? "bg-[#0B1F4D] text-white"
+                : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+            }`}
+          >
+            <Plus className="size-4" /> New Survey
+          </button>
+        </div>
 
-        <button
-          onClick={() => setActiveTab("new")}
-          className={`flex cursor-pointer items-center gap-2 px-4 py-2 font-medium text-[14px] transition-colors rounded-[10px] ${
-            activeTab === "new"
-              ? "bg-[#0B1F4D] text-white"
-              : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
-          }`}
-        >
-          <Plus className="size-4" />
-          New Survey
-        </button>
+        {/* Page Size Selector preserved from previous table layout */}
+        {activeTab === "list" && (
+          <div className="flex items-center gap-2">
+            <span className="text-[13px] text-gray-500 font-medium">
+              Rows per page:
+            </span>
+            <select
+              value={pageSize}
+              onChange={(e) => {
+                setPageSize(Number(e.target.value));
+                setPage(1);
+              }}
+              className="text-[13px] border border-gray-200 rounded px-2 py-1.5 bg-white outline-none focus:border-[#0B1F4D]"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+          </div>
+        )}
       </div>
 
       {activeTab === "list" && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6 flex flex-col relative">
+        <div className="relative mb-6">
+          {/* Faded Background Data Updater */}
           {isFetching && !isLoading && (
-            <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-10 flex items-center justify-center">
+            <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-xl">
               <span className="text-[#0B1F4D] font-medium bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">
                 Updating...
               </span>
             </div>
           )}
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-[13px] text-left">
-              <thead className="bg-[#F5F7FA] text-[#0B1F4D]">
-                <tr className="h-14">
-                  <th className="px-4 font-semibold whitespace-nowrap">
-                    Title
-                  </th>
-                  <th className="px-4 font-semibold whitespace-nowrap">
-                    Survey Code
-                  </th>
-                  <th className="px-4 font-semibold whitespace-nowrap">
-                    District
-                  </th>
-                  <th className="px-4 font-semibold whitespace-nowrap">
-                    Date of GR Issued
-                  </th>
-                  <th className="px-4 font-semibold whitespace-nowrap">
-                    Allocated Budget
-                  </th>
-                  <th className="px-4 font-semibold whitespace-nowrap">
-                    Utilized Budget
-                  </th>
-                  <th className="px-4 font-semibold whitespace-nowrap">
-                    Date of Completion
-                  </th>
-                  <th className="px-4 font-semibold whitespace-nowrap text-center">
-                    Action
-                  </th>
-                </tr>
-              </thead>
-
-              <tbody className="divide-y divide-gray-100">
-                {isLoading ? (
-                  <tr>
-                    <td
-                      colSpan={8}
-                      className="px-4 py-8 text-center text-gray-500 font-medium"
-                    >
-                      Loading surveys...
-                    </td>
-                  </tr>
-                ) : isError ? (
-                  <tr>
-                    <td
-                      colSpan={8}
-                      className="px-4 py-8 text-center text-red-500 font-medium"
-                    >
-                      Failed to load surveys. Please try again.
-                    </td>
-                  </tr>
-                ) : surveys.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={8}
-                      className="px-4 py-8 text-center text-gray-500 font-medium"
-                    >
-                      No surveys found. Click "New Survey" to add one.
-                    </td>
-                  </tr>
-                ) : (
-                  surveys.map((survey, index) => (
-                    <tr
-                      key={survey.id || index}
-                      className="hover:bg-blue-50/50 transition-colors h-14 even:bg-gray-50/50"
-                    >
-                      <td className="px-4">{survey.surveyCode}</td>
-                      <td className="px-4">{survey.title}</td>
-                      <td className="px-4">
-                        <span
-                          className="truncate max-w-25 inline-block"
-                          title={
-                            districtMap[survey.districtId] || survey.districtId
-                          }
-                        >
-                          {districtMap[survey.districtId] || survey.districtId}
-                        </span>
-                      </td>
-                      <td className="px-4">
-                        {formatDate(survey.grIssuedDate)}
-                      </td>
-                      <td className="px-4">
-                        {formatCurrency(survey.allocatedBudget)}
-                      </td>
-                      <td className="px-4">
-                        {formatCurrency(survey.utilizedBudget)}
-                      </td>
-                      <td className="px-4">
-                        {formatDate(survey.completionDate)}
-                      </td>
-
-                      <td className="px-4 whitespace-nowrap text-center">
-                        <button
-                          onClick={() => setSelectedSurvey(survey)}
-                          className="inline-flex cursor-pointer items-center gap-1.5 px-4 h-10 bg-white border border-[#0B1F4D] text-[#0B1F4D] rounded-[10px] hover:bg-blue-50 transition-colors text-[14px] font-medium"
-                        >
-                          <Eye className="size-4" />
-                          View
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {surveys.length > 0 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-[#F5F7FA]">
-              <div className="flex items-center gap-3">
-                <span className="text-[13px] text-gray-500 font-medium">
-                  Showing {(page - 1) * pageSize + 1} to{" "}
-                  {Math.min(page * pageSize, totalCount)} of {totalCount}{" "}
-                  entries
-                </span>
-
-                <select
-                  value={pageSize}
-                  onChange={(e) => {
-                    setPageSize(Number(e.target.value));
-                    setPage(1);
-                  }}
-                  className="text-[13px] border border-gray-200 rounded px-2 py-1 bg-white outline-none focus:border-[#0B1F4D]"
-                >
-                  <option value={5}>5 per page</option>
-                  <option value={10}>10 per page</option>
-                  <option value={20}>20 per page</option>
-                  <option value={50}>50 per page</option>
-                </select>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1 || isLoading || isFetching}
-                  className="px-3 py-1.5 text-[13px] font-medium border border-gray-200 rounded-lg bg-white text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                >
-                  Previous
-                </button>
-
-                <span className="text-[13px] font-semibold text-[#0B1F4D] px-2">
-                  Page {page} of {totalPages}
-                </span>
-
-                <button
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page >= totalPages || isLoading || isFetching}
-                  className="px-3 py-1.5 text-[13px] font-medium border border-gray-200 rounded-lg bg-white text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                >
-                  Next
-                </button>
-              </div>
+          {isLoading ? (
+            <div className="bg-white border border-gray-200 rounded-xl p-12 flex justify-center shadow-sm">
+              <span className="text-gray-500 font-medium">
+                Loading surveys...
+              </span>
             </div>
+          ) : isError ? (
+            <div className="bg-white border border-gray-200 rounded-xl p-12 flex justify-center shadow-sm">
+              <span className="text-red-500 font-medium">
+                Failed to load surveys. Please try again.
+              </span>
+            </div>
+          ) : (
+            <Table
+              rowData={surveys}
+              columnDefs={columnDefs}
+              totalCount={totalCount}
+              page={page}
+              totalPages={totalPages}
+              onPageChange={(newPage) => setPage(newPage)}
+            />
           )}
         </div>
       )}
 
       {activeTab === "new" && (
-        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm"
+        >
           <h2 className="text-[20px] font-semibold mb-6 text-[#0B1F4D]">
             Add New Survey
           </h2>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-[14px] font-medium text-gray-700 mb-1">
                 Survey Code
               </label>
-              <input
-                type="text"
-                className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20"
-                value={formData.surveyCode}
-                onChange={(e) =>
-                  setFormData({ ...formData, surveyCode: e.target.value })
-                }
+              <Controller
+                name="surveyCode"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    placeholder="Enter Survey Code"
+                    className="h-10 rounded-[10px] text-[14px] hover:border-[#0B1F4D]/50 focus:border-[#0B1F4D]/50"
+                  />
+                )}
               />
             </div>
-
             <div>
               <label className="block text-[14px] font-medium text-gray-700 mb-1">
                 Title
               </label>
-              <input
-                type="text"
-                className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20"
-                value={formData.title}
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
+              <Controller
+                name="title"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    placeholder="Enter Title"
+                    className="h-10 rounded-[10px] text-[14px] hover:border-[#0B1F4D]/50 focus:border-[#0B1F4D]/50"
+                  />
+                )}
               />
             </div>
-
             <div>
               <label className="block text-[14px] font-medium text-gray-700 mb-1">
                 District
               </label>
-              <select
-                className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20 disabled:opacity-50"
-                value={formData.districtId}
-                onChange={(e) =>
-                  setFormData({ ...formData, districtId: e.target.value })
-                }
-                disabled={isDistrictsLoading}
-              >
-                <option value="" disabled>
-                  {isDistrictsLoading
-                    ? "Loading districts..."
-                    : "Select District"}
-                </option>
-                {districtsList.map((district: any) => (
-                  <option key={district.id} value={district.id}>
-                    {district.name}
-                  </option>
-                ))}
-              </select>
+              <Controller
+                name="districtId"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    className="w-full h-10 [&>.ant-select-selector]:rounded-[10px] text-[14px]"
+                    placeholder={
+                      isDistrictsLoading
+                        ? "Loading districts..."
+                        : "Select District"
+                    }
+                    disabled={isDistrictsLoading}
+                    options={districtsList.map((district: any) => ({
+                      value: district.id,
+                      label: district.name,
+                    }))}
+                  />
+                )}
+              />
             </div>
-
             <div>
               <label className="block text-[14px] font-medium text-gray-700 mb-1">
                 Date of GR Issued
               </label>
-              <input
-                type="date"
-                className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20"
-                value={formData.grIssuedDate}
-                onChange={(e) =>
-                  setFormData({ ...formData, grIssuedDate: e.target.value })
-                }
+              <Controller
+                name="grIssuedDate"
+                control={control}
+                render={({ field }) => (
+                  <DatePicker
+                    className="w-full h-10 rounded-[10px] text-[14px]"
+                    format="YYYY-MM-DD"
+                    value={field.value ? dayjs(field.value) : null}
+                    onChange={(date, dateString) => {
+                      field.onChange(
+                        typeof dateString === "string" ? dateString : "",
+                      );
+                    }}
+                  />
+                )}
               />
             </div>
-
             <div>
               <label className="block text-[14px] font-medium text-gray-700 mb-1">
                 Allocated Budget
               </label>
-              <input
-                type="number"
-                className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20"
-                value={formData.allocatedBudget}
-                onChange={(e) =>
-                  setFormData({ ...formData, allocatedBudget: e.target.value })
-                }
+              <Controller
+                name="allocatedBudget"
+                control={control}
+                render={({ field }) => (
+                  <InputNumber
+                    {...field}
+                    style={{ width: "100%" }}
+                    className="w-full h-10 rounded-[10px] text-[14px] flex items-center"
+                    placeholder="Enter Allocated Budget"
+                  />
+                )}
               />
             </div>
-
             <div>
               <label className="block text-[14px] font-medium text-gray-700 mb-1">
                 Utilized Budget
               </label>
-              <input
-                type="number"
-                className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20"
-                value={formData.utilizedBudget}
-                onChange={(e) =>
-                  setFormData({ ...formData, utilizedBudget: e.target.value })
-                }
+              <Controller
+                name="utilizedBudget"
+                control={control}
+                render={({ field }) => (
+                  <InputNumber
+                    {...field}
+                    style={{ width: "100%" }}
+                    className="w-full h-10 rounded-[10px] text-[14px] flex items-center"
+                    placeholder="Enter Utilized Budget"
+                  />
+                )}
               />
             </div>
-
-            <div>
+            <div className="col-span-2">
               <label className="block text-[14px] font-medium text-gray-700 mb-1">
                 Date of Completion
               </label>
-              <input
-                type="date"
-                className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20"
-                value={formData.completionDate}
-                onChange={(e) =>
-                  setFormData({ ...formData, completionDate: e.target.value })
-                }
+              <Controller
+                name="completionDate"
+                control={control}
+                render={({ field }) => (
+                  <DatePicker
+                    className="w-full h-10 rounded-[10px] text-[14px]"
+                    format="YYYY-MM-DD"
+                    value={field.value ? dayjs(field.value) : null}
+                    onChange={(date, dateString) => {
+                      field.onChange(
+                        typeof dateString === "string" ? dateString : "",
+                      );
+                    }}
+                  />
+                )}
               />
             </div>
-
             <div>
               <label className="block text-[14px] font-medium text-gray-700 mb-1">
                 GR Issued Upload
               </label>
-              <input
-                type="file"
-                className="w-full text-[14px] file:mr-4 file:py-2 file:px-4 file:rounded-[10px] file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    grDocument: e.target.files?.[0] || null,
-                  })
-                }
+              <Controller
+                name="grDocument"
+                control={control}
+                render={({ field }) => (
+                  <Upload
+                    beforeUpload={(file) => {
+                      field.onChange(file);
+                      return false;
+                    }}
+                    onRemove={() => field.onChange(null)}
+                    fileList={field.value ? [field.value as any] : []}
+                    maxCount={1}
+                  >
+                    <AntButton icon={<UploadOutlined />}>Select File</AntButton>
+                  </Upload>
+                )}
               />
             </div>
-
-            <div className="md:col-span-2">
+            <div>
               <label className="block text-[14px] font-medium text-gray-700 mb-1">
                 Completion Certificate Upload
               </label>
-              <input
-                type="file"
-                className="w-full text-[14px] file:mr-4 file:py-2 file:px-4 file:rounded-[10px] file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    completionCertificate: e.target.files?.[0] || null,
-                  })
-                }
+              <Controller
+                name="completionCertificate"
+                control={control}
+                render={({ field }) => (
+                  <Upload
+                    beforeUpload={(file) => {
+                      field.onChange(file);
+                      return false;
+                    }}
+                    onRemove={() => field.onChange(null)}
+                    fileList={field.value ? [field.value as any] : []}
+                    maxCount={1}
+                  >
+                    <AntButton icon={<UploadOutlined />}>Select File</AntButton>
+                  </Upload>
+                )}
               />
             </div>
           </div>
-
           <div className="flex gap-3 justify-end mt-6 pt-4 border-t border-gray-200">
             <button
+              type="button"
               onClick={() => {
-                setFormData(initialFormState);
+                reset();
                 setActiveTab("list");
               }}
               className="px-4 h-10 cursor-pointer bg-white border border-[#0B1F4D] text-[#0B1F4D] rounded-[10px] font-medium hover:bg-gray-50 transition-colors text-[14px]"
             >
               Cancel
             </button>
-
             <button
-              onClick={handleSave}
-              disabled={addMutation.isPending || uploadMutation.isPending}
+              type="submit"
+              disabled={
+                addMutation.isPending ||
+                uploadMutation.isPending ||
+                isSubmitting
+              }
               className="px-4 h-10 cursor-pointer bg-[#0B1F4D] text-white rounded-[10px] font-medium hover:bg-[#0B1F4D]/90 transition-colors text-[14px] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {addMutation.isPending || uploadMutation.isPending
+              {addMutation.isPending || uploadMutation.isPending || isSubmitting
                 ? "Saving..."
                 : "Save"}
             </button>
           </div>
-        </div>
+        </form>
       )}
     </div>
   );

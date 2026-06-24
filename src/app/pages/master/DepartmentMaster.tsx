@@ -1,7 +1,9 @@
-import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 import { Edit2, Plus, Trash2 } from "lucide-react";
+import { Table } from "../../components/Table";
 
 import {
   Dialog,
@@ -21,12 +23,28 @@ import {
   AlertDialogTitle,
 } from "../../components/ui/alert-dialog";
 import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { Label } from "../../components/ui/label";
-import { queryClient } from "../../App";
+import { Input as AntdInput, Checkbox as AntdCheckbox } from "antd";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../../components/ui/form";
+
+// --- TYPES ---
+type FormValues = {
+  code: string;
+  name: string;
+  headOffice: string;
+  contactPerson: string;
+  isActive: boolean;
+};
 
 export function DepartmentMaster() {
   const axiosPrivate = useAxiosPrivate();
+  const queryClient = useQueryClient();
 
   // Table State
   const [page, setPage] = useState(1);
@@ -39,23 +57,26 @@ export function DepartmentMaster() {
     null,
   );
 
-  // Form State for Add/Edit
-  const [formData, setFormData] = useState({
-    code: "",
-    name: "",
-    headOffice: "",
-    contactPerson: "",
-    isActive: true,
+  const form = useForm<FormValues>({
+    defaultValues: {
+      code: "",
+      name: "",
+      headOffice: "",
+      contactPerson: "",
+      isActive: true,
+    },
   });
 
   // --- QUERIES ---
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["departments", page, pageSize],
     queryFn: async () => {
-      // Assuming the endpoint pattern matches the districts API
-      const response = await axiosPrivate.get("/api/v1/masters/line-departments", {
-        params: { page, pageSize },
-      });
+      const response = await axiosPrivate.get(
+        "/api/v1/masters/line-departments",
+        {
+          params: { page, pageSize },
+        },
+      );
       return response.data;
     },
   });
@@ -66,10 +87,14 @@ export function DepartmentMaster() {
 
   // --- MUTATIONS ---
   const addMutation = useMutation({
-    mutationFn: async (newData: any) => {
-      return await axiosPrivate.post("/api/v1/masters/line-departments", newData, {
-        headers: { "Content-Type": "application/json" },
-      });
+    mutationFn: async (newData: FormValues) => {
+      return await axiosPrivate.post(
+        "/api/v1/masters/line-departments",
+        newData,
+        {
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["departments"] });
@@ -78,8 +103,11 @@ export function DepartmentMaster() {
   });
 
   const editMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      return await axiosPrivate.put(`/api/v1/masters/line-departments/${id}`, data);
+    mutationFn: async ({ id, data }: { id: string; data: FormValues }) => {
+      return await axiosPrivate.put(
+        `/api/v1/masters/line-departments/${id}`,
+        data,
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["departments"] });
@@ -89,7 +117,9 @@ export function DepartmentMaster() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      return await axiosPrivate.delete(`/api/v1/masters/line-departments/${id}`);
+      return await axiosPrivate.delete(
+        `/api/v1/masters/line-departments/${id}`,
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["departments"] });
@@ -100,7 +130,7 @@ export function DepartmentMaster() {
   // --- HANDLERS ---
   const handleOpenAdd = () => {
     setEditingDepartment(null);
-    setFormData({
+    form.reset({
       code: "",
       name: "",
       headOffice: "",
@@ -112,12 +142,12 @@ export function DepartmentMaster() {
 
   const handleOpenEdit = (department: any) => {
     setEditingDepartment(department);
-    setFormData({
+    form.reset({
       code: department.code,
       name: department.name,
       headOffice: department.headOffice,
       contactPerson: department.contactPerson,
-      isActive: department.isActive ?? department.active, // fallback if API uses 'active'
+      isActive: department.isActive ?? department.active ?? true, // Fallback if API uses 'active'
     });
     setIsModalOpen(true);
   };
@@ -125,16 +155,78 @@ export function DepartmentMaster() {
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingDepartment(null);
+    form.reset();
   };
 
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = (data: FormValues) => {
     if (editingDepartment) {
-      editMutation.mutate({ id: editingDepartment.id, data: formData });
+      editMutation.mutate({ id: editingDepartment.id, data });
     } else {
-      addMutation.mutate(formData);
+      addMutation.mutate(data);
     }
   };
+
+  // --- AG GRID COLUMN DEFINITIONS ---
+  const columnDefs = useMemo(
+    () => [
+      { field: "code", headerName: "Code", flex: 1 },
+      { field: "name", headerName: "Department Name", flex: 1 },
+      { field: "headOffice", headerName: "Head Office", flex: 1 },
+      { field: "contactPerson", headerName: "Contact Person", flex: 1 },
+      {
+        field: "isActive",
+        headerName: "Status",
+        flex: 1,
+        cellRenderer: (params: any) => {
+          const isActive =
+            params.value !== false && params.data.active !== false;
+          return (
+            <span
+              className={`inline-flex items-center gap-2 rounded-full px-3 py-1 mt-2 text-xs font-medium ${
+                isActive
+                  ? "bg-green-100 text-green-700"
+                  : "bg-gray-100 text-gray-600"
+              }`}
+            >
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  isActive ? "bg-green-500" : "bg-gray-400"
+                }`}
+              />
+              {isActive ? "Active" : "Inactive"}
+            </span>
+          );
+        },
+      },
+      {
+        headerName: "Actions",
+        flex: 1,
+        sortable: false,
+        filter: false,
+        cellRenderer: (params: any) => {
+          return (
+            <div className="flex gap-2 mt-1">
+              <button
+                className="p-2 hover:bg-muted rounded cursor-pointer"
+                onClick={() => handleOpenEdit(params.data)}
+              >
+                <Edit2 className="size-4" />
+              </button>
+              <button
+                className="p-2 hover:bg-destructive/20 rounded cursor-pointer"
+                onClick={() =>
+                  setDepartmentToDelete(params.data.id || params.data.code)
+                }
+              >
+                <Trash2 className="size-4 text-destructive" />
+              </button>
+            </div>
+          );
+        },
+      },
+    ],
+    [],
+  );
 
   if (isLoading) {
     return (
@@ -184,95 +276,14 @@ export function DepartmentMaster() {
       </div>
 
       <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-muted">
-              <tr>
-                <th className="px-6 py-4 text-left text-sm">Code</th>
-                <th className="px-6 py-4 text-left text-sm">Department Name</th>
-                <th className="px-6 py-4 text-left text-sm">Head Office</th>
-                <th className="px-6 py-4 text-left text-sm">Contact Person</th>
-                <th className="px-6 py-4 text-left text-sm">Status</th>
-                <th className="px-6 py-4 text-left text-sm">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {departments.map((dept: any) => (
-                <tr
-                  key={dept.id || dept.code} // Fallback to code if id is missing
-                  className="border-t border-border hover:bg-muted/50"
-                >
-                  <td className="px-6 py-4 font-medium">{dept.code}</td>
-                  <td className="px-6 py-4">{dept.name}</td>
-                  <td className="px-6 py-4">{dept.headOffice}</td>
-                  <td className="px-6 py-4">{dept.contactPerson}</td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${
-                        dept.isActive || dept.active
-                          ? "bg-green-100 text-green-700"
-                          : "bg-gray-100 text-gray-600"
-                      }`}
-                    >
-                      <span
-                        className={`h-2 w-2 rounded-full ${
-                          dept.isActive || dept.active
-                            ? "bg-green-500"
-                            : "bg-gray-400"
-                        }`}
-                      />
-                      {dept.isActive || dept.active ? "Active" : "Inactive"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex gap-2">
-                      <button
-                        className="p-2 hover:bg-muted rounded cursor-pointer"
-                        onClick={() => handleOpenEdit(dept)}
-                      >
-                        <Edit2 className="size-4" />
-                      </button>
-                      <button
-                        className="p-2 hover:bg-destructive/20 rounded cursor-pointer"
-                        onClick={() => setDepartmentToDelete(dept.id)}
-                      >
-                        <Trash2 className="size-4 text-destructive" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        <div className="flex items-center justify-between px-6 py-4 border-t">
-          <span className="text-sm text-muted-foreground">
-            Total Records: {totalCount}
-          </span>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((prev) => prev - 1)}
-              disabled={page === 1}
-            >
-              Previous
-            </Button>
-            <span className="text-sm">
-              Page {page} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((prev) => prev + 1)}
-              disabled={page >= totalPages}
-            >
-              Next
-            </Button>
-          </div>
-        </div>
+        <Table
+          rowData={departments}
+          columnDefs={columnDefs}
+          totalCount={totalCount}
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+        />
       </div>
 
       {/* --- ADD / EDIT MODAL --- */}
@@ -283,85 +294,121 @@ export function DepartmentMaster() {
               {editingDepartment ? "Edit Department" : "Add Department"}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSave} className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="code">Code</Label>
-              <Input
-                id="code"
-                value={formData.code}
-                onChange={(e) =>
-                  setFormData({ ...formData, code: e.target.value })
-                }
-                required
+
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-4 py-4"
+            >
+              <FormField
+                control={form.control}
+                name="code"
+                rules={{ required: "Code is required" }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Code</FormLabel>
+                    <FormControl>
+                      <AntdInput
+                        placeholder="Enter department code"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="name">Department Name</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                required
+
+              <FormField
+                control={form.control}
+                name="name"
+                rules={{ required: "Department name is required" }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Department Name</FormLabel>
+                    <FormControl>
+                      <AntdInput
+                        placeholder="Enter department name"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="headOffice">Head Office</Label>
-              <Input
-                id="headOffice"
-                value={formData.headOffice}
-                onChange={(e) =>
-                  setFormData({ ...formData, headOffice: e.target.value })
-                }
-                required
+
+              <FormField
+                control={form.control}
+                name="headOffice"
+                rules={{ required: "Head office is required" }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Head Office</FormLabel>
+                    <FormControl>
+                      <AntdInput placeholder="Enter head office" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="contactPerson">Contact Person</Label>
-              <Input
-                id="contactPerson"
-                value={formData.contactPerson}
-                onChange={(e) =>
-                  setFormData({ ...formData, contactPerson: e.target.value })
-                }
-                required
+
+              <FormField
+                control={form.control}
+                name="contactPerson"
+                rules={{ required: "Contact person is required" }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Contact Person</FormLabel>
+                    <FormControl>
+                      <AntdInput
+                        placeholder="Enter contact person"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="isActive"
-                checked={formData.isActive}
-                onChange={(e) =>
-                  setFormData({ ...formData, isActive: e.target.checked })
-                }
-                className="size-4 rounded border-gray-300"
+
+              <FormField
+                control={form.control}
+                name="isActive"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row mt-2 items-center space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <AntdCheckbox
+                        checked={field.value}
+                        onChange={(e) => field.onChange(e.target.checked)}
+                      >
+                        Is Active?
+                      </AntdCheckbox>
+                    </FormControl>
+
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              <Label htmlFor="isActive" className="cursor-pointer">
-                Is Active?
-              </Label>
-            </div>
-            <DialogFooter className="mt-6">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={closeModal}
-                className="cursor-pointer"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                className="cursor-pointer"
-                disabled={addMutation.isPending || editMutation.isPending}
-              >
-                {addMutation.isPending || editMutation.isPending
-                  ? "Saving..."
-                  : "Save"}
-              </Button>
-            </DialogFooter>
-          </form>
+
+              <DialogFooter className="mt-6">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={closeModal}
+                  className="cursor-pointer"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="cursor-pointer"
+                  disabled={addMutation.isPending || editMutation.isPending}
+                >
+                  {addMutation.isPending || editMutation.isPending
+                    ? "Saving..."
+                    : "Save"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
 

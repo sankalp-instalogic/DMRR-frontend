@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 import { Edit2, Plus, Trash2, Upload } from "lucide-react";
+import { Table } from "../../components/Table";
 
 import {
   Dialog,
@@ -21,8 +23,30 @@ import {
   AlertDialogTitle,
 } from "../../components/ui/alert-dialog";
 import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { Label } from "../../components/ui/label";
+import {
+  Input as AntdInput,
+  InputNumber as AntdInputNumber,
+  Checkbox as AntdCheckbox,
+  Select as AntdSelect,
+} from "antd";
+import { Checkbox } from "../../components/ui/checkbox";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../../components/ui/form";
+
+// --- TYPES ---
+type FormValues = {
+  code: string;
+  name: string;
+  districtId: string;
+  villages: number | string;
+  isActive: boolean;
+};
 
 export function TalukaMaster() {
   const axiosPrivate = useAxiosPrivate();
@@ -37,13 +61,14 @@ export function TalukaMaster() {
   const [editingTaluka, setEditingTaluka] = useState<any | null>(null);
   const [talukaToDelete, setTalukaToDelete] = useState<string | null>(null);
 
-  // Form State for Add/Edit
-  const [formData, setFormData] = useState({
-    code: "",
-    name: "",
-    districtId: "",
-    villages: "",
-    isActive: true,
+  const form = useForm<FormValues>({
+    defaultValues: {
+      code: "",
+      name: "",
+      districtId: "",
+      villages: "",
+      isActive: true,
+    },
   });
 
   // --- QUERIES ---
@@ -69,20 +94,22 @@ export function TalukaMaster() {
 
   const districts = districtsData ?? [];
 
-  const districtMap = Object.fromEntries(
-    (districts?.items ?? []).map((district: any) => [
-      district.id,
-      district.name,
-    ]),
-  );
+  const districtMap = useMemo(() => {
+    return Object.fromEntries(
+      (districts?.items ?? []).map((district: any) => [
+        district.id,
+        district.name,
+      ]),
+    );
+  }, [districts]);
 
-  const talukas = data ?? [];
-  const totalPages = 1;
-  const totalCount = talukas.length;
+  const talukas = data?.items ?? data ?? [];
+  const totalPages = data?.totalPages ?? 1;
+  const totalCount = data?.totalCount ?? talukas.length;
 
   // --- MUTATIONS ---
   const addMutation = useMutation({
-    mutationFn: async (newData: any) => {
+    mutationFn: async (newData: FormValues) => {
       return await axiosPrivate.post("/api/v1/masters/talukas", newData, {
         headers: { "Content-Type": "application/json" },
       });
@@ -94,7 +121,7 @@ export function TalukaMaster() {
   });
 
   const editMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+    mutationFn: async ({ id, data }: { id: string; data: FormValues }) => {
       return await axiosPrivate.put(`/api/v1/masters/talukas/${id}`, data);
     },
     onSuccess: () => {
@@ -116,7 +143,7 @@ export function TalukaMaster() {
   // --- HANDLERS ---
   const handleOpenAdd = () => {
     setEditingTaluka(null);
-    setFormData({
+    form.reset({
       code: "",
       name: "",
       districtId: "",
@@ -128,7 +155,7 @@ export function TalukaMaster() {
 
   const handleOpenEdit = (taluka: any) => {
     setEditingTaluka(taluka);
-    setFormData({
+    form.reset({
       code: taluka.code,
       name: taluka.name,
       districtId: taluka.districtId,
@@ -141,18 +168,89 @@ export function TalukaMaster() {
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingTaluka(null);
+    form.reset();
   };
 
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = (data: FormValues) => {
     if (editingTaluka) {
-      editMutation.mutate({ id: editingTaluka.id, data: formData });
+      editMutation.mutate({ id: editingTaluka.id, data });
     } else {
-      addMutation.mutate(formData);
+      addMutation.mutate(data);
     }
   };
 
-  if (isLoading) {
+  // --- AG GRID COLUMN DEFINITIONS ---
+  const columnDefs = useMemo(
+    () => [
+      { field: "code", headerName: "Taluka Code", flex: 1 },
+      { field: "name", headerName: "Taluka Name", flex: 1 },
+      {
+        field: "districtId",
+        headerName: "District",
+        flex: 1,
+        cellRenderer: (params: any) => {
+          return districtMap[params.value] || "-";
+        },
+      },
+      {
+        field: "villages",
+        headerName: "Villages",
+        flex: 1,
+        cellRenderer: (params: any) => params.value || "-",
+      },
+      {
+        field: "isActive",
+        headerName: "Status",
+        flex: 1,
+        cellRenderer: (params: any) => {
+          const isActive = params.value !== false;
+          return (
+            <span
+              className={`inline-flex items-center gap-2 rounded-full px-3 py-1 mt-2 text-xs font-medium ${
+                isActive
+                  ? "bg-green-100 text-green-700"
+                  : "bg-gray-100 text-gray-600"
+              }`}
+            >
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  isActive ? "bg-green-500" : "bg-gray-400"
+                }`}
+              />
+              {isActive ? "Active" : "Inactive"}
+            </span>
+          );
+        },
+      },
+      {
+        headerName: "Actions",
+        flex: 1,
+        sortable: false,
+        filter: false,
+        cellRenderer: (params: any) => {
+          return (
+            <div className="flex gap-2 mt-1">
+              <button
+                className="p-2 hover:bg-muted rounded cursor-pointer"
+                onClick={() => handleOpenEdit(params.data)}
+              >
+                <Edit2 className="size-4" />
+              </button>
+              <button
+                className="p-2 hover:bg-destructive/20 rounded cursor-pointer"
+                onClick={() => setTalukaToDelete(params.data.id)}
+              >
+                <Trash2 className="size-4 text-destructive" />
+              </button>
+            </div>
+          );
+        },
+      },
+    ],
+    [districtMap],
+  );
+
+  if (isLoading || isDistrictsLoading) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-blue-500"></div>
@@ -206,97 +304,14 @@ export function TalukaMaster() {
       </div>
 
       <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-muted">
-              <tr>
-                <th className="px-6 py-4 text-left text-sm">Taluka Code</th>
-                <th className="px-6 py-4 text-left text-sm">Taluka Name</th>
-                <th className="px-6 py-4 text-left text-sm">District</th>
-                <th className="px-6 py-4 text-left text-sm">Villages</th>
-                <th className="px-6 py-4 text-left text-sm">Status</th>
-                <th className="px-6 py-4 text-left text-sm">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {talukas.map((taluka: any) => (
-                <tr
-                  key={taluka.id}
-                  className="border-t border-border hover:bg-muted/50"
-                >
-                  <td className="px-6 py-4 font-medium">{taluka.code}</td>
-                  <td className="px-6 py-4">{taluka.name}</td>
-                  <td className="px-6 py-4">
-                    {districtMap[taluka.districtId] || "-"}
-                  </td>
-                  <td className="px-6 py-4">{taluka.villages || "-"}</td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${
-                        taluka.isActive !== false
-                          ? "bg-green-100 text-green-700"
-                          : "bg-gray-100 text-gray-600"
-                      }`}
-                    >
-                      <span
-                        className={`h-2 w-2 rounded-full ${
-                          taluka.isActive !== false
-                            ? "bg-green-500"
-                            : "bg-gray-400"
-                        }`}
-                      />
-                      {taluka.isActive !== false ? "Active" : "Inactive"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex gap-2">
-                      <button
-                        className="p-2 hover:bg-muted rounded cursor-pointer"
-                        onClick={() => handleOpenEdit(taluka)}
-                      >
-                        <Edit2 className="size-4" />
-                      </button>
-                      <button
-                        className="p-2 hover:bg-destructive/20 rounded cursor-pointer"
-                        onClick={() => setTalukaToDelete(taluka.id)}
-                      >
-                        <Trash2 className="size-4 text-destructive" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        <div className="flex items-center justify-between px-6 py-4 border-t">
-          <span className="text-sm text-muted-foreground">
-            Total Records: {totalCount}
-          </span>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((prev) => prev - 1)}
-              disabled={page === 1}
-            >
-              Previous
-            </Button>
-            <span className="text-sm">
-              Page {page} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((prev) => prev + 1)}
-              disabled={page >= totalPages}
-            >
-              Next
-            </Button>
-          </div>
-        </div>
+        <Table
+          rowData={talukas}
+          columnDefs={columnDefs}
+          totalCount={totalCount}
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+        />
       </div>
 
       {/* --- ADD / EDIT MODAL --- */}
@@ -307,95 +322,134 @@ export function TalukaMaster() {
               {editingTaluka ? "Edit Taluka" : "Add Taluka"}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSave} className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="code">Taluka Code</Label>
-              <Input
-                id="code"
-                value={formData.code}
-                onChange={(e) =>
-                  setFormData({ ...formData, code: e.target.value })
-                }
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="name">Taluka Name</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="district">District</Label>
-              <select
-                id="district"
-                value={formData.districtId}
-                onChange={(e) =>
-                  setFormData({ ...formData, districtId: e.target.value })
-                }
-                className="w-full h-10 rounded-md border border-input bg-background px-3 py-2"
-                required
-              >
-                <option value="">Select District</option>
 
-                {districts?.items?.map((district: any) => (
-                  <option key={district.id} value={district.id}>
-                    {district.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="villages">Number of Villages</Label>
-              <Input
-                id="villages"
-                type="number"
-                value={formData.villages}
-                onChange={(e) =>
-                  setFormData({ ...formData, villages: e.target.value })
-                }
-                required
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-4 py-4"
+            >
+              <FormField
+                control={form.control}
+                name="code"
+                rules={{ required: "Taluka code is required" }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Taluka Code</FormLabel>
+                    <FormControl>
+                      <AntdInput placeholder="Enter taluka code" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="isActive"
-                checked={formData.isActive}
-                onChange={(e) =>
-                  setFormData({ ...formData, isActive: e.target.checked })
-                }
-                className="size-4 rounded border-gray-300"
+
+              <FormField
+                control={form.control}
+                name="name"
+                rules={{ required: "Taluka name is required" }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Taluka Name</FormLabel>
+                    <FormControl>
+                      <AntdInput placeholder="Enter taluka name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              <Label htmlFor="isActive" className="cursor-pointer">
-                Is Active?
-              </Label>
-            </div>
-            <DialogFooter className="mt-6">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={closeModal}
-                className="cursor-pointer"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                className="cursor-pointer"
-                disabled={addMutation.isPending || editMutation.isPending}
-              >
-                {addMutation.isPending || editMutation.isPending
-                  ? "Saving..."
-                  : "Save"}
-              </Button>
-            </DialogFooter>
-          </form>
+
+              <FormField
+                control={form.control}
+                name="districtId"
+                rules={{ required: "District is required" }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>District</FormLabel>
+                    <FormControl>
+                      <AntdSelect
+                        className="w-full"
+                        placeholder="Select District"
+                        value={field.value || undefined}
+                        getPopupContainer={(trigger) => trigger.parentElement as HTMLElement}
+                        onChange={field.onChange}
+                        options={districts?.items?.map((district: any) => ({
+                          value: district.id,
+                          label: district.name,
+                        }))}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="villages"
+                rules={{
+                  required: "Number of villages is required",
+                  min: {
+                    value: 0,
+                    message: "Must be a positive number",
+                  },
+                }}
+                render={({ field }) => (
+                  <FormControl>
+                    <FormItem>
+                      <FormLabel>Villages</FormLabel>
+                      <AntdInputNumber
+                        className="w-full"
+                        style={{ width: "100%" }}
+                        placeholder="Enter number of villages"
+                        min={0}
+                        value={field.value as number}
+                        onChange={(value) => field.onChange(value ?? 0)}
+                      />
+                    </FormItem>
+                  </FormControl>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="isActive"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row mt-2 items-center space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <AntdCheckbox
+                        checked={field.value}
+                        onChange={(e) => field.onChange(e.target.checked)}
+                      >
+                        Is Active?
+                      </AntdCheckbox>
+                    </FormControl>
+
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <DialogFooter className="mt-6">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={closeModal}
+                  className="cursor-pointer"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="cursor-pointer"
+                  disabled={addMutation.isPending || editMutation.isPending}
+                >
+                  {addMutation.isPending || editMutation.isPending
+                    ? "Saving..."
+                    : "Save"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
 

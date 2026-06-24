@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from "react";
+import  { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
+import { useForm, Controller } from "react-hook-form";
+import { Input } from "antd";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { Eye, EyeOff, Lock, User } from "lucide-react";
 import emblemImg from "../../imports/emblem.png";
@@ -10,50 +12,57 @@ import { useAuth } from "../../context/AuthContext";
 import type { AuthPayload } from "../../context/AuthContext";
 import toast from "react-hot-toast";
 
+type LoginFormInputs = {
+  username: "";
+  password: "";
+};
+
 export function Login() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { login, auth } = useAuth();
-
   const [loading, setLoading] = useState(false);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormInputs>({
+    defaultValues: {
+      username: "",
+      password: "",
+    },
+  });
 
   useEffect(() => {
     if (auth?.accessToken) {
       navigate("/", { replace: true });
     }
-  }, [auth]);
+  }, [auth, navigate]);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const onSubmit = async (data: LoginFormInputs) => {
     setLoading(true);
 
     try {
       const response = await api.post<AuthPayload>("/api/v1/Auth/login", {
-        username,
-        password,
+        username: data.username,
+        password: data.password,
       });
+
       if (response.status === 200) {
         toast.success("Login successful");
       }
       login(response.data);
 
       if (response.data.mustChangePassword) {
-        navigate("/change-password", {
-          replace: true,
-        });
+        navigate("/change-password", { replace: true });
         return;
       }
 
-      navigate("/", {
-        replace: true,
-      });
+      navigate("/", { replace: true });
     } catch (error) {
       if (error instanceof AxiosError) {
         toast.error(
-          error.response?.data?.title ?? "Invalid username or password",
+          error.response?.data?.title ?? "Invalid username or password"
         );
       } else {
         toast.error("Something went wrong. Please try again.");
@@ -112,54 +121,62 @@ export function Login() {
             </p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-2">
               <label className="text-sm font-semibold text-[#0F172A] ml-1">
                 Username
               </label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <User className="h-5 w-5 text-gray-400 group-focus-within:text-[#1E5AA8] transition-colors" />
-                </div>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="block w-full pl-11 pr-4 py-3.5 bg-[#F8F9FB] border border-gray-200 rounded-xl text-[#0F172A] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1E5AA8]/20 focus:border-[#1E5AA8] transition-all duration-200"
-                  placeholder="Enter your username"
-                  required
-                />
-              </div>
+              <Controller
+                name="username"
+                control={control}
+                rules={{ required: "Username is required" }}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    size="large"
+                    prefix={<User className="h-5 w-5 text-gray-400 mr-1.5 transition-colors" />}
+                    className="bg-[#F8F9FB] border-gray-200 rounded-xl text-[#0F172A] placeholder-gray-400 hover:border-[#1E5AA8] focus:border-[#1E5AA8] focus-within:border-[#1E5AA8] focus-within:ring-2 focus-within:ring-[#1E5AA8]/20 transition-all duration-200 py-3 [&>input]:bg-[#F8F9FB]"
+                    placeholder="Enter your username"
+                  />
+                )}
+              />
+              {errors.username && (
+                <p className="text-red-500 text-xs mt-1 ml-1">
+                  {errors.username.message}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-semibold text-[#0F172A] ml-1">
                 Password
               </label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400 group-focus-within:text-[#1E5AA8] transition-colors" />
-                </div>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-11 pr-12 py-3.5 bg-[#F8F9FB] border border-gray-200 rounded-xl text-[#0F172A] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1E5AA8]/20 focus:border-[#1E5AA8] transition-all duration-200"
-                  placeholder="••••••••"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-[#0B1F4D] transition-colors"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
-                  ) : (
-                    <Eye className="h-5 w-5" />
-                  )}
-                </button>
-              </div>
+              <Controller
+                name="password"
+                control={control}
+                rules={{ required: "Password is required" }}
+                render={({ field }) => (
+                  <Input.Password
+                    {...field}
+                    size="large"
+                    prefix={<Lock className="h-5 w-5 text-gray-400 mr-1.5 transition-colors" />}
+                    iconRender={(visible) =>
+                      visible ? (
+                        <EyeOff className="h-5 w-5 text-gray-400 hover:text-[#0B1F4D] transition-colors cursor-pointer" />
+                      ) : (
+                        <Eye className="h-5 w-5 text-gray-400 hover:text-[#0B1F4D] transition-colors cursor-pointer" />
+                      )
+                    }
+                    className="bg-[#F8F9FB] border-gray-200 rounded-xl text-[#0F172A] placeholder-gray-400 hover:border-[#1E5AA8] focus:border-[#1E5AA8] focus-within:border-[#1E5AA8] focus-within:ring-2 focus-within:ring-[#1E5AA8]/20 transition-all duration-200 py-3 [&>input]:bg-[#F8F9FB]"
+                    placeholder="••••••••"
+                  />
+                )}
+              />
+              {errors.password && (
+                <p className="text-red-500 text-xs mt-1 ml-1">
+                  {errors.password.message}
+                </p>
+              )}
             </div>
 
             <button

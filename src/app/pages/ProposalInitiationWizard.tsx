@@ -320,13 +320,13 @@ export function ProposalInitiationWizard() {
               Back
             </button>
           )}
-          <button
+          {/* <button
             onClick={handleSaveDraft}
             className="px-6 py-3 bg-secondary text-secondary-foreground rounded-lg hover:opacity-90 transition-opacity font-medium flex items-center gap-2"
           >
             <Save className="size-4" />
             Save Draft
-          </button>
+          </button> */}
         </div>
 
         <div className="flex gap-3">

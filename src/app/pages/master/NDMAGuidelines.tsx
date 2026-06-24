@@ -1,7 +1,10 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate"; // Adjust path as needed
-import { Plus, Download } from "lucide-react"; // Removed FileText
+import { Plus, Download } from "lucide-react";
+import { Table } from "../../components/Table";
+import dayjs from "dayjs";
 
 import {
   Dialog,
@@ -11,8 +14,31 @@ import {
   DialogFooter,
 } from "../../components/ui/dialog";
 import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { Label } from "../../components/ui/label";
+import {
+  Input as AntdInput,
+  Select as AntdSelect,
+  Checkbox as AntdCheckbox,
+  DatePicker as AntdDatePicker,
+} from "antd";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../../components/ui/form";
+
+// --- TYPES ---
+type FormValues = {
+  code: string;
+  title: string;
+  disasterTypeId: string;
+  ruleBody: string;
+  version: string;
+  effectiveDate: string;
+  isActive: boolean;
+};
 
 export function NDMAGuidelines() {
   const axiosPrivate = useAxiosPrivate();
@@ -26,15 +52,16 @@ export function NDMAGuidelines() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  // Form State for Add
-  const [formData, setFormData] = useState({
-    code: "",
-    title: "",
-    disasterTypeId: "",
-    ruleBody: "",
-    version: "",
-    effectiveDate: "",
-    isActive: true,
+  const form = useForm<FormValues>({
+    defaultValues: {
+      code: "",
+      title: "",
+      disasterTypeId: "",
+      ruleBody: "",
+      version: "",
+      effectiveDate: "",
+      isActive: true,
+    },
   });
 
   // --- QUERIES ---
@@ -45,9 +72,7 @@ export function NDMAGuidelines() {
     queryFn: async () => {
       const response = await axiosPrivate.get(
         "/api/v1/masters/ndma-guidelines",
-        {
-          params: { page, pageSize },
-        },
+        { params: { page, pageSize } }
       );
       return response.data;
     },
@@ -59,9 +84,7 @@ export function NDMAGuidelines() {
     queryFn: async () => {
       const response = await axiosPrivate.get(
         "/api/v1/masters/disaster-types",
-        {
-          params: { page: 1, pageSize: 100 },
-        },
+        { params: { page: 1, pageSize: 100 } }
       );
       return response.data;
     },
@@ -69,18 +92,18 @@ export function NDMAGuidelines() {
 
   const guidelines = data?.items ?? [];
   const totalPages = data?.totalPages ?? 1;
-  const totalCount = data?.total ?? 0;
+  const totalCount = data?.totalCount ?? data?.total ?? guidelines.length;
   const disasterTypes = disasterData?.items ?? [];
 
-  const disasterMap = isDisastersLoading
-    ? {}
-    : Object.fromEntries(
-        disasterTypes.map((disaster: any) => [disaster.id, disaster.name]),
-      );
+  const disasterMap = useMemo(() => {
+    return Object.fromEntries(
+      disasterTypes.map((disaster: any) => [disaster.id, disaster.name])
+    );
+  }, [disasterTypes]);
 
   // --- MUTATIONS ---
 
-  // 2. Upload Document Mutation
+  // 1. Upload Document Mutation
   const uploadMutation = useMutation({
     mutationFn: async ({
       file,
@@ -99,9 +122,7 @@ export function NDMAGuidelines() {
       const response = await axiosPrivate.post(
         "/api/v1/Documents/upload",
         formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        },
+        { headers: { "Content-Type": "multipart/form-data" } }
       );
       return response.data;
     },
@@ -116,15 +137,13 @@ export function NDMAGuidelines() {
     },
   });
 
-  // 1. Add Text Data Mutation
+  // 2. Add Text Data Mutation
   const addMutation = useMutation({
     mutationFn: async (newData: any) => {
       const response = await axiosPrivate.post(
         "/api/v1/masters/ndma-guidelines",
         newData,
-        {
-          headers: { "Content-Type": "application/json" },
-        },
+        { headers: { "Content-Type": "application/json" } }
       );
       return response.data;
     },
@@ -144,24 +163,18 @@ export function NDMAGuidelines() {
 
   // --- HANDLERS ---
 
-  // Handle File Download
   const handleDownload = async (documentId: string, fallbackName: string) => {
     if (!documentId) return;
-
     try {
       const response = await axiosPrivate.get(
         `/api/v1/Documents/${documentId}/download`,
-        {
-          responseType: "blob", // Important: Tells axios to handle binary data
-        }
+        { responseType: "blob" }
       );
 
-      // Create a URL for the downloaded blob
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
 
-      // Attempt to extract filename from headers, otherwise use a fallback
       let fileName = `${fallbackName.replace(/\s+/g, "_")}_Document.pdf`;
       const contentDisposition = response.headers["content-disposition"];
       if (contentDisposition) {
@@ -174,18 +187,16 @@ export function NDMAGuidelines() {
       link.setAttribute("download", fileName);
       document.body.appendChild(link);
       link.click();
-      
-      // Cleanup
+
       link.parentNode?.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("File download failed:", error);
-      // You might want to add a toast/alert notification here
     }
   };
 
   const handleOpenAdd = () => {
-    setFormData({
+    form.reset({
       code: "",
       title: "",
       disasterTypeId: "",
@@ -201,14 +212,14 @@ export function NDMAGuidelines() {
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedFile(null);
+    form.reset();
   };
 
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = (data: FormValues) => {
     const payload = {
-      ...formData,
-      effectiveDate: formData.effectiveDate
-        ? new Date(formData.effectiveDate).toISOString()
+      ...data,
+      effectiveDate: data.effectiveDate
+        ? new Date(data.effectiveDate).toISOString()
         : null,
     };
     addMutation.mutate(payload);
@@ -226,9 +237,79 @@ export function NDMAGuidelines() {
       .replace(/ /g, "-");
   };
 
-  if (isLoading) {
+  // --- AG GRID COLUMN DEFINITIONS ---
+  const columnDefs = useMemo(
+    () => [
+      { field: "code", headerName: "Guideline Code", flex: 1 },
+      {
+        field: "title",
+        headerName: "Title",
+        flex: 2,
+        tooltipField: "title",
+      },
+      {
+        field: "disasterTypeId",
+        headerName: "Category",
+        flex: 1,
+        cellRenderer: (params: any) => {
+          const typeName =
+            params.data.disasterType?.name || disasterMap[params.value] || "-";
+          return (
+            <span className="px-2 py-1 bg-secondary/20 text-secondary rounded-full text-xs">
+              {typeName}
+            </span>
+          );
+        },
+      },
+      {
+        field: "version",
+        headerName: "Version",
+        flex: 0.5,
+        cellRenderer: (params: any) => (
+          <span className="px-2 py-1 bg-primary/20 text-primary rounded-full text-xs">
+            v{params.value}
+          </span>
+        ),
+      },
+      {
+        field: "effectiveDate",
+        headerName: "Effective Date",
+        flex: 1,
+        cellRenderer: (params: any) => formatDate(params.value),
+      },
+      {
+        headerName: "Actions",
+        flex: 0.5,
+        sortable: false,
+        filter: false,
+        cellRenderer: (params: any) => {
+          const isDownloadable = !!params.data.latestDocumentId;
+          return (
+            <div className="flex gap-2 mt-1">
+              <button
+                className="p-2 hover:bg-muted rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Download"
+                disabled={!isDownloadable}
+                onClick={() =>
+                  handleDownload(
+                    params.data.latestDocumentId,
+                    params.data.title
+                  )
+                }
+              >
+                <Download className="size-4" />
+              </button>
+            </div>
+          );
+        },
+      },
+    ],
+    [disasterMap]
+  );
+
+  if (isLoading || isDisastersLoading) {
     return (
-      <div className="flex items-center justify-center h-full min-h-100">
+      <div className="flex items-center justify-center h-full min-h-25">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-primary"></div>
       </div>
     );
@@ -241,9 +322,7 @@ export function NDMAGuidelines() {
           <div className="flex items-start gap-3">
             <div className="text-red-500">⚠️</div>
             <div>
-              <h3 className="font-semibold text-red-800">
-                Something went wrong
-              </h3>
+              <h3 className="font-semibold text-red-800">Something went wrong</h3>
               <p className="mt-1 text-sm text-red-600">
                 {(error as Error).message}
               </p>
@@ -272,118 +351,14 @@ export function NDMAGuidelines() {
       </div>
 
       <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-muted">
-              <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold">
-                  Guideline Code
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold">
-                  Title
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold">
-                  Category
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold">
-                  Version
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold">
-                  Effective Date
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {guidelines.map((guideline: any) => (
-                <tr
-                  key={guideline.id || guideline.code}
-                  className="border-t border-border hover:bg-muted/50"
-                >
-                  <td className="px-6 py-4 font-medium font-mono text-sm">
-                    {guideline.code}
-                  </td>
-                  <td
-                    className="px-6 py-4 max-w-xs truncate"
-                    title={guideline.title}
-                  >
-                    {guideline.title}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="px-2 py-1 bg-secondary/20 text-secondary rounded-full text-xs">
-                      {guideline.disasterType?.name ||
-                        disasterMap[guideline.disasterTypeId] ||
-                        "-"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="px-2 py-1 bg-primary/20 text-primary rounded-full text-xs">
-                      v{guideline.version}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm">
-                    {formatDate(guideline.effectiveDate)}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex gap-2">
-                      {/* Removed the Preview button and wired up the Download button */}
-                      <button
-                        className="p-2 hover:bg-muted rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Download"
-                        disabled={!guideline.latestDocumentId}
-                        onClick={() => handleDownload(guideline.latestDocumentId, guideline.title)}
-                      >
-                        <Download className="size-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {guidelines.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="px-6 py-8 text-center text-muted-foreground"
-                  >
-                    No guidelines found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        {guidelines.length > 0 && (
-          <div className="flex items-center justify-between px-6 py-4 border-t">
-            <span className="text-sm text-muted-foreground">
-              Total Records: {totalCount}
-            </span>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((prev) => prev - 1)}
-                disabled={page === 1}
-              >
-                Previous
-              </Button>
-              <span className="text-sm">
-                Page {page} of {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((prev) => prev + 1)}
-                disabled={page >= totalPages}
-              >
-                Next
-              </Button>
-            </div>
-          </div>
-        )}
+        <Table
+          rowData={guidelines}
+          columnDefs={columnDefs}
+          totalCount={totalCount}
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+        />
       </div>
 
       {/* --- ADD MODAL --- */}
@@ -392,129 +367,179 @@ export function NDMAGuidelines() {
           <DialogHeader>
             <DialogTitle>Add Guideline</DialogTitle>
           </DialogHeader>
-          <form
-            onSubmit={handleSave}
-            className="grid gap-4 py-4 md:grid-cols-2"
-          >
-            <div className="space-y-2">
-              <Label htmlFor="code">Guideline Code</Label>
-              <Input
-                id="code"
-                value={formData.code}
-                onChange={(e) =>
-                  setFormData({ ...formData, code: e.target.value })
-                }
-                placeholder="e.g. NDMA-FL-2024"
-                required
+
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="grid gap-4 py-4 md:grid-cols-2"
+            >
+              <FormField
+                control={form.control}
+                name="code"
+                rules={{ required: "Guideline code is required" }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Guideline Code</FormLabel>
+                    <FormControl>
+                      <AntdInput placeholder="e.g. NDMA-FL-2024" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="version">Version</Label>
-              <Input
-                id="version"
-                value={formData.version}
-                onChange={(e) =>
-                  setFormData({ ...formData, version: e.target.value })
-                }
-                placeholder="e.g. 1.0"
-                required
+              <FormField
+                control={form.control}
+                name="version"
+                rules={{ required: "Version is required" }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Version</FormLabel>
+                    <FormControl>
+                      <AntdInput placeholder="e.g. 1.0" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="title">Title</Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
-                required
+              <FormField
+                control={form.control}
+                name="title"
+                rules={{ required: "Title is required" }}
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <AntdInput placeholder="Enter guideline title" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="disasterType">Disaster Category</Label>
-              <select
-                id="disasterType"
-                value={formData.disasterTypeId}
-                onChange={(e) =>
-                  setFormData({ ...formData, disasterTypeId: e.target.value })
-                }
-                required
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="" disabled>
-                  Select Disaster Type
-                </option>
-                {disasterTypes.map((type: any) => (
-                  <option key={type.id} value={type.id}>
-                    {type.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="effectiveDate">Effective Date</Label>
-              <Input
-                id="effectiveDate"
-                type="date"
-                value={formData.effectiveDate}
-                onChange={(e) =>
-                  setFormData({ ...formData, effectiveDate: e.target.value })
-                }
-                required
+              <FormField
+                control={form.control}
+                name="disasterTypeId"
+                rules={{ required: "Disaster Category is required" }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Disaster Category</FormLabel>
+                    <FormControl>
+                      <AntdSelect
+                        className="w-full"
+                        placeholder="Select Disaster Type"
+                        value={field.value || undefined}
+                        onChange={field.onChange}
+                        getPopupContainer={(trigger) =>
+                          trigger.parentElement as HTMLElement
+                        }
+                        options={disasterTypes.map((type: any) => ({
+                          label: type.name,
+                          value: type.id,
+                        }))}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="ruleBody">Rule Body / Description</Label>
-              <textarea
-                id="ruleBody"
-                value={formData.ruleBody}
-                onChange={(e) =>
-                  setFormData({ ...formData, ruleBody: e.target.value })
-                }
-                rows={3}
-                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              <FormField
+                control={form.control}
+                name="effectiveDate"
+                rules={{ required: "Effective Date is required" }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Effective Date</FormLabel>
+                    <FormControl>
+                      <AntdDatePicker
+                        className="w-full"
+                        value={field.value ? dayjs(field.value) : null}
+                        onChange={(date, dateString) =>
+                          field.onChange(dateString)
+                        }
+                        getPopupContainer={(trigger) =>
+                          trigger.parentElement as HTMLElement
+                        }
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="document">Upload Document (Optional)</Label>
-              <Input
-                id="document"
-                type="file"
-                onChange={(e) => {
-                  if (e.target.files && e.target.files.length > 0) {
-                    setSelectedFile(e.target.files[0]);
-                  }
-                }}
+              <FormField
+                control={form.control}
+                name="ruleBody"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Rule Body / Description</FormLabel>
+                    <FormControl>
+                      <AntdInput.TextArea
+                        {...field}
+                        rows={3}
+                        placeholder="Enter guideline details..."
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            <DialogFooter className="mt-6 md:col-span-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={closeModal}
-                className="cursor-pointer"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                className="cursor-pointer"
-                disabled={addMutation.isPending || uploadMutation.isPending}
-              >
-                {addMutation.isPending || uploadMutation.isPending
-                  ? "Saving..."
-                  : "Save"}
-              </Button>
-            </DialogFooter>
-          </form>
+              <FormItem className="md:col-span-2">
+                <FormLabel>Upload Document (Optional)</FormLabel>
+                <FormControl>
+                  <AntdInput
+                    type="file"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files.length > 0) {
+                        setSelectedFile(e.target.files[0]);
+                      }
+                    }}
+                  />
+                </FormControl>
+              </FormItem>
+
+              <FormField
+                control={form.control}
+                name="isActive"
+                render={({ field }) => (
+                  <FormItem className="col-span-2">
+                    <FormControl>
+                      <AntdCheckbox
+                        checked={field.value}
+                        onChange={(e) => field.onChange(e.target.checked)}
+                      >
+                        Is Active?
+                      </AntdCheckbox>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <DialogFooter className="mt-6 md:col-span-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={closeModal}
+                  className="cursor-pointer"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="cursor-pointer"
+                  disabled={addMutation.isPending || uploadMutation.isPending}
+                >
+                  {addMutation.isPending || uploadMutation.isPending
+                    ? "Saving..."
+                    : "Save"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
     </div>

@@ -536,7 +536,7 @@ export function ProjectExecution() {
                             setSelectedProject(project);
                             setActiveTab("entry");
                           }}
-                          className="px-4 py-2 bg-primary cursor-pointer text-primary-foreground rounded-lg transition-opacity hover:opacity-90 whitespace-nowrap"
+                          className="px-3 py-1.5 text-sm bg-primary cursor-pointer text-primary-foreground rounded-md transition-opacity hover:opacity-90 whitespace-nowrap"
                         >
                           Add Data
                         </button>
@@ -548,7 +548,7 @@ export function ProjectExecution() {
                               ensureBillingMutation.mutate(project.proposalId)
                             }
                             disabled={ensureBillingMutation.isPending}
-                            className="px-4 py-2 bg-green-600 cursor-pointer text-white rounded-lg transition-opacity hover:bg-green-700 disabled:opacity-50 whitespace-nowrap"
+                            className="px-3 py-1.5 text-sm bg-green-600 cursor-pointer text-white rounded-md transition-opacity hover:bg-green-700 disabled:opacity-50 whitespace-nowrap"
                           >
                             {ensureBillingMutation.isPending &&
                             ensureBillingMutation.variables ===

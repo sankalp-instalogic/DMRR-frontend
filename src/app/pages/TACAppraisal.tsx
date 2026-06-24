@@ -7,7 +7,6 @@ import {
   Trash2,
   Loader2,
   Forward,
-  Send,
 } from "lucide-react";
 import { useNavigate } from "react-router";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";

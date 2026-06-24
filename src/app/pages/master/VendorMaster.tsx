@@ -1,7 +1,9 @@
-import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 import { Edit2, Plus, Trash2 } from "lucide-react";
+import { Table } from "../../components/Table";
 
 import {
   Dialog,
@@ -21,12 +23,33 @@ import {
   AlertDialogTitle,
 } from "../../components/ui/alert-dialog";
 import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { Label } from "../../components/ui/label";
-import { queryClient } from "../../App";
+import {
+  Input as AntdInput,
+  InputNumber as AntdInputNumber,
+  Checkbox as AntdCheckbox,
+} from "antd";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../../components/ui/form";
+
+// --- TYPES ---
+type FormValues = {
+  legalName: string;
+  gstin: string;
+  pan: string;
+  category: string;
+  rating: number | string;
+  isActive: boolean;
+};
 
 export function VendorMaster() {
   const axiosPrivate = useAxiosPrivate();
+  const queryClient = useQueryClient();
 
   // Table State
   const [page, setPage] = useState(1);
@@ -37,14 +60,15 @@ export function VendorMaster() {
   const [editingVendor, setEditingVendor] = useState<any | null>(null);
   const [vendorToDelete, setVendorToDelete] = useState<string | null>(null);
 
-  // Form State for Add/Edit
-  const [formData, setFormData] = useState({
-    legalName: "",
-    gstin: "",
-    pan: "",
-    category: "",
-    rating: "",
-    isActive: true,
+  const form = useForm<FormValues>({
+    defaultValues: {
+      legalName: "",
+      gstin: "",
+      pan: "",
+      category: "",
+      rating: "",
+      isActive: true,
+    },
   });
 
   // --- QUERIES ---
@@ -60,11 +84,11 @@ export function VendorMaster() {
 
   const vendors = data?.items ?? [];
   const totalPages = data?.totalPages ?? 1;
-  const totalCount = data?.totalCount ?? 0;
+  const totalCount = data?.totalCount ?? vendors.length;
 
   // --- MUTATIONS ---
   const addMutation = useMutation({
-    mutationFn: async (newData: any) => {
+    mutationFn: async (newData: FormValues) => {
       return await axiosPrivate.post("/api/v1/masters/vendors", newData, {
         headers: { "Content-Type": "application/json" },
       });
@@ -76,7 +100,7 @@ export function VendorMaster() {
   });
 
   const editMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+    mutationFn: async ({ id, data }: { id: string; data: FormValues }) => {
       return await axiosPrivate.put(`/api/v1/masters/vendors/${id}`, data);
     },
     onSuccess: () => {
@@ -98,7 +122,7 @@ export function VendorMaster() {
   // --- HANDLERS ---
   const handleOpenAdd = () => {
     setEditingVendor(null);
-    setFormData({
+    form.reset({
       legalName: "",
       gstin: "",
       pan: "",
@@ -111,7 +135,7 @@ export function VendorMaster() {
 
   const handleOpenEdit = (vendor: any) => {
     setEditingVendor(vendor);
-    setFormData({
+    form.reset({
       legalName: vendor.legalName,
       gstin: vendor.gstin,
       pan: vendor.pan,
@@ -125,16 +149,101 @@ export function VendorMaster() {
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingVendor(null);
+    form.reset();
   };
 
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = (data: FormValues) => {
     if (editingVendor) {
-      editMutation.mutate({ id: editingVendor.id, data: formData });
+      editMutation.mutate({ id: editingVendor.id, data });
     } else {
-      addMutation.mutate(formData);
+      addMutation.mutate(data);
     }
   };
+
+  // --- AG GRID COLUMN DEFINITIONS ---
+  const columnDefs = useMemo(
+    () => [
+      { field: "legalName", headerName: "Vendor Name", flex: 1 },
+      { field: "gstin", headerName: "GST Number", flex: 1, cellClass: "font-mono text-sm" },
+      { field: "pan", headerName: "PAN", flex: 1, cellClass: "font-mono text-sm" },
+      {
+        field: "category",
+        headerName: "Category",
+        flex: 1,
+        cellRenderer: (params: any) => {
+          if (!params.value) return "-";
+          return (
+            <span className="px-2 py-1 mt-2 inline-block bg-primary/20 text-primary rounded-full text-xs">
+              {params.value}
+            </span>
+          );
+        },
+      },
+      {
+        field: "rating",
+        headerName: "Rating",
+        flex: 1,
+        cellRenderer: (params: any) => {
+          const ratingValue = params.value ? (params.value / 10000).toFixed(2) : "0.00";
+          return (
+            <div className="flex items-center gap-1 mt-2">
+              <span className="text-yellow-500">★</span>
+              <span>{ratingValue}</span>
+            </div>
+          );
+        },
+      },
+      {
+        field: "isActive",
+        headerName: "Status",
+        flex: 1,
+        cellRenderer: (params: any) => {
+          const isActive = params.value ?? params.data.active ?? true;
+          return (
+            <span
+              className={`inline-flex items-center gap-2 rounded-full px-3 py-1 mt-2 text-xs font-medium ${
+                isActive
+                  ? "bg-green-100 text-green-700"
+                  : "bg-gray-100 text-gray-600"
+              }`}
+            >
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  isActive ? "bg-green-500" : "bg-gray-400"
+                }`}
+              />
+              {isActive ? "Active" : "Inactive"}
+            </span>
+          );
+        },
+      },
+      {
+        headerName: "Actions",
+        flex: 1,
+        sortable: false,
+        filter: false,
+        cellRenderer: (params: any) => {
+          return (
+            <div className="flex gap-2 mt-1">
+              <button
+                className="p-2 hover:bg-muted rounded cursor-pointer"
+                onClick={() => handleOpenEdit(params.data)}
+              >
+                <Edit2 className="size-4" />
+              </button>
+              <button
+                className="p-2 hover:bg-destructive/20 rounded cursor-pointer"
+                onClick={() => setVendorToDelete(params.data.id)}
+              >
+                <Trash2 className="size-4 text-destructive" />
+              </button>
+            </div>
+          );
+        },
+      },
+    ],
+    []
+  );
 
   if (isLoading) {
     return (
@@ -182,108 +291,14 @@ export function VendorMaster() {
       </div>
 
       <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-muted">
-              <tr>
-                <th className="px-6 py-4 text-left text-sm font-medium">Vendor Name</th>
-                <th className="px-6 py-4 text-left text-sm font-medium">GST Number</th>
-                <th className="px-6 py-4 text-left text-sm font-medium">PAN</th>
-                <th className="px-6 py-4 text-left text-sm font-medium">Category</th>
-                <th className="px-6 py-4 text-left text-sm font-medium">Rating</th>
-                <th className="px-6 py-4 text-left text-sm font-medium">Status</th>
-                <th className="px-6 py-4 text-left text-sm font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {vendors.map((vendor: any) => (
-                <tr key={vendor.id} className="border-t border-border hover:bg-muted/50">
-                  <td className="px-6 py-4">{vendor.legalName}</td>
-                  <td className="px-6 py-4 text-sm font-mono">{vendor.gstin}</td>
-                  <td className="px-6 py-4 text-sm font-mono">{vendor.pan}</td>
-                  <td className="px-6 py-4">
-                    <span className="px-2 py-1 bg-primary/20 text-primary rounded-full text-xs">
-                      {vendor.category}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-1">
-                      <span className="text-yellow-500">★</span>
-                      <span>{(vendor.rating / 10000).toFixed(2)}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${
-                        vendor.isActive ?? vendor.active
-                          ? "bg-green-100 text-green-700"
-                          : "bg-gray-100 text-gray-600"
-                      }`}
-                    >
-                      <span
-                        className={`h-2 w-2 rounded-full ${
-                          vendor.isActive ?? vendor.active ? "bg-green-500" : "bg-gray-400"
-                        }`}
-                      />
-                      {vendor.isActive ?? vendor.active ? "Active" : "Inactive"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex gap-2">
-                      <button
-                        className="p-2 hover:bg-muted rounded cursor-pointer"
-                        onClick={() => handleOpenEdit(vendor)}
-                      >
-                        <Edit2 className="size-4" />
-                      </button>
-                      <button
-                        className="p-2 hover:bg-destructive/20 rounded cursor-pointer"
-                        onClick={() => setVendorToDelete(vendor.id)}
-                      >
-                        <Trash2 className="size-4 text-destructive" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {vendors.length === 0 && (
-                <tr>
-                  <td colSpan={8} className="px-6 py-8 text-center text-muted-foreground">
-                    No vendors found. Add a new vendor to get started.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        <div className="flex items-center justify-between px-6 py-4 border-t">
-          <span className="text-sm text-muted-foreground">
-            Total Records: {totalCount}
-          </span>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((prev) => prev - 1)}
-              disabled={page === 1}
-            >
-              Previous
-            </Button>
-            <span className="text-sm">
-              Page {page} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((prev) => prev + 1)}
-              disabled={page >= totalPages}
-            >
-              Next
-            </Button>
-          </div>
-        </div>
+        <Table
+          rowData={vendors}
+          columnDefs={columnDefs}
+          totalCount={totalCount}
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+        />
       </div>
 
       {/* --- ADD / EDIT MODAL --- */}
@@ -294,106 +309,134 @@ export function VendorMaster() {
               {editingVendor ? "Edit Vendor" : "Add Vendor"}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSave} className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2 col-span-2">
-                <Label htmlFor="name">Vendor Name</Label>
-                <Input
-                  id="name"
-                  value={formData.legalName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, legalName: e.target.value })
-                  }
-                  required
-                />
-              </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="gst">GST Number</Label>
-                <Input
-                  id="gst"
-                  value={formData.gstin}
-                  onChange={(e) =>
-                    setFormData({ ...formData, gstin: e.target.value })
-                  }
-                  required
-                />
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <FormField
+                    control={form.control}
+                    name="legalName"
+                    rules={{ required: "Vendor Name is required" }}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Vendor Name</FormLabel>
+                        <FormControl>
+                          <AntdInput placeholder="Enter vendor name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="pan">PAN</Label>
-                <Input
-                  id="pan"
-                  value={formData.pan}
-                  onChange={(e) =>
-                    setFormData({ ...formData, pan: e.target.value })
-                  }
-                  required
-                />
-              </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
-                <Input
-                  id="category"
-                  value={formData.category}
-                  onChange={(e) =>
-                    setFormData({ ...formData, category: e.target.value })
-                  }
-                  required
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="gstin"
+                  rules={{ required: "GST Number is required" }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>GST Number</FormLabel>
+                      <FormControl>
+                        <AntdInput placeholder="Enter GSTIN" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="pan"
+                  rules={{ required: "PAN is required" }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>PAN</FormLabel>
+                      <FormControl>
+                        <AntdInput placeholder="Enter PAN" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="rating">Rating</Label>
-                <Input
-                  id="rating"
-                  type="number"
-                  value={formData.rating}
-                  onChange={(e) =>
-                    setFormData({ ...formData, rating: e.target.value })
-                  }
-                />
-              </div>
-            </div>
 
-            <div className="flex items-center gap-2 pt-2">
-              <input
-                type="checkbox"
-                id="isActive"
-                checked={formData.isActive}
-                onChange={(e) =>
-                  setFormData({ ...formData, isActive: e.target.checked })
-                }
-                className="size-4 rounded border-gray-300"
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="category"
+                  rules={{ required: "Category is required" }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Category</FormLabel>
+                      <FormControl>
+                        <AntdInput placeholder="Enter category" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="rating"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Rating</FormLabel>
+                      <FormControl>
+                        <AntdInputNumber
+                          {...field}
+                          className="w-full"
+                          style={{ width: "100%" }}
+                          placeholder="Enter rating"
+                          onChange={(value) => field.onChange(value ?? "")}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="isActive"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <AntdCheckbox
+                        checked={field.value}
+                        onChange={(e) => field.onChange(e.target.checked)}
+                      >
+                        Is Active?
+                      </AntdCheckbox>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              <Label htmlFor="isActive" className="cursor-pointer">
-                Is Active?
-              </Label>
-            </div>
-            
-            <DialogFooter className="mt-6">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={closeModal}
-                className="cursor-pointer"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                className="cursor-pointer"
-                disabled={addMutation.isPending || editMutation.isPending}
-              >
-                {addMutation.isPending || editMutation.isPending
-                  ? "Saving..."
-                  : "Save"}
-              </Button>
-            </DialogFooter>
-          </form>
+
+              <DialogFooter className="mt-6">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={closeModal}
+                  className="cursor-pointer"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="cursor-pointer"
+                  disabled={addMutation.isPending || editMutation.isPending}
+                >
+                  {addMutation.isPending || editMutation.isPending
+                    ? "Saving..."
+                    : "Save"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
 
