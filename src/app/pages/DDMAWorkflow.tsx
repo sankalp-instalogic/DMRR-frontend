@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo } from "react";
-import { Upload, Save, Loader2 } from "lucide-react";
+import { Upload, Save, Loader2, Pencil } from "lucide-react";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
@@ -143,6 +143,31 @@ export function DDMAWorkflow() {
     activeTab === "new" ? isLoadingNew : isLoadingRevised;
   const isCurrentError = activeTab === "new" ? isErrorNew : isErrorRevised;
 
+  const handleProposalSelect = (proposal: any) => {
+    setSelectedProposal(proposal);
+
+    const matchedDepartment = departmentsData?.items?.find(
+      (dept: any) =>
+        dept.name === proposal.lineDepartment ||
+        dept.id === proposal.lineDepartment,
+    );
+
+    setDepartmentId(
+      matchedDepartment ? matchedDepartment.id : proposal.lineDepartment || "",
+    );
+
+    setCostEstimation("");
+    setResolutionFile(null);
+    setSanctionFile(null);
+
+    setTimeout(() => {
+      workflowSectionRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 100);
+  };
+
   // --- AG Grid Configurations ---
   const columnDefs = useMemo<ColDef[]>(
     () => [
@@ -157,6 +182,7 @@ export function DDMAWorkflow() {
         cellRenderer: (params: any) => {
           const isPending =
             params.value === "Pending" || params.value === "Draft";
+
           return (
             <span
               className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -170,8 +196,25 @@ export function DDMAWorkflow() {
           );
         },
       },
+      {
+        headerName: "Actions",
+        width: 100,
+        sortable: false,
+        filter: false,
+        cellRenderer: (params: any) => (
+          <button
+            onClick={(e) => {
+              e.stopPropagation(); // prevents row click if enabled
+              handleProposalSelect(params.data);
+            }}
+            className="p-2 rounded hover:bg-muted transition-colors cursor-pointer"
+          >
+            <Pencil className="size-4" />
+          </button>
+        ),
+      },
     ],
-    [],
+    [departmentsData],
   );
 
   const rowClassRules = useMemo(() => {
@@ -180,37 +223,6 @@ export function DDMAWorkflow() {
         selectedProposal && params.data.id === selectedProposal.id,
     };
   }, [selectedProposal]);
-
-  const handleRowClick = (event: any) => {
-    const proposal = event.data;
-    setSelectedProposal(proposal);
-
-    // --- THE FIX ---
-    // Look up the matching department ID based on the department name coming from the row data
-    const matchedDepartment = departmentsData?.items?.find(
-      (dept: any) =>
-        dept.name === proposal.lineDepartment ||
-        dept.id === proposal.lineDepartment,
-    );
-
-    // Set state to the ID if found, otherwise fallback to what came from the row
-    setDepartmentId(
-      matchedDepartment ? matchedDepartment.id : proposal.lineDepartment || "",
-    );
-    // --------------
-
-    setCostEstimation("");
-    setResolutionFile(null);
-    setSanctionFile(null);
-
-    // Wait for render, then scroll
-    setTimeout(() => {
-      workflowSectionRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }, 100);
-  };
 
   return (
     <div className="space-y-6">
@@ -263,11 +275,10 @@ export function DDMAWorkflow() {
           <Table
             rowData={currentList}
             columnDefs={columnDefs}
-            totalCount={currentList.length} // Map these to backend meta if server-side paginated
+            totalCount={currentList.length}
             page={currentPage}
             totalPages={Math.ceil(currentList.length / 10) || 1}
             onPageChange={(p) => setCurrentPage(p)}
-            onRowClicked={handleRowClick}
             rowClassRules={rowClassRules}
           />
         )}

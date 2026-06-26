@@ -81,7 +81,7 @@ export default function Sidebar() {
   return (
     <aside
       className={`fixed left-0 top-18.25 h-[calc(100vh-73px)] bg-sidebar text-sidebar-foreground transition-all duration-300 ${
-        sidebarOpen ? "w-72" : "w-0"
+        sidebarOpen ? "w-80" : "w-0"
       } overflow-hidden z-40`}
     >
       <nav className="p-4 space-y-2 overflow-y-auto h-full pb-20">
@@ -103,7 +103,8 @@ export default function Sidebar() {
                   className="flex items-center justify-between w-full px-4 py-3 rounded-lg hover:bg-sidebar-accent transition-colors cursor-pointer text-sidebar-foreground"
                 >
                   <div className="flex items-center gap-3">
-                    {Icon && <Icon className="size-5" />}
+                    {/* Added shrink-0 to prevent icon from getting smaller */}
+                    {Icon && <Icon className="size-5 shrink-0" />}
                     <span className="text-left leading-tight">
                       {item.title}
                     </span>
@@ -134,7 +135,7 @@ export default function Sidebar() {
                               }
                               className="flex items-center justify-between w-full px-4 py-2 rounded-lg hover:bg-sidebar-accent transition-colors text-sm font-medium cursor-pointer text-sidebar-foreground"
                             >
-                              <span>{child.title}</span>
+                              <span className="text-left leading-tight pr-2">{child.title}</span>
                               {isChildExpanded ? (
                                 <ChevronDown className="size-3.5 shrink-0" />
                               ) : (
@@ -187,8 +188,9 @@ export default function Sidebar() {
               end={item.end}
               className={topLevelLinkClass}
             >
-              {Icon && <Icon className="size-5" />}
-              <span>{item.title}</span>
+              {/* Added shrink-0 to prevent icon from getting smaller */}
+              {Icon && <Icon className="size-5 shrink-0" />}
+              <span className="leading-tight">{item.title}</span>
             </NavLink>
           );
         })}
