@@ -45,7 +45,7 @@ const [uploadedDocument, setUploadedDocument] = useState<File | null>(null);
     });
     setProposals(updated);
     setSelectedProposal(null);
-    if(action === 'Forward') navigate("/pac-evaluation");
+    if(action === 'Forward') navigate("/evaluation/pac");
   };
 
   return (

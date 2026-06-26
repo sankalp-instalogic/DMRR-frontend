@@ -1,12 +1,22 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { Upload, CheckCircle2, XCircle, Trash2, Download } from "lucide-react";
 
+// Ant Design Imports (Added Tabs)
+import { Input, InputNumber, DatePicker, Tabs } from "antd";
+import dayjs from "dayjs";
+
+// Import your custom Table component (adjust path as needed)
+import { Table } from "../components/Table";
+
 export function ProjectExecution() {
   const axiosPrivate = useAxiosPrivate();
   const queryClient = useQueryClient();
+
+  // Pagination state for custom Table
+  const [page, setPage] = useState(1);
 
   const [selectedProject, setSelectedProject] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<
@@ -33,8 +43,8 @@ export function ProjectExecution() {
   const [photos, setPhotos] = useState([
     {
       file: null as File | null,
-      latitude: "",
-      longitude: "",
+      latitude: "" as number | string,
+      longitude: "" as number | string,
       date: "",
       description: "",
     },
@@ -49,7 +59,7 @@ export function ProjectExecution() {
 
   // 1. Fetch main projects list
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["projects"],
+    queryKey: ["projects", page],
     queryFn: async () => {
       const response = await axiosPrivate.get("/api/v1/Projects");
       return response.data;
@@ -57,6 +67,8 @@ export function ProjectExecution() {
   });
 
   const projects = data?.items || [];
+  const totalCount = data?.totalCount || projects.length;
+  const totalPages = data?.totalPages || 1;
 
   // 2. Fetch specific project details when a project is selected
   const { data: projectDetails, isLoading: isDetailsLoading } = useQuery({
@@ -77,7 +89,7 @@ export function ProjectExecution() {
       const response = await axiosPrivate.get(
         `/api/v1/Projects/${selectedProject.id}/mpr`,
       );
-      return response.data; // Assuming this returns the array of MPRs
+      return response.data;
     },
     enabled: !!selectedProject?.id && activeTab === "mpr",
   });
@@ -169,7 +181,6 @@ export function ProjectExecution() {
       queryClient.invalidateQueries({
         queryKey: ["project", selectedProject.id],
       });
-      // Invalidate the MPR list to refresh the table
       queryClient.invalidateQueries({
         queryKey: ["projectMprs", selectedProject.id],
       });
@@ -368,11 +379,9 @@ export function ProjectExecution() {
       }
     };
 
-  // Function to download document securely
   const handleDownloadDocument = async (doc: any) => {
     if (!doc?.id) return;
     try {
-      // Step 1: Fetch the document metadata
       const metaResponse = await axiosPrivate.get(
         `/api/v1/Documents/${doc.documentId}`,
       );
@@ -392,7 +401,6 @@ export function ProjectExecution() {
 
       const link = document.createElement("a");
       link.href = url;
-
       link.setAttribute("download", fileName || `document-${id}`);
 
       document.body.appendChild(link);
@@ -458,6 +466,423 @@ export function ProjectExecution() {
     );
   };
 
+  // AG-Grid Column Definitions
+  const columnDefs = useMemo(
+    () => [
+      {
+        headerName: "Project ID",
+        field: "id",
+        valueFormatter: (params: any) =>
+          params.value ? `${params.value.substring(0, 8)}...` : "",
+        tooltipField: "id",
+      },
+      { headerName: "Proposal ID", field: "proposalRefNo" },
+      { headerName: "District", field: "district" },
+      { headerName: "Contractor", field: "contractor" },
+      {
+        headerName: "Status",
+        field: "status",
+        cellRenderer: (params: any) => (
+          <span className="px-2 py-1 bg-secondary rounded-full text-xs font-medium text-white">
+            {params.value}
+          </span>
+        ),
+      },
+      {
+        headerName: "Action",
+        cellRenderer: (params: any) => {
+          const project = params.data;
+          return (
+            <div className="flex items-center gap-2 h-full">
+              {project.status !== "Completed" && (
+                <button
+                  onClick={() => {
+                    setSelectedProject(project);
+                    setActiveTab("entry");
+                  }}
+                  className="px-2 py-1 text-xs bg-primary cursor-pointer text-primary-foreground rounded-md transition-opacity hover:opacity-90 whitespace-nowrap"
+                >
+                  Add Data
+                </button>
+              )}
+              {project.status === "In Progress" &&
+                !project.isBillingEnsured && (
+                  <button
+                    onClick={() =>
+                      ensureBillingMutation.mutate(project.proposalId)
+                    }
+                    disabled={ensureBillingMutation.isPending}
+                    className="px-2 py-1 text-xs bg-green-600 cursor-pointer text-white rounded-md transition-opacity hover:bg-green-700 disabled:opacity-50 whitespace-nowrap"
+                  >
+                    {ensureBillingMutation.isPending &&
+                    ensureBillingMutation.variables === project.proposalId
+                      ? "Processing..."
+                      : "Ensure Billing"}
+                  </button>
+                )}
+            </div>
+          );
+        },
+      },
+    ],
+    [ensureBillingMutation],
+  );
+
+  // Define Ant Design Tab Items
+  const tabItems = [
+    {
+      key: "entry",
+      label: <span className="font-bold text-base">Entry Details</span>,
+      children: (
+        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <h4 className="font-semibold mb-4">Entry Details</h4>
+          <div className="grid md:grid-cols-3 gap-4 mb-6">
+            <div>
+              <label className="text-sm font-medium mb-1 block">
+                Date of Entry into System
+              </label>
+              <DatePicker
+                value={
+                  entryDetails.entryDate ? dayjs(entryDetails.entryDate) : null
+                }
+                onChange={(_date, dateString) =>
+                  setEntryDetails({
+                    ...entryDetails,
+                    entryDate: dateString as string,
+                  })
+                }
+                className="w-full rounded-lg"
+                size="large"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">
+                Project Start Date
+              </label>
+              <DatePicker
+                value={
+                  entryDetails.startDate ? dayjs(entryDetails.startDate) : null
+                }
+                onChange={(_date, dateString) =>
+                  setEntryDetails({
+                    ...entryDetails,
+                    startDate: dateString as string,
+                  })
+                }
+                className="w-full rounded-lg"
+                size="large"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">
+                Expected Completion Date
+              </label>
+              <DatePicker
+                value={
+                  entryDetails.expectedCompletionDate
+                    ? dayjs(entryDetails.expectedCompletionDate)
+                    : null
+                }
+                onChange={(_date, dateString) =>
+                  setEntryDetails({
+                    ...entryDetails,
+                    expectedCompletionDate: dateString as string,
+                  })
+                }
+                className="w-full rounded-lg"
+                size="large"
+              />
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "mpr",
+      label: (
+        <span className="font-bold text-base">
+          Monthly Progress Reports (MPR)
+        </span>
+      ),
+      disabled: !isEntrySaved,
+      children: (
+        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <h4 className="font-semibold mb-4">Monthly Progress Reports (MPR)</h4>
+
+          {/* Submit New MPR Form */}
+          <div className="grid md:grid-cols-5 gap-3 mb-5 p-4 border border-border rounded-lg bg-muted/20">
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                Reporting Month
+              </label>
+              <DatePicker
+                picker="month"
+                value={
+                  mprDetails.reportingMonth
+                    ? dayjs(mprDetails.reportingMonth)
+                    : null
+                }
+                onChange={(_date, dateString) =>
+                  setMprDetails({
+                    ...mprDetails,
+                    reportingMonth: dateString as string,
+                  })
+                }
+                className="w-full rounded-lg"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                Report Date
+              </label>
+              <DatePicker
+                value={
+                  mprDetails.reportDate ? dayjs(mprDetails.reportDate) : null
+                }
+                onChange={(_date, dateString) =>
+                  setMprDetails({
+                    ...mprDetails,
+                    reportDate: dateString as string,
+                  })
+                }
+                className="w-full rounded-lg"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                Progress %
+              </label>
+              <InputNumber
+                placeholder="Progress %"
+                min={0}
+                max={100}
+                style={{ width: "100%" }}
+                value={mprDetails.progressPercent as number}
+                onChange={(val) =>
+                  setMprDetails({ ...mprDetails, progressPercent: val ?? "" })
+                }
+                className="w-full rounded-lg"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                Remarks
+              </label>
+              <Input
+                placeholder="Remarks"
+                value={mprDetails.remarks}
+                onChange={(e) =>
+                  setMprDetails({ ...mprDetails, remarks: e.target.value })
+                }
+                className="w-full rounded-lg py-1.25"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                Report File
+              </label>
+              <input
+                type="file"
+                onChange={(e) =>
+                  setMprDetails({
+                    ...mprDetails,
+                    file: e.target.files?.[0] || null,
+                  })
+                }
+                className="w-full border border-dashed rounded-lg p-1.5 text-xs file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-muted bg-background"
+              />
+            </div>
+          </div>
+
+          {/* Historic MPRs Table */}
+          <div className="mt-8 border-t border-border pt-6">
+            <h5 className="font-semibold mb-4 text-sm">Submitted MPRs</h5>
+            <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-muted text-muted-foreground">
+                  <tr>
+                    <th className="px-4 py-3 font-medium">Reporting Month</th>
+                    <th className="px-4 py-3 font-medium">Report Date</th>
+                    <th className="px-4 py-3 font-medium">Progress %</th>
+                    <th className="px-4 py-3 font-medium">Remarks</th>
+                    <th className="px-4 py-3 font-medium text-center">
+                      Document
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {isMprListLoading ? (
+                    <tr>
+                      <td colSpan={5} className="px-4 py-4 text-center">
+                        Loading previous MPRs...
+                      </td>
+                    </tr>
+                  ) : mprList && mprList.length > 0 ? (
+                    mprList.map((mpr: any) => (
+                      <tr
+                        key={mpr.id}
+                        className="hover:bg-muted/50 transition-colors"
+                      >
+                        <td className="px-4 py-3">{mpr.reportingMonth}</td>
+                        <td className="px-4 py-3">
+                          {new Date(mpr.reportDate).toLocaleDateString()}
+                        </td>
+                        <td className="px-4 py-3">{mpr.progressPercent}%</td>
+                        <td
+                          className="px-4 py-3 max-w-50 truncate"
+                          title={mpr.remarks}
+                        >
+                          {mpr.remarks}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          {mpr.documentId ? (
+                            <button
+                              onClick={() => handleDownloadDocument(mpr)}
+                              className="inline-flex items-center justify-center p-1.5 text-primary hover:bg-primary/10 rounded-md transition-colors"
+                              title="Download Document"
+                            >
+                              <Download className="w-4 h-4" />
+                            </button>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">
+                              N/A
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan={5}
+                        className="px-4 py-4 text-center text-muted-foreground"
+                      >
+                        No previous MPRs found.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "photos",
+      label: <span className="font-bold text-base">Geo Tagged Photos</span>,
+      disabled: !isEntrySaved,
+      children: (
+        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="flex justify-between items-center mb-4">
+            <h4 className="font-semibold">Geo Tagged Photos</h4>
+            <button
+              onClick={addPhotoRow}
+              className="px-3 py-1 bg-primary text-primary-foreground rounded text-sm transition-opacity hover:opacity-90"
+            >
+              + Add Photo
+            </button>
+          </div>
+
+          {photos.map((photo, index) => (
+            <div key={index} className="flex gap-2 mb-3 items-center">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) =>
+                  updatePhotoField(index, "file", e.target.files?.[0] || null)
+                }
+                className="border rounded p-2 text-sm w-1/5"
+              />
+              <InputNumber
+                placeholder="Latitude"
+                value={photo.latitude as number}
+                onChange={(val) =>
+                  updatePhotoField(index, "latitude", val ?? "")
+                }
+                className="w-1/6"
+              />
+              <InputNumber
+                placeholder="Longitude"
+                value={photo.longitude as number}
+                onChange={(val) =>
+                  updatePhotoField(index, "longitude", val ?? "")
+                }
+                className="w-1/6"
+              />
+              <DatePicker
+                value={photo.date ? dayjs(photo.date) : null}
+                onChange={(_date, dateString) =>
+                  updatePhotoField(index, "date", dateString)
+                }
+                className="w-1/6"
+              />
+              <Input
+                placeholder="Site Description"
+                value={photo.description}
+                onChange={(e) =>
+                  updatePhotoField(index, "description", e.target.value)
+                }
+                className="flex-1"
+              />
+              {photos.length > 1 && (
+                <button
+                  onClick={() => removePhotoRow(index)}
+                  className="text-red-500 hover:text-red-700 p-2"
+                  title="Remove row"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      key: "documents",
+      label: <span className="font-bold text-base">Supporting Documents</span>,
+      disabled: !isEntrySaved,
+      children: (
+        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <h4 className="font-semibold mb-4">Supporting Documents</h4>
+          <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden mb-6">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-muted text-muted-foreground border-b border-border">
+                  <tr>
+                    <th className="px-6 py-3 font-medium">Document Name</th>
+                    <th className="px-6 py-3 font-medium text-center">
+                      Upload Document
+                    </th>
+                    <th className="px-6 py-3 font-medium text-center">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {renderDocumentRow(
+                    "Site Inspection Report",
+                    "siteInspectionReport",
+                  )}
+                  {renderDocumentRow("TPQA Report", "tpqaReport")}
+                  {renderDocumentRow(
+                    "Utilization Certificate",
+                    "utilizationCertificate",
+                  )}
+                  {renderDocumentRow(
+                    "Completion Certificate",
+                    "completionCertificate",
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <div>
@@ -467,107 +892,29 @@ export function ProjectExecution() {
         </p>
       </div>
 
-      {/* PROJECT LIST */}
-      <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
-        <table className="w-full">
-          <thead className="bg-muted">
-            <tr>
-              <th className="px-6 py-4 text-left">Project ID</th>
-              <th className="px-6 py-4 text-left">Proposal ID</th>
-              <th className="px-6 py-4 text-left">District</th>
-              <th className="px-6 py-4 text-left">Contractor</th>
-              <th className="px-6 py-4 text-left">Status</th>
-              <th className="px-6 py-4 text-left">Action</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {isLoading && (
-              <tr>
-                <td
-                  colSpan={6}
-                  className="px-6 py-8 text-center text-muted-foreground"
-                >
-                  Loading projects...
-                </td>
-              </tr>
-            )}
-
-            {isError && (
-              <tr>
-                <td colSpan={6} className="px-6 py-8 text-center text-red-500">
-                  Failed to load projects. Please try again.
-                </td>
-              </tr>
-            )}
-
-            {!isLoading && !isError && projects.length === 0 && (
-              <tr>
-                <td
-                  colSpan={6}
-                  className="px-6 py-8 text-center text-muted-foreground"
-                >
-                  No projects found.
-                </td>
-              </tr>
-            )}
-
-            {!isLoading &&
-              !isError &&
-              projects.map((project: any) => (
-                <tr key={project.id} className="border-t border-border">
-                  <td className="px-6 py-4" title={project.id}>
-                    {project.id.substring(0, 8)}...
-                  </td>
-                  <td className="px-6 py-4">{project.proposalRefNo}</td>
-                  <td className="px-6 py-4">{project.district}</td>
-                  <td className="px-6 py-4">{project.contractor}</td>
-                  <td className="px-6 py-4">
-                    <span className="px-2 py-1 bg-secondary rounded-full text-xs font-medium text-white">
-                      {project.status}
-                    </span>
-                  </td>
-
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      {project.status !== "Completed" && (
-                        <button
-                          onClick={() => {
-                            setSelectedProject(project);
-                            setActiveTab("entry");
-                          }}
-                          className="px-3 py-1.5 text-sm bg-primary cursor-pointer text-primary-foreground rounded-md transition-opacity hover:opacity-90 whitespace-nowrap"
-                        >
-                          Add Data
-                        </button>
-                      )}
-                      {project.status === "In Progress" &&
-                        !project.isBillingEnsured && (
-                          <button
-                            onClick={() =>
-                              ensureBillingMutation.mutate(project.proposalId)
-                            }
-                            disabled={ensureBillingMutation.isPending}
-                            className="px-3 py-1.5 text-sm bg-green-600 cursor-pointer text-white rounded-md transition-opacity hover:bg-green-700 disabled:opacity-50 whitespace-nowrap"
-                          >
-                            {ensureBillingMutation.isPending &&
-                            ensureBillingMutation.variables ===
-                              project.proposalId
-                              ? "Processing..."
-                              : "Ensure Billing"}
-                          </button>
-                        )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
-      </div>
+      {/* PROJECT LIST USING CUSTOM TABLE COMPONENT */}
+      {isLoading ? (
+        <div className="p-8 text-center text-muted-foreground bg-card border border-border rounded-xl">
+          Loading projects...
+        </div>
+      ) : isError ? (
+        <div className="p-8 text-center text-red-500 bg-card border border-border rounded-xl">
+          Failed to load projects. Please try again.
+        </div>
+      ) : (
+        <Table
+          rowData={projects}
+          columnDefs={columnDefs}
+          totalCount={totalCount}
+          page={page}
+          totalPages={totalPages}
+          onPageChange={(newPage) => setPage(newPage)}
+        />
+      )}
 
       {/* EXECUTION FORM */}
       {selectedProject && (
-        <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+        <div className="bg-card border border-border rounded-xl p-6 shadow-sm mt-6">
           <div className="flex justify-between items-start mb-6">
             <div>
               <h3 className="font-bold text-lg">
@@ -588,39 +935,7 @@ export function ProjectExecution() {
             </button>
           </div>
 
-          {/* TAB NAVIGATION */}
-          <div className="flex space-x-4 border-b border-border mb-6 overflow-x-auto">
-            {[
-              { id: "entry", label: "Entry Details" },
-              { id: "mpr", label: "Monthly Progress Reports (MPR)" },
-              { id: "photos", label: "Geo Tagged Photos" },
-              { id: "documents", label: "Supporting Documents" },
-            ].map((tab) => {
-              const isDisabled = tab.id !== "entry" && !isEntrySaved;
-
-              return (
-                <button
-                  key={tab.id}
-                  disabled={isDisabled}
-                  onClick={() => {
-                    if (!isDisabled) setActiveTab(tab.id as any);
-                  }}
-                  title={isDisabled ? "Please save Entry Details first" : ""}
-                  className={`py-2 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                    activeTab === tab.id
-                      ? "border-primary text-primary"
-                      : isDisabled
-                        ? "border-transparent text-muted-foreground/40 cursor-not-allowed"
-                        : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* TAB CONTENT */}
+          {/* ANTD TABS IMPLEMENTATION */}
           <div className="min-h-62.5 relative">
             {isDetailsLoading && (
               <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10">
@@ -630,350 +945,11 @@ export function ProjectExecution() {
               </div>
             )}
 
-            {/* ENTRY DETAILS TAB */}
-            {activeTab === "entry" && (
-              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <h4 className="font-semibold mb-4">Entry Details</h4>
-                <div className="grid md:grid-cols-3 gap-4 mb-6">
-                  <div>
-                    <label className="text-sm font-medium mb-1 block">
-                      Date of Entry into System
-                    </label>
-                    <input
-                      type="date"
-                      value={entryDetails.entryDate}
-                      onChange={(e) =>
-                        setEntryDetails({
-                          ...entryDetails,
-                          entryDate: e.target.value,
-                        })
-                      }
-                      className="w-full border rounded-lg p-2"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium mb-1 block">
-                      Project Start Date
-                    </label>
-                    <input
-                      type="date"
-                      value={entryDetails.startDate}
-                      onChange={(e) =>
-                        setEntryDetails({
-                          ...entryDetails,
-                          startDate: e.target.value,
-                        })
-                      }
-                      className="w-full border rounded-lg p-2"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium mb-1 block">
-                      Expected Completion Date
-                    </label>
-                    <input
-                      type="date"
-                      value={entryDetails.expectedCompletionDate}
-                      onChange={(e) =>
-                        setEntryDetails({
-                          ...entryDetails,
-                          expectedCompletionDate: e.target.value,
-                        })
-                      }
-                      className="w-full border rounded-lg p-2"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* MPR TAB */}
-            {activeTab === "mpr" && (
-              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <h4 className="font-semibold mb-4">
-                  Monthly Progress Reports (MPR)
-                </h4>
-
-                {/* Submit New MPR Form */}
-                <div className="grid md:grid-cols-5 gap-3 mb-5 p-4 border border-border rounded-lg bg-muted/20">
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">
-                      Reporting Month
-                    </label>
-                    <input
-                      type="month"
-                      value={mprDetails.reportingMonth}
-                      onChange={(e) =>
-                        setMprDetails({
-                          ...mprDetails,
-                          reportingMonth: e.target.value,
-                        })
-                      }
-                      className="w-full border rounded-lg p-2 text-sm bg-background"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">
-                      Report Date
-                    </label>
-                    <input
-                      type="date"
-                      value={mprDetails.reportDate}
-                      onChange={(e) =>
-                        setMprDetails({
-                          ...mprDetails,
-                          reportDate: e.target.value,
-                        })
-                      }
-                      className="w-full border rounded-lg p-2 text-sm bg-background"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">
-                      Progress %
-                    </label>
-                    <input
-                      type="number"
-                      placeholder="Progress %"
-                      value={mprDetails.progressPercent}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setMprDetails({
-                          ...mprDetails,
-                          progressPercent: val === "" ? "" : Number(val),
-                        });
-                      }}
-                      className="w-full border rounded-lg p-2 text-sm bg-background"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">
-                      Remarks
-                    </label>
-                    <input
-                      placeholder="Remarks"
-                      value={mprDetails.remarks}
-                      onChange={(e) =>
-                        setMprDetails({
-                          ...mprDetails,
-                          remarks: e.target.value,
-                        })
-                      }
-                      className="w-full border rounded-lg p-2 text-sm bg-background"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">
-                      Report File
-                    </label>
-                    <input
-                      type="file"
-                      onChange={(e) =>
-                        setMprDetails({
-                          ...mprDetails,
-                          file: e.target.files?.[0] || null,
-                        })
-                      }
-                      className="w-full border border-dashed rounded-lg p-1.5 text-xs file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-muted bg-background"
-                    />
-                  </div>
-                </div>
-
-                {/* Historic MPRs Table */}
-                <div className="mt-8 border-t border-border pt-6">
-                  <h5 className="font-semibold mb-4 text-sm">Submitted MPRs</h5>
-                  <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
-                    <table className="w-full text-sm text-left">
-                      <thead className="bg-muted text-muted-foreground">
-                        <tr>
-                          <th className="px-4 py-3 font-medium">
-                            Reporting Month
-                          </th>
-                          <th className="px-4 py-3 font-medium">Report Date</th>
-                          <th className="px-4 py-3 font-medium">Progress %</th>
-                          <th className="px-4 py-3 font-medium">Remarks</th>
-                          <th className="px-4 py-3 font-medium text-center">
-                            Document
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border">
-                        {isMprListLoading ? (
-                          <tr>
-                            <td colSpan={5} className="px-4 py-4 text-center">
-                              Loading previous MPRs...
-                            </td>
-                          </tr>
-                        ) : mprList && mprList.length > 0 ? (
-                          mprList.map((mpr: any) => (
-                            <tr
-                              key={mpr.id}
-                              className="hover:bg-muted/50 transition-colors"
-                            >
-                              <td className="px-4 py-3">
-                                {mpr.reportingMonth}
-                              </td>
-                              <td className="px-4 py-3">
-                                {new Date(mpr.reportDate).toLocaleDateString()}
-                              </td>
-                              <td className="px-4 py-3">
-                                {mpr.progressPercent}%
-                              </td>
-                              <td
-                                className="px-4 py-3 max-w-50 truncate"
-                                title={mpr.remarks}
-                              >
-                                {mpr.remarks}
-                              </td>
-                              <td className="px-4 py-3 text-center">
-                                {mpr.documentId ? (
-                                  <button
-                                    onClick={() => handleDownloadDocument(mpr)}
-                                    className="inline-flex items-center justify-center p-1.5 text-primary hover:bg-primary/10 rounded-md transition-colors"
-                                    title="Download Document"
-                                  >
-                                    <Download className="w-4 h-4" />
-                                  </button>
-                                ) : (
-                                  <span className="text-muted-foreground text-xs">
-                                    N/A
-                                  </span>
-                                )}
-                              </td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td
-                              colSpan={5}
-                              className="px-4 py-4 text-center text-muted-foreground"
-                            >
-                              No previous MPRs found.
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* GEO TAGGED PHOTOS TAB */}
-            {activeTab === "photos" && (
-              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div className="flex justify-between items-center mb-4">
-                  <h4 className="font-semibold">Geo Tagged Photos</h4>
-                  <button
-                    onClick={addPhotoRow}
-                    className="px-3 py-1 bg-primary text-primary-foreground rounded text-sm transition-opacity hover:opacity-90"
-                  >
-                    + Add Photo
-                  </button>
-                </div>
-
-                {photos.map((photo, index) => (
-                  <div key={index} className="flex gap-2 mb-3 items-center">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) =>
-                        updatePhotoField(
-                          index,
-                          "file",
-                          e.target.files?.[0] || null,
-                        )
-                      }
-                      className="border rounded p-2 text-sm w-1/5"
-                    />
-                    <input
-                      type="number"
-                      placeholder="Latitude"
-                      value={photo.latitude}
-                      onChange={(e) =>
-                        updatePhotoField(index, "latitude", e.target.value)
-                      }
-                      className="border rounded p-2 text-sm w-1/6"
-                    />
-                    <input
-                      type="number"
-                      placeholder="Longitude"
-                      value={photo.longitude}
-                      onChange={(e) =>
-                        updatePhotoField(index, "longitude", e.target.value)
-                      }
-                      className="border rounded p-2 text-sm w-1/6"
-                    />
-                    <input
-                      type="date"
-                      value={photo.date}
-                      onChange={(e) =>
-                        updatePhotoField(index, "date", e.target.value)
-                      }
-                      className="border rounded p-2 text-sm w-1/6"
-                    />
-                    <input
-                      placeholder="Site Description"
-                      value={photo.description}
-                      onChange={(e) =>
-                        updatePhotoField(index, "description", e.target.value)
-                      }
-                      className="border rounded p-2 text-sm flex-1"
-                    />
-                    {photos.length > 1 && (
-                      <button
-                        onClick={() => removePhotoRow(index)}
-                        className="text-red-500 hover:text-red-700 p-2"
-                        title="Remove row"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* SUPPORTING DOCUMENTS TAB */}
-            {activeTab === "documents" && (
-              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <h4 className="font-semibold mb-4">Supporting Documents</h4>
-                <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden mb-6">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                      <thead className="bg-muted text-muted-foreground border-b border-border">
-                        <tr>
-                          <th className="px-6 py-3 font-medium">
-                            Document Name
-                          </th>
-                          <th className="px-6 py-3 font-medium text-center">
-                            Upload Document
-                          </th>
-                          <th className="px-6 py-3 font-medium text-center">
-                            Status
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border">
-                        {renderDocumentRow(
-                          "Site Inspection Report",
-                          "siteInspectionReport",
-                        )}
-                        {renderDocumentRow("TPQA Report", "tpqaReport")}
-                        {renderDocumentRow(
-                          "Utilization Certificate",
-                          "utilizationCertificate",
-                        )}
-                        {renderDocumentRow(
-                          "Completion Certificate",
-                          "completionCertificate",
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            )}
+            <Tabs
+              activeKey={activeTab}
+              onChange={(key) => setActiveTab(key as any)}
+              items={tabItems}
+            />
           </div>
 
           {/* SAVE & ACTION BUTTONS */}

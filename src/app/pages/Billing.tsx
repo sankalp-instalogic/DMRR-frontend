@@ -1,7 +1,12 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { getBillingSectionsConfig } from "../../../constants/billingYesNoQuestions";
+import { Table } from "../components/Table";
+import type { ColDef } from "ag-grid-community";
+import { Input, Select, DatePicker } from "antd";
+import dayjs from "dayjs";
 
 export function Billing() {
   const axiosPrivate = useAxiosPrivate();
@@ -57,6 +62,54 @@ export function Billing() {
     vendorRtgsNumber: "",
   });
 
+  const columnDefs = useMemo<ColDef[]>(
+    () => [
+      {
+        headerName: "Ref No",
+        field: "proposalRefNo",
+        flex: 1,
+        valueGetter: (params) => params.data.proposalRefNo || "N/A",
+      },
+      {
+        headerName: "Title",
+        field: "title",
+        flex: 2,
+      },
+      {
+        headerName: "Vendor",
+        field: "vendorName",
+        flex: 1.5,
+        valueGetter: (params) => params.data.vendorName || "Unassigned",
+      },
+      {
+        headerName: "Amount (Lakhs)",
+        field: "amountLakhs",
+        flex: 1,
+        valueFormatter: (params) =>
+          `₹${params.value?.toLocaleString("en-IN") || "0"}`,
+        cellStyle: { color: "green", fontWeight: 600 },
+      },
+      {
+        headerName: "Status",
+        field: "status",
+        flex: 1,
+      },
+      {
+        headerName: "Action",
+        flex: 1,
+        cellRenderer: (params: any) => (
+          <button
+            onClick={() => setSelectedBill(params.data)}
+            className="px-3 py-1.5 cursor-pointer bg-[#0B1F4D] text-white rounded-lg text-sm"
+          >
+            Update
+          </button>
+        ),
+      },
+    ],
+    [],
+  );
+
   // --- FETCH FUNCTION ---
   const fetchBills = async ({ queryKey }: any) => {
     const [_key, currentPage, currentPageSize] = queryKey;
@@ -70,7 +123,7 @@ export function Billing() {
   };
 
   // --- REACT QUERY ---
-  const { data, isLoading, isError } = useQuery({
+  const { data } = useQuery({
     queryKey: ["bills", page, pageSize],
     queryFn: fetchBills,
     placeholderData: keepPreviousData,
@@ -116,7 +169,7 @@ export function Billing() {
 
       await axiosPrivate.post(
         `/api/v1/Billing/${selectedBill.id}/stages`,
-        payload
+        payload,
       );
 
       toast.success("DDMR Section saved successfully!");
@@ -161,7 +214,7 @@ export function Billing() {
 
       await axiosPrivate.post(
         `/api/v1/Billing/${selectedBill.id}/stages`,
-        payload
+        payload,
       );
 
       toast.success("DO Section saved successfully!");
@@ -206,7 +259,7 @@ export function Billing() {
 
       await axiosPrivate.post(
         `/api/v1/Billing/${selectedBill.id}/stages`,
-        payload
+        payload,
       );
 
       toast.success("PS / Minister Section saved successfully!");
@@ -251,7 +304,7 @@ export function Billing() {
 
       await axiosPrivate.post(
         `/api/v1/Billing/${selectedBill.id}/stages`,
-        payload
+        payload,
       );
 
       toast.success("Payment Order Section saved successfully!");
@@ -296,7 +349,7 @@ export function Billing() {
 
       await axiosPrivate.post(
         `/api/v1/Billing/${selectedBill.id}/stages`,
-        payload
+        payload,
       );
 
       toast.success("Grant Released Section saved successfully!");
@@ -339,7 +392,7 @@ export function Billing() {
 
       await axiosPrivate.post(
         `/api/v1/Billing/${selectedBill.id}/stages`,
-        payload
+        payload,
       );
       toast.success("Payment Done To DDO Section saved successfully!");
     } catch (error) {
@@ -381,7 +434,7 @@ export function Billing() {
 
       await axiosPrivate.post(
         `/api/v1/Billing/${selectedBill.id}/stages`,
-        payload
+        payload,
       );
       toast.success("Bill Sent To Treasury Section saved successfully!");
     } catch (error) {
@@ -423,7 +476,7 @@ export function Billing() {
 
       await axiosPrivate.post(
         `/api/v1/Billing/${selectedBill.id}/stages`,
-        payload
+        payload,
       );
       toast.success("Payment Sent To Vendor Section saved successfully!");
     } catch (error) {
@@ -447,7 +500,7 @@ export function Billing() {
 
       await axiosPrivate.post(
         `/api/v1/Billing/${selectedBill.id}/reconciliation`,
-        payload
+        payload,
       );
 
       toast.success("Billing Reconciliation Details Saved Successfully!");
@@ -457,6 +510,38 @@ export function Billing() {
       toast.error("Failed to save reconciliation details. Please try again.");
     }
   };
+
+  const sectionsConfig = useMemo(() => {
+    return getBillingSectionsConfig({
+      handleSaveDDMR,
+      handleSaveDO,
+      handleSaveMinister,
+      handleSavePaymentOrder,
+      handleSaveGrant,
+      handleSaveDDO,
+      handleSaveTreasury,
+      handleSaveVendor,
+      setDdmrFile,
+      setDoFile,
+      setMinisterFile,
+      setPaymentOrderFile,
+      setGrantFile,
+      setDdoFile,
+      setTreasuryFile,
+      setVendorFile,
+    });
+  }, [
+    selectedBill,
+    formData,
+    ddmrFile,
+    doFile,
+    ministerFile,
+    paymentOrderFile,
+    grantFile,
+    ddoFile,
+    treasuryFile,
+    vendorFile,
+  ]);
 
   const YesNoField = ({
     label,
@@ -499,7 +584,7 @@ export function Billing() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#0B1F4D]">
+        <h1>
           Billing & Fund Release
         </h1>
         <p className="text-sm text-muted-foreground">
@@ -508,115 +593,15 @@ export function Billing() {
       </div>
 
       {/* BILL LIST */}
-      <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-muted text-muted-foreground border-b border-border">
-              <tr>
-                <th className="px-4 py-4 font-medium">Ref No</th>
-                <th className="px-4 py-4 font-medium">Title</th>
-                <th className="px-4 py-4 font-medium">Vendor</th>
-                <th className="px-4 py-4 font-medium">Amount (Lakhs)</th>
-                <th className="px-4 py-4 font-medium">Status</th>
-                <th className="px-4 py-4 font-medium">Action</th>
-              </tr>
-            </thead>
-
-            <tbody className="divide-y divide-border">
-              {isLoading ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="px-4 py-8 text-center text-muted-foreground"
-                  >
-                    Loading bills...
-                  </td>
-                </tr>
-              ) : isError ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="px-4 py-8 text-center text-red-500 font-medium"
-                  >
-                    Failed to load billing data. Please try again.
-                  </td>
-                </tr>
-              ) : bills.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="px-4 py-8 text-center text-muted-foreground"
-                  >
-                    No records found.
-                  </td>
-                </tr>
-              ) : (
-                bills.map((bill: any) => (
-                  <tr
-                    key={bill.id}
-                    className="hover:bg-muted/50 transition-colors"
-                  >
-                    <td className="px-4 py-3 font-medium text-[#0B1F4D]">
-                      {bill.proposalRefNo || "N/A"}
-                    </td>
-                    <td className="px-4 py-3">{bill.title}</td>
-                    <td className="px-4 py-3">
-                      {bill.vendorName || "Unassigned"}
-                    </td>
-                    <td className="px-4 py-3 font-medium text-green-600">
-                      ₹{bill.amountLakhs?.toLocaleString("en-IN") || "0"}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="px-2 py-1 bg-secondary text-secondary-foreground rounded-full text-xs font-medium">
-                        {bill.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <button
-                        onClick={() => setSelectedBill(bill)}
-                        className="px-3 py-1.5 bg-[#0B1F4D] text-white hover:bg-opacity-90 rounded-lg text-sm transition-colors"
-                      >
-                        Update
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Server-Side Pagination Footer */}
-        {!isLoading && !isError && bills.length > 0 && (
-          <div className="px-4 py-3 border-t border-border flex items-center justify-between bg-muted/20">
-            <span className="text-sm text-muted-foreground">
-              Showing entries {(page - 1) * pageSize + 1} to{" "}
-              {Math.min(page * pageSize, totalItems)} of {totalItems} entries
-            </span>
-            <div className="flex gap-1">
-              <button
-                onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                className="px-3 py-1 bg-white border border-border rounded text-sm disabled:opacity-50 hover:bg-gray-50 transition-colors"
-                disabled={page === 1}
-              >
-                Previous
-              </button>
-              <button className="px-3 py-1 bg-[#0B1F4D] text-white border border-[#0B1F4D] rounded text-sm font-medium">
-                {page}
-              </button>
-              <button
-                onClick={() =>
-                  setPage((prev) => Math.min(prev + 1, totalPages))
-                }
-                className="px-3 py-1 bg-white border border-border rounded text-sm disabled:opacity-50 hover:bg-gray-50 transition-colors"
-                disabled={page === totalPages}
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+      <Table
+        rowData={bills}
+        columnDefs={columnDefs}
+        totalCount={totalItems}
+        page={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        rowHeight={55}
+      />
 
       {/* FORM */}
       {selectedBill && (
@@ -625,443 +610,145 @@ export function Billing() {
             Billing Workflow - {selectedBill.proposalRefNo}
           </h2>
 
-          {/* 1. DDMR SECTION */}
-          <div className="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-100">
-            <YesNoField
-              label="DDMR Received Bill From Line Department?"
-              value={formData.ddmrReceived}
-              onChange={(value) =>
-                setFormData({ ...formData, ddmrReceived: value })
-              }
-            />
+          {sectionsConfig.map((section) => (
+            <div
+              key={section.id}
+              className="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-100"
+            >
+              <YesNoField
+                label={section.yesNoLabel}
+                value={
+                  formData[section.yesNoKey as keyof typeof formData] as string
+                }
+                onChange={(value) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    [section.yesNoKey]: value,
+                  }))
+                }
+              />
 
-            {formData.ddmrReceived === "Yes" && (
-              <div className="grid md:grid-cols-2 gap-4 mb-2">
-                <input
-                  type="date"
-                  value={formData.ddmrDate}
-                  onChange={(e) =>
-                    setFormData({ ...formData, ddmrDate: e.target.value })
-                  }
-                  className="border border-border bg-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <input
-                  type="number"
-                  placeholder="Amount"
-                  value={formData.ddmrAmount}
-                  onChange={(e) =>
-                    setFormData({ ...formData, ddmrAmount: e.target.value })
-                  }
-                  className="border border-border bg-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <div className="md:col-span-2">
-                  <label className="block text-sm mb-1 text-muted-foreground">
-                    Upload Invoice
-                  </label>
-                  <input
-                    type="file"
-                    onChange={(e) => setDdmrFile(e.target.files?.[0] || null)}
-                    className="w-full border border-border bg-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
+              {formData[section.yesNoKey as keyof typeof formData] ===
+                "Yes" && (
+                <div className={section.gridClass}>
+                  {section.fields.map((field, index) => {
+                    if (field.type === "empty")
+                      return <div key={`empty-${index}`} />;
 
-                <div className="md:col-span-2 flex justify-end mt-2">
-                  <button
-                    onClick={handleSaveDDMR}
-                    className="px-4 py-2 bg-[#0B1F4D] text-white rounded-lg hover:bg-opacity-90 transition-colors text-sm font-medium"
-                  >
-                    Save Line of Department Section
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* 2. DO SECTION */}
-          <div className="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-100">
-            <YesNoField
-              label="Bill Received At DO?"
-              value={formData.billReceivedDO}
-              onChange={(value) =>
-                setFormData({ ...formData, billReceivedDO: value })
-              }
-            />
-
-            {formData.billReceivedDO === "Yes" && (
-              <div className="grid md:grid-cols-2 gap-4 mb-2">
-                <input
-                  type="date"
-                  value={formData.doDate}
-                  onChange={(e) =>
-                    setFormData({ ...formData, doDate: e.target.value })
-                  }
-                  className="border border-border bg-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <input
-                  type="number"
-                  placeholder="Amount"
-                  value={formData.doAmount}
-                  onChange={(e) =>
-                    setFormData({ ...formData, doAmount: e.target.value })
-                  }
-                  className="border border-border bg-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <div className="md:col-span-2">
-                  <label className="block text-sm mb-1 text-muted-foreground">
-                    Upload Document
-                  </label>
-                  <input
-                    type="file"
-                    onChange={(e) => setDoFile(e.target.files?.[0] || null)}
-                    className="w-full border border-border bg-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
-
-                <div className="md:col-span-2 flex justify-end mt-2">
-                  <button
-                    onClick={handleSaveDO}
-                    className="px-4 py-2 bg-[#0B1F4D] text-white rounded-lg hover:bg-opacity-90 transition-colors text-sm font-medium"
-                  >
-                    Save DO Section
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* 3. PS / MINISTER SECTION */}
-          <div className="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-100">
-            <YesNoField
-              label="Bill Sent To PS / Minister?"
-              value={formData.billSentMinister}
-              onChange={(value) =>
-                setFormData({ ...formData, billSentMinister: value })
-              }
-            />
-
-            {formData.billSentMinister === "Yes" && (
-              <div className="grid md:grid-cols-2 gap-4 mb-2">
-                <input
-                  type="date"
-                  value={formData.ministerDate}
-                  onChange={(e) =>
-                    setFormData({ ...formData, ministerDate: e.target.value })
-                  }
-                  className="border border-border bg-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <div></div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm mb-1 text-muted-foreground">
-                    Upload Document
-                  </label>
-                  <input
-                    type="file"
-                    onChange={(e) =>
-                      setMinisterFile(e.target.files?.[0] || null)
+                    if (field.type === "file") {
+                      return (
+                        <div
+                          key={`file-${index}`}
+                          className={field.containerClass || ""}
+                        >
+                          {field.label && (
+                            <label className="block text-sm mb-1 text-muted-foreground">
+                              {field.label}
+                            </label>
+                          )}
+                          <Input
+                            type="file"
+                            size="large"
+                            onChange={(e) =>
+                              field.fileSetter &&
+                              field.fileSetter(e.target.files?.[0] || null)
+                            }
+                            className="w-full bg-white"
+                          />
+                        </div>
+                      );
                     }
-                    className="w-full border border-border bg-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
 
-                <div className="md:col-span-2 flex justify-end mt-2">
-                  <button
-                    onClick={handleSaveMinister}
-                    className="px-4 py-2 bg-[#0B1F4D] text-white rounded-lg hover:bg-opacity-90 transition-colors text-sm font-medium"
+                    if (field.type === "select") {
+                      return (
+                        <Select
+                          key={`select-${index}`}
+                          size="large"
+                          value={
+                            formData[
+                              field.stateKey as keyof typeof formData
+                            ] as string
+                          }
+                          onChange={(value) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              [field.stateKey as string]: value,
+                            }))
+                          }
+                          className="w-full bg-white"
+                        >
+                          {field.options?.map((opt) => (
+                            <Select.Option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </Select.Option>
+                          ))}
+                        </Select>
+                      );
+                    }
+
+                    if (field.type === "date") {
+                      return (
+                        <DatePicker
+                          key={`date-${index}`}
+                          size="large"
+                          placeholder={field.placeholder || "Select date"}
+                          value={
+                            formData[field.stateKey as keyof typeof formData]
+                              ? dayjs(
+                                  formData[
+                                    field.stateKey as keyof typeof formData
+                                  ] as string,
+                                )
+                              : null
+                          }
+                          onChange={(_date, dateString) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              [field.stateKey as string]: dateString, // dateString defaults to YYYY-MM-DD
+                            }))
+                          }
+                          className="w-full bg-white"
+                        />
+                      );
+                    }
+
+                    // For standard inputs (text, number)
+                    return (
+                      <Input
+                        key={`input-${index}`}
+                        type={field.type}
+                        size="large"
+                        placeholder={field.placeholder}
+                        value={
+                          formData[
+                            field.stateKey as keyof typeof formData
+                          ] as string
+                        }
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            [field.stateKey as string]: e.target.value,
+                          }))
+                        }
+                        className="w-full bg-white"
+                      />
+                    );
+                  })}
+
+                  <div
+                    className={`${section.btnContainerClass} flex justify-end mt-2`}
                   >
-                    Save PS / Minister Section
-                  </button>
+                    <button
+                      onClick={section.onSave}
+                      className="px-4 py-2 bg-[#0B1F4D] text-white rounded-lg hover:bg-opacity-90 transition-colors text-sm font-medium"
+                    >
+                      {section.buttonText}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-
-          {/* 4. PAYMENT ORDER */}
-          <div className="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-100">
-            <YesNoField
-              label="Payment Order Made?"
-              value={formData.paymentOrderMade}
-              onChange={(value) =>
-                setFormData({ ...formData, paymentOrderMade: value })
-              }
-            />
-
-            {formData.paymentOrderMade === "Yes" && (
-              <div className="grid md:grid-cols-4 gap-4 mb-2">
-                <input
-                  type="date"
-                  value={formData.paymentOrderDate}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      paymentOrderDate: e.target.value,
-                    })
-                  }
-                  className="border border-border bg-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <select
-                  value={formData.paymentOrderInstallment}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      paymentOrderInstallment: e.target.value,
-                    })
-                  }
-                  className="border border-border bg-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                >
-                  <option value="1">1st Installment</option>
-                  <option value="2">2nd Installment</option>
-                  <option value="3">3rd Installment</option>
-                  <option value="0">Final Installment</option>
-                </select>
-                <input
-                  type="number"
-                  placeholder="Amount Released"
-                  value={formData.paymentOrderAmount}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      paymentOrderAmount: e.target.value,
-                    })
-                  }
-                  className="border border-border bg-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <input
-                  type="file"
-                  onChange={(e) =>
-                    setPaymentOrderFile(e.target.files?.[0] || null)
-                  }
-                  className="border border-border bg-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-
-                <div className="md:col-span-4 flex justify-end mt-2">
-                  <button
-                    onClick={handleSavePaymentOrder}
-                    className="px-4 py-2 bg-[#0B1F4D] text-white rounded-lg hover:bg-opacity-90 transition-colors text-sm font-medium"
-                  >
-                    Save Payment Order Section
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* 5. GRANT RELEASED */}
-          <div className="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-100">
-            <YesNoField
-              label="Grant Released?"
-              value={formData.grantReleased}
-              onChange={(value) =>
-                setFormData({ ...formData, grantReleased: value })
-              }
-            />
-
-            {formData.grantReleased === "Yes" && (
-              <div className="grid md:grid-cols-3 gap-4 mb-2">
-                <input
-                  type="date"
-                  value={formData.grantDate}
-                  onChange={(e) =>
-                    setFormData({ ...formData, grantDate: e.target.value })
-                  }
-                  className="border border-border bg-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <input
-                  type="number"
-                  placeholder="Amount Released"
-                  value={formData.grantAmount}
-                  onChange={(e) =>
-                    setFormData({ ...formData, grantAmount: e.target.value })
-                  }
-                  className="border border-border bg-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <input
-                  type="file"
-                  onChange={(e) => setGrantFile(e.target.files?.[0] || null)}
-                  className="border border-border bg-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-
-                <div className="md:col-span-3 flex justify-end mt-2">
-                  <button
-                    onClick={handleSaveGrant}
-                    className="px-4 py-2 bg-[#0B1F4D] text-white rounded-lg hover:bg-opacity-90 transition-colors text-sm font-medium"
-                  >
-                    Save Grant Released Section
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* 6. PAYMENT DONE TO DDO */}
-          <div className="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-100">
-            <YesNoField
-              label="Payment Done To DDO?"
-              value={formData.paymentDoneDDO}
-              onChange={(value) =>
-                setFormData({ ...formData, paymentDoneDDO: value })
-              }
-            />
-
-            {formData.paymentDoneDDO === "Yes" && (
-              <div className="grid md:grid-cols-3 gap-4 mb-2">
-                <input
-                  type="date"
-                  value={formData.paymentDDODate}
-                  onChange={(e) =>
-                    setFormData({ ...formData, paymentDDODate: e.target.value })
-                  }
-                  className="border border-border bg-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <input
-                  type="number"
-                  placeholder="Amount"
-                  value={formData.paymentDDOAmount}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      paymentDDOAmount: e.target.value,
-                    })
-                  }
-                  className="border border-border bg-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <input
-                  type="file"
-                  onChange={(e) => setDdoFile(e.target.files?.[0] || null)}
-                  className="border border-border bg-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-
-                <div className="md:col-span-3 flex justify-end mt-2">
-                  <button
-                    onClick={handleSaveDDO}
-                    className="px-4 py-2 bg-[#0B1F4D] text-white rounded-lg hover:bg-opacity-90 transition-colors text-sm font-medium"
-                  >
-                    Save DDO Section
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* 7. BILL SENT TO TREASURY */}
-          <div className="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-100">
-            <YesNoField
-              label="Bill Sent To Treasury Office By DDO?"
-              value={formData.billSentTreasury}
-              onChange={(value) =>
-                setFormData({ ...formData, billSentTreasury: value })
-              }
-            />
-
-            {formData.billSentTreasury === "Yes" && (
-              <div className="grid md:grid-cols-4 gap-4 mb-2">
-                <input
-                  type="date"
-                  value={formData.treasuryDate}
-                  onChange={(e) =>
-                    setFormData({ ...formData, treasuryDate: e.target.value })
-                  }
-                  className="border border-border bg-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <input
-                  placeholder="Bill Number"
-                  value={formData.treasuryBillNumber}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      treasuryBillNumber: e.target.value,
-                    })
-                  }
-                  className="border border-border bg-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <input
-                  placeholder="RTGS Number"
-                  value={formData.treasuryRtgsNumber}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      treasuryRtgsNumber: e.target.value,
-                    })
-                  }
-                  className="border border-border bg-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <input
-                  type="file"
-                  onChange={(e) => setTreasuryFile(e.target.files?.[0] || null)}
-                  className="border border-border bg-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-
-                <div className="md:col-span-4 flex justify-end mt-2">
-                  <button
-                    onClick={handleSaveTreasury}
-                    className="px-4 py-2 bg-[#0B1F4D] text-white rounded-lg hover:bg-opacity-90 transition-colors text-sm font-medium"
-                  >
-                    Save Treasury Section
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* 8. PAYMENT SENT TO VENDOR */}
-          <div className="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-100">
-            <YesNoField
-              label="Payment Sent From Treasury Office To Vendor?"
-              value={formData.paymentToVendor}
-              onChange={(value) =>
-                setFormData({ ...formData, paymentToVendor: value })
-              }
-            />
-
-            {formData.paymentToVendor === "Yes" && (
-              <div className="grid md:grid-cols-4 gap-4 mb-2">
-                <input
-                  type="date"
-                  value={formData.vendorDate}
-                  onChange={(e) =>
-                    setFormData({ ...formData, vendorDate: e.target.value })
-                  }
-                  className="border border-border bg-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <input
-                  placeholder="Transaction ID"
-                  value={formData.vendorTransactionId}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      vendorTransactionId: e.target.value,
-                    })
-                  }
-                  className="border border-border bg-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <input
-                  placeholder="RTGS Number"
-                  value={formData.vendorRtgsNumber}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      vendorRtgsNumber: e.target.value,
-                    })
-                  }
-                  className="border border-border bg-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <input
-                  type="file"
-                  onChange={(e) => setVendorFile(e.target.files?.[0] || null)}
-                  className="border border-border bg-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-
-                <div className="md:col-span-4 flex justify-end mt-2">
-                  <button
-                    onClick={handleSaveVendor}
-                    className="px-4 py-2 bg-[#0B1F4D] text-white rounded-lg hover:bg-opacity-90 transition-colors text-sm font-medium"
-                  >
-                    Save Vendor Section
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          ))}
 
           {/* Payment Details */}
           <h3 className="font-bold text-lg mb-4 text-[#0B1F4D]">
@@ -1069,23 +756,25 @@ export function Billing() {
           </h3>
 
           <div className="grid md:grid-cols-2 gap-4 mb-6">
-            <input
+            <Input
               type="number"
+              size="large"
               placeholder="Amount Intended to Pay"
               value={formData.intendedAmount}
               onChange={(e) =>
                 setFormData({ ...formData, intendedAmount: e.target.value })
               }
-              className="border border-border bg-input-background rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
+              className="bg-input-background"
             />
-            <input
+            <Input
               type="number"
+              size="large"
               placeholder="Amount Paid by Department"
               value={formData.paidAmount}
               onChange={(e) =>
                 setFormData({ ...formData, paidAmount: e.target.value })
               }
-              className="border border-border bg-input-background rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
+              className="bg-input-background"
             />
           </div>
 
@@ -1095,23 +784,25 @@ export function Billing() {
           </h3>
 
           <div className="grid md:grid-cols-2 gap-4 mb-6">
-            <input
+            <Input
               type="number"
+              size="large"
               placeholder="GST Amount"
               value={formData.gstAmount}
               onChange={(e) =>
                 setFormData({ ...formData, gstAmount: e.target.value })
               }
-              className="border border-border bg-input-background rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
+              className="bg-input-background"
             />
-            <input
+            <Input
               type="number"
+              size="large"
               placeholder="TDS Amount"
               value={formData.tdsAmount}
               onChange={(e) =>
                 setFormData({ ...formData, tdsAmount: e.target.value })
               }
-              className="border border-border bg-input-background rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary"
+              className="bg-input-background"
             />
           </div>
 

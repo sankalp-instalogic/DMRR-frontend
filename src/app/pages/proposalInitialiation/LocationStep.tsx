@@ -45,10 +45,9 @@ export function LocationStep({ data, setData }: LocationStepProps) {
   });
 
   // 3. Fetch Talukas based on selected District ID
-  const {
-    data: talukas = [],
-    isFetching: isFetchingTalukas,
-  } = useQuery<MasterItem[]>({
+  const { data: talukas = [], isFetching: isFetchingTalukas } = useQuery<
+    MasterItem[]
+  >({
     queryKey: ["talukas", data.district],
     queryFn: async () => {
       const response = await axiosPrivate.get(`/api/v1/masters/talukas`, {
@@ -76,14 +75,18 @@ export function LocationStep({ data, setData }: LocationStepProps) {
           size="large"
           placeholder="Select Disaster Type"
           // Antd placeholders only show if value is undefined, not an empty string
-          value={data.disasterType || undefined} 
+          value={data.disasterType || undefined}
           onChange={(value) => setData({ ...data, disasterType: value })}
           disabled={isLoadingDisasters}
           loading={isLoadingDisasters}
-          options={disasterTypes.map((type) => ({
-            value: type.id,
-            label: type.name,
-          }))}
+          options={
+            Array.isArray(disasterTypes)
+              ? disasterTypes.map((type) => ({
+                  value: type.id,
+                  label: type.name,
+                }))
+              : []
+          }
         />
       </div>
 
@@ -106,10 +109,14 @@ export function LocationStep({ data, setData }: LocationStepProps) {
           }
           disabled={isLoadingDistricts}
           loading={isLoadingDistricts}
-          options={districts.map((district) => ({
-            value: district.id,
-            label: district.name,
-          }))}
+          options={
+            Array.isArray(districts)
+              ? districts?.map((district) => ({
+                  value: district.id,
+                  label: district.name,
+                }))
+              : []
+          }
         />
       </div>
 

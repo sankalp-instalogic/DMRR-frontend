@@ -103,11 +103,11 @@ export function ProposalInitiationWizard() {
       lineDepartmentId: step2Data.lineDepartment || null,
       receivedFromSourceId: step2Data.proposalReceivedFrom || null,
       proposalReceivedDate: formatToISO(step2Data.proposalReceivedDate),
-      sourceName: step2Data.sourceName || "string",
+      sourceName: step2Data.sourceName || "",
       markedToAuthorityId: step2Data.receivingAuthority || null,
       dateReceivedByAuthority: formatToISO(step2Data.authorityReceivedDate),
       receivingOfficerId: step2Data.officerInCharge || null,
-      receivingOfficerName: "string", // Placeholder as per example
+      receivingOfficerName: "", // Placeholder as per example
       ndmaGuidelineId: step3Data.ndmaGuideline || null,
       costOfProjectLakhs: step4Data.projectCost
         ? Number(step4Data.projectCost)

@@ -1,20 +1,18 @@
 import { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router";
-import { Plus, Search, Eye, Loader2 } from "lucide-react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Plus, Eye, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import useAxiosPrivate from "../../../../hooks/useAxiosPrivate";
 import type { ColDef } from "ag-grid-community";
-import { Table } from "../../../components/Table"; // Adjust import path to your custom Table component
+import { Table } from "../../../components/Table";
 import { cn } from "../../../../utils/utils";
 import { buttonVariants } from "../../../components/ui/button";
 
 export function TendersList() {
   const navigate = useNavigate();
   const axiosPrivate = useAxiosPrivate();
-  const queryClient = useQueryClient();
 
   // Search & Pagination states
-  const [searchTerm, setSearchTerm] = useState("");
   const [tenderPage, setTenderPage] = useState(1);
   const [tenderPageSize] = useState(10);
 
@@ -80,12 +78,16 @@ export function TendersList() {
   const departments = deptData?.items ?? [];
 
   const getDemandLocationName = (row: any) => {
-    if (row.demandFrom === "Districts" && row.districtId) {
-      const dist = districts.find((d: any) => d.id === row.districtId);
+    if (row.demandFrom === "Districts" && row.beneficiaryDistrictId) {
+      const dist = districts.find(
+        (d: any) => d.id === row.beneficiaryDistrictId,
+      );
       return dist ? `${dist.name}` : "Loading District...";
     }
-    if (row.demandFrom === "Other Departments" && row.departmentId) {
-      const dept = departments.find((d: any) => d.id === row.departmentId);
+    if (row.demandFrom === "Other Departments" && row.beneficiaryDepartmentId) {
+      const dept = departments.find(
+        (d: any) => d.id === row.beneficiaryDepartmentId,
+      );
       return dept ? `${dept.name}` : "Loading Department...";
     }
     return row.demandFrom || "N/A";
@@ -115,20 +117,9 @@ export function TendersList() {
 
   // Local filtering for Tenders
   const filteredTenders = useMemo(() => {
-    return tenders
-      .filter((tender: any) => tender.status !== "Completed")
-      .filter((tender: any) => {
-        const searchLower = searchTerm.toLowerCase();
-        return (
-          tender.tenderTitle?.toLowerCase().includes(searchLower) ||
-          tender.tenderRefNo?.toLowerCase().includes(searchLower) ||
-          tender.tenderCode?.toLowerCase().includes(searchLower) ||
-          tender.organizationChain?.toLowerCase().includes(searchLower)
-        );
-      });
-  }, [tenders, searchTerm]);
+    return tenders.filter((tender: any) => tender.status !== "Completed");
+  }, [tenders]);
 
-  // Local pagination calculation for Tenders
   const tenderTotalCount = filteredTenders.length;
   const tenderTotalPages = Math.ceil(tenderTotalCount / tenderPageSize) || 1;
   const paginatedTenders = filteredTenders.slice(
@@ -139,28 +130,6 @@ export function TendersList() {
   const procurementItems = procurementResponse?.items ?? [];
   const procurementTotalCount = procurementResponse?.totalCount ?? 0;
   const procurementTotalPages = procurementResponse?.totalPages ?? 1;
-
-  // --- MUTATION ---
-
-  const markForClosureMutation = useMutation({
-    mutationFn: async (procurementId: string) => {
-      const response = await axiosPrivate.post(
-        `/api/v1/Procurements/${procurementId}/committees/5/decision`,
-        {
-          approved: true,
-          decisionDate: new Date().toISOString(),
-          documentId: null,
-        },
-      );
-      return response.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["procurements"] });
-    },
-    onError: (error) => {
-      console.error("Error marking procurement for closure:", error);
-    },
-  });
 
   // --- COLUMN DEFINITIONS ---
 
@@ -197,10 +166,10 @@ export function TendersList() {
           <button
             onClick={() =>
               navigate(
-                `/procurement-tendering/tenders/${params.data.id || params.data.procurementId}`,
+                `/procurement-tendering/tenders/independent/${params.data.id || params.data.procurementId}`,
               )
             }
-            className="p-2 inline-flex justify-center hover:bg-muted rounded-lg text-muted-foreground hover:text-[#0B1F4D] transition-colors"
+            className="p-2 inline-flex cursor-pointer justify-center hover:bg-muted rounded-lg text-muted-foreground hover:text-[#0B1F4D] transition-colors"
             title="View Details"
           >
             <Eye className="size-4" />
@@ -225,7 +194,7 @@ export function TendersList() {
         valueGetter: (params) => getDemandLocationName(params.data),
       },
       {
-        field: "totalQuantity",
+        field: "quantity",
         headerName: "Total Quantity",
         valueFormatter: (p) => p.value ?? 0,
       },
@@ -241,27 +210,26 @@ export function TendersList() {
         filter: false,
         cellRenderer: (params: any) => {
           const row = params.data;
-          const isPending =
-            markForClosureMutation.isPending &&
-            markForClosureMutation.variables === row.id;
+
           return (
             <button
-              onClick={() => markForClosureMutation.mutate(row.id)}
-              disabled={isPending}
-              className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-blue-700 hover:shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Mark for Closure"
+              onClick={() =>
+                navigate(`/procurement-tendering/tenders/procurement/${row.id}`)
+              }
+              className="p-2 inline-flex cursor-pointer justify-center hover:bg-muted rounded-lg text-muted-foreground hover:text-[#0B1F4D] transition-colors"
+              title="View Details"
             >
-              {isPending ? "Processing..." : "Mark for Closure"}
+              <Eye className="size-4" />
             </button>
           );
         },
       },
     ],
-    [districts, departments, markForClosureMutation],
+    [districts, departments, navigate],
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-12">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#0B1F4D]">Tenders</h1>
@@ -283,20 +251,9 @@ export function TendersList() {
       {/* --- TABLE 1: ALL TENDERS --- */}
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-[#0B1F4D]">All Tenders</h2>
-          <div className="relative w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search tenders..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setTenderPage(1); // Reset to first page on new search
-              }}
-              className="w-full pl-9 pr-4 py-2 bg-white border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E5AA8]/20"
-            />
-          </div>
+          <h2 className="text-lg font-semibold text-[#0B1F4D]">
+            Independent Tenders
+          </h2>
         </div>
 
         {isTendersLoading ? (
@@ -323,7 +280,7 @@ export function TendersList() {
       {/* --- TABLE 2: PROCUREMENT RECORDS --- */}
       <div className="space-y-4 mt-8">
         <h2 className="text-lg font-semibold text-[#0B1F4D]">
-          Pending Procurement Records
+          Procurement Tenders
         </h2>
 
         {isProcurementLoading ? (

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { Search, Loader2 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate"; // Adjust path as needed
@@ -20,6 +20,7 @@ export function ProcurementClosure() {
   // --- Closure Form States ---
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [isCompleted, setIsCompleted] = useState("");
+  const closureFormRef = useRef<HTMLDivElement>(null);
 
   interface CompletionDataState {
     completionCertificate: File | null;
@@ -287,21 +288,46 @@ export function ProcurementClosure() {
     }
   };
 
+  useEffect(() => {
+    if (selectedItem && closureFormRef.current) {
+      // Adding a tiny timeout ensures the browser has painted the new element
+      // before trying to calculate its position for scrolling.
+      setTimeout(() => {
+        closureFormRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 100);
+    }
+  }, [selectedItem]);
+
   // --- AG Grid Column Definitions ---
   const tenderColumnDefs: ColDef[] = useMemo(
     () => [
-      { field: "tenderTitle", headerName: "Tender Title", flex: 2 },
-      { field: "tenderRefNo", headerName: "Tender Ref No", flex: 1 },
-      { field: "tenderCode", headerName: "Tender ID", flex: 1 },
+      {
+        field: "tenderTitle",
+        headerName: "Tender Title",
+        flex: 1,
+        minWidth: 250,
+      },
+      {
+        field: "tenderRefNo",
+        headerName: "Tender Ref No",
+        flex: 1,
+        minWidth: 180,
+      },
+      { field: "tenderCode", headerName: "Tender ID", flex: 1, minWidth: 150 },
       {
         field: "organisationChain",
         headerName: "Organizational Chain",
         flex: 1,
+        minWidth: 200,
       },
       {
         field: "status",
         headerName: "Status",
         flex: 1,
+        minWidth: 150,
         cellRenderer: (params: any) => (
           <span
             className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusStyles(params.value)}`}
@@ -310,8 +336,27 @@ export function ProcurementClosure() {
           </span>
         ),
       },
+      {
+        headerName: "Actions",
+        flex: 1,
+        minWidth: 160,
+        sortable: false,
+        filter: false,
+        pinned: "right", // Optional: pins the action column so it's always visible when scrolling
+        cellRenderer: (params: any) => (
+          <button
+            onClick={() => handleSelectForClosure(params.data, "tender")}
+            className={cn(
+              buttonVariants({ variant: "default", size: "sm" }),
+              "cursor-pointer",
+            )}
+          >
+            Project Closure
+          </button>
+        ),
+      },
     ],
-    [],
+    [handleSelectForClosure], // Best practice to include this if linting complains
   );
 
   const procurementColumnDefs: ColDef[] = useMemo(
@@ -341,6 +386,38 @@ export function ProcurementClosure() {
         flex: 1,
         valueFormatter: (params) =>
           `₹${params.value?.toLocaleString("en-IN") || "0"}`,
+      },
+      {
+        field: "status",
+        headerName: "Status",
+        flex: 1,
+        cellRenderer: (params: any) => (
+          <span
+            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusStyles(params.value)}`}
+          >
+            {params.value || "Unknown"}
+          </span>
+        ),
+      },
+      // New Actions Column
+      {
+        headerName: "Actions",
+        flex: 1,
+        minWidth: 160,
+        sortable: false,
+        filter: false,
+        pinned: "right",
+        cellRenderer: (params: any) => (
+          <button
+            onClick={() => handleSelectForClosure(params.data, "procurement")}
+            className={cn(
+              buttonVariants({ variant: "default", size: "sm" }),
+              "cursor-pointer",
+            )}
+          >
+            Project Closure
+          </button>
+        ),
       },
     ],
     [districts, departments],
@@ -396,13 +473,13 @@ export function ProcurementClosure() {
             totalCount={filteredTenders.length}
             page={1}
             totalPages={1}
-            onPageChange={() => {}} // Client-side search handles this array
-            onRowClicked={(e) => handleSelectForClosure(e.data, "tender")}
+            onPageChange={() => {}}
+            // onRowClicked is REMOVED
             rowClassRules={{
               "bg-blue-50/80 border-l-4 border-[#1E5AA8]": (params) =>
                 selectedItem?.id ===
                 (params.data.id || params.data.procurementId),
-              "cursor-pointer hover:bg-muted/50": () => true, // Gives the table a nice hover effect
+              "hover:bg-muted/50": () => true, // Kept hover, removed cursor-pointer
             }}
           />
         )}
@@ -437,11 +514,11 @@ export function ProcurementClosure() {
             page={page}
             totalPages={totalPages}
             onPageChange={setPage}
-            onRowClicked={(e) => handleSelectForClosure(e.data, "procurement")}
+            // onRowClicked is REMOVED
             rowClassRules={{
               "bg-blue-50/80 border-l-4 border-[#1E5AA8]": (params) =>
                 selectedItem?.id === params.data.id,
-              "cursor-pointer hover:bg-muted/50": () => true,
+              "hover:bg-muted/50": () => true, // Kept hover, removed cursor-pointer
             }}
           />
         )}
@@ -449,7 +526,7 @@ export function ProcurementClosure() {
 
       {/* --- CLOSURE FORM SECTION --- */}
       {selectedItem && (
-        <div className="bg-white border border-border rounded-xl p-6 shadow-sm mt-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
+        <div ref={closureFormRef} className="bg-white border border-border rounded-xl p-6 shadow-sm mt-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
           <h3 className="mb-6 text-xl font-bold border-b pb-4 text-[#0B1F4D]">
             Project Closure:{" "}
             <span className="text-muted-foreground font-medium">
@@ -534,13 +611,19 @@ export function ProcurementClosure() {
           <div className="mt-8 flex justify-end gap-3">
             <button
               onClick={() => setSelectedItem(null)}
-              className={cn(buttonVariants({ variant: "outline" }),"cursor-pointer")}
+              className={cn(
+                buttonVariants({ variant: "outline" }),
+                "cursor-pointer",
+              )}
             >
               Cancel
             </button>
             <button
               onClick={handleSaveClosure}
-              className={cn(buttonVariants({ variant: "default" }),"cursor-pointer")}
+              className={cn(
+                buttonVariants({ variant: "default" }),
+                "cursor-pointer",
+              )}
             >
               Save Closure Data
             </button>

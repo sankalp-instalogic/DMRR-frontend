@@ -1,25 +1,36 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { Upload, Save, Loader2 } from "lucide-react";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 
+// Ant Design Imports
+import { Input, Select, Spin } from "antd";
+import type { ColDef } from "ag-grid-community";
+
+// Import your Custom Table Component (adjust path as needed)
+import { Table } from "../components/Table";
+
 export function DDMAWorkflow() {
   const resolutionFileInputRef = useRef<HTMLInputElement>(null);
   const technicalSanctionFileInputRef = useRef<HTMLInputElement>(null);
+  const workflowSectionRef = useRef<HTMLDivElement>(null);
+
   const [activeTab, setActiveTab] = useState("new");
   const [selectedProposal, setSelectedProposal] = useState<any>(null);
   const [resolutionFile, setResolutionFile] = useState<File | null>(null);
   const [sanctionFile, setSanctionFile] = useState<File | null>(null);
   const [departmentId, setDepartmentId] = useState("");
   const [costEstimation, setCostEstimation] = useState("");
-  const queryClient = useQueryClient();
 
+  const [currentPage, setCurrentPage] = useState(1); // Pagination state
+
+  const queryClient = useQueryClient();
   const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
 
-  // 1. Fetch NEW proposals from original API
+  // 1. Fetch NEW proposals
   const {
     data: newProposalsData,
     isLoading: isLoadingNew,
@@ -32,7 +43,7 @@ export function DDMAWorkflow() {
     },
   });
 
-  // 2. Fetch REVISED proposals from the new API
+  // 2. Fetch REVISED proposals
   const {
     data: revisedProposalsData,
     isLoading: isLoadingRevised,
@@ -45,7 +56,7 @@ export function DDMAWorkflow() {
     },
   });
 
-  // 3. Fetch Line Departments for the dropdown
+  // 3. Fetch Line Departments
   const { data: departmentsData, isLoading: isLoadingDepartments } = useQuery({
     queryKey: ["lineDepartments"],
     queryFn: async () => {
@@ -57,7 +68,6 @@ export function DDMAWorkflow() {
   });
 
   // 4. Integrated Routing & File Upload Mutation
-  // 4. Integrated Routing, File Upload & Forwarding Mutation
   const processWorkflowMutation = useMutation({
     mutationFn: async () => {
       if (!selectedProposal || !departmentId) {
@@ -75,10 +85,9 @@ export function DDMAWorkflow() {
         routingPayload,
       );
 
-      // STEP 2: Execute File Uploads (if files are selected)
+      // STEP 2: Execute File Uploads
       const uploadPromises = [];
 
-      // Helper function to build form data
       const createUploadConfig = (file: File, docType: number) => {
         const formData = new FormData();
         formData.append("ownerType", "1");
@@ -87,36 +96,26 @@ export function DDMAWorkflow() {
         formData.append("file", file);
 
         return axiosPrivate.post("/api/v1/Documents/upload", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+          headers: { "Content-Type": "multipart/form-data" },
         });
       };
 
-      if (resolutionFile) {
+      if (resolutionFile)
         uploadPromises.push(createUploadConfig(resolutionFile, 2));
-      }
-
-      if (sanctionFile) {
+      if (sanctionFile)
         uploadPromises.push(createUploadConfig(sanctionFile, 17));
-      }
 
-      // Wait for all file uploads to complete successfully
       if (uploadPromises.length > 0) {
         await Promise.all(uploadPromises);
       }
 
       // STEP 3: Forward the proposal
-      // Called after uploads finish, with no body payload
       await axiosPrivate.post(`/api/v1/ddma/${selectedProposal.id}/forward`);
 
       return true;
     },
     onSuccess: () => {
-      // Refresh the proposal lists
       queryClient.invalidateQueries({ queryKey: ["proposals"] });
-
-      // Reset form and selection
       setSelectedProposal(null);
       setDepartmentId("");
       setCostEstimation("");
@@ -126,7 +125,7 @@ export function DDMAWorkflow() {
       toast.success(
         "Proposal routed, documents uploaded, and forwarded successfully!",
       );
-      navigate("/pac-evaluation");
+      navigate("/evaluation/pac");
     },
     onError: () => {
       toast.error("Failed to process the workflow. Please try again.");
@@ -144,9 +143,78 @@ export function DDMAWorkflow() {
     activeTab === "new" ? isLoadingNew : isLoadingRevised;
   const isCurrentError = activeTab === "new" ? isErrorNew : isErrorRevised;
 
+  // --- AG Grid Configurations ---
+  const columnDefs = useMemo<ColDef[]>(
+    () => [
+      { headerName: "Proposal ID", field: "proposalRefNo", flex: 1 },
+      { headerName: "Project Name", field: "title", flex: 2 },
+      { headerName: "Disaster Type", field: "disasterType", flex: 1 },
+      { headerName: "District", field: "district", flex: 1 },
+      {
+        headerName: "Status",
+        field: "status",
+        flex: 1,
+        cellRenderer: (params: any) => {
+          const isPending =
+            params.value === "Pending" || params.value === "Draft";
+          return (
+            <span
+              className={`px-3 py-1 rounded-full text-xs font-medium ${
+                isPending
+                  ? "bg-blue-100 text-blue-700"
+                  : "bg-orange-100 text-orange-700"
+              }`}
+            >
+              {params.value}
+            </span>
+          );
+        },
+      },
+    ],
+    [],
+  );
+
+  const rowClassRules = useMemo(() => {
+    return {
+      "bg-primary/5": (params: any) =>
+        selectedProposal && params.data.id === selectedProposal.id,
+    };
+  }, [selectedProposal]);
+
+  const handleRowClick = (event: any) => {
+    const proposal = event.data;
+    setSelectedProposal(proposal);
+
+    // --- THE FIX ---
+    // Look up the matching department ID based on the department name coming from the row data
+    const matchedDepartment = departmentsData?.items?.find(
+      (dept: any) =>
+        dept.name === proposal.lineDepartment ||
+        dept.id === proposal.lineDepartment,
+    );
+
+    // Set state to the ID if found, otherwise fallback to what came from the row
+    setDepartmentId(
+      matchedDepartment ? matchedDepartment.id : proposal.lineDepartment || "",
+    );
+    // --------------
+
+    setCostEstimation("");
+    setResolutionFile(null);
+    setSanctionFile(null);
+
+    // Wait for render, then scroll
+    setTimeout(() => {
+      workflowSectionRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 100);
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header and Tabs - Unchanged */}
+      {/* Header and Tabs */}
       <div>
         <h1>DDMA & Line Department Workflow</h1>
         <p className="text-sm text-muted-foreground">
@@ -157,6 +225,7 @@ export function DDMAWorkflow() {
             onClick={() => {
               setActiveTab("new");
               setSelectedProposal(null);
+              setCurrentPage(1);
             }}
             className={`px-5 py-2 rounded-lg font-medium ${
               activeTab === "new" ? "bg-primary text-white" : "bg-muted"
@@ -169,6 +238,7 @@ export function DDMAWorkflow() {
             onClick={() => {
               setActiveTab("revised");
               setSelectedProposal(null);
+              setCurrentPage(1);
             }}
             className={`px-5 py-2 rounded-lg font-medium ${
               activeTab === "revised" ? "bg-primary text-white" : "bg-muted"
@@ -179,111 +249,53 @@ export function DDMAWorkflow() {
         </div>
       </div>
 
-      {/* Table - Unchanged */}
-      <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
-        <table className="w-full">
-          <thead className="bg-muted">
-            <tr>
-              <th className="px-6 py-4 text-left text-sm">Proposal ID</th>
-              <th className="px-6 py-4 text-left text-sm">Project Name</th>
-              <th className="px-6 py-4 text-left text-sm">Disaster Type</th>
-              <th className="px-6 py-4 text-left text-sm">District</th>
-              <th className="px-6 py-4 text-left text-sm">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isCurrentLoading && (
-              <tr>
-                <td colSpan={5} className="text-center py-8">
-                  <Loader2 className="size-6 animate-spin mx-auto text-muted-foreground" />
-                </td>
-              </tr>
-            )}
-
-            {isCurrentError && (
-              <tr>
-                <td colSpan={5} className="text-center py-8 text-destructive">
-                  Failed to load {activeTab} proposals. Please try again.
-                </td>
-              </tr>
-            )}
-
-            {!isCurrentLoading &&
-              !isCurrentError &&
-              currentList.map((proposal: any) => (
-                <tr
-                  key={proposal.id}
-                  className={`border-t border-border hover:bg-muted/50 cursor-pointer ${
-                    selectedProposal?.id === proposal.id ? "bg-primary/5" : ""
-                  }`}
-                  onClick={() => {
-                    setSelectedProposal(proposal);
-                    // Reset inputs when changing selection
-                    setDepartmentId(proposal.lineDepartment || "");
-                    setCostEstimation("");
-                    setResolutionFile(null);
-                    setSanctionFile(null);
-                  }}
-                >
-                  <td className="px-6 py-4 text-sm font-medium">
-                    {proposal.proposalRefNo}
-                  </td>
-                  <td className="px-6 py-4 text-sm">{proposal.title}</td>
-                  <td className="px-6 py-4 text-sm">{proposal.disasterType}</td>
-                  <td className="px-6 py-4 text-sm">{proposal.district}</td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        proposal.status === "Pending" ||
-                        proposal.status === "Draft"
-                          ? "bg-blue-100 text-blue-700"
-                          : "bg-orange-100 text-orange-700"
-                      }`}
-                    >
-                      {proposal.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-
-            {!isCurrentLoading &&
-              !isCurrentError &&
-              currentList.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={5}
-                    className="text-center py-8 text-muted-foreground"
-                  >
-                    No {activeTab} proposals found.
-                  </td>
-                </tr>
-              )}
-          </tbody>
-        </table>
+      {/* Table Section */}
+      <div className="min-h-50 relative">
+        {isCurrentLoading ? (
+          <div className="flex items-center justify-center h-48 bg-card border rounded-xl shadow-sm">
+            <Spin indicator={<Loader2 className="size-8 animate-spin" />} />
+          </div>
+        ) : isCurrentError ? (
+          <div className="flex items-center justify-center h-48 bg-card border rounded-xl shadow-sm text-destructive">
+            Failed to load {activeTab} proposals. Please try again.
+          </div>
+        ) : (
+          <Table
+            rowData={currentList}
+            columnDefs={columnDefs}
+            totalCount={currentList.length} // Map these to backend meta if server-side paginated
+            page={currentPage}
+            totalPages={Math.ceil(currentList.length / 10) || 1}
+            onPageChange={(p) => setCurrentPage(p)}
+            onRowClicked={handleRowClick}
+            rowClassRules={rowClassRules}
+          />
+        )}
       </div>
 
+      {/* Selected Proposal Workflow Form */}
       {selectedProposal && (
-        <div className="space-y-6">
-          {/* Revision Details - Unchanged */}
+        <div ref={workflowSectionRef} className="space-y-6">
+          {/* Revision Details */}
           {activeTab === "revised" && (
-            <div className="mb-8 border rounded-xl p-6 shadow-sm">
+            <div className="mb-8 border rounded-xl p-6 shadow-sm bg-card">
               <h3 className="font-bold mb-5">Revision Details</h3>
               <div className="grid md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm mb-2">Revised At Stage</label>
-                  <input
+                  <Input
                     value={
                       selectedProposal.revisedStage ||
                       selectedProposal.currentStage ||
                       "N/A"
                     }
                     readOnly
-                    className="w-full px-4 py-2 border rounded-lg bg-muted"
+                    className="bg-muted"
                   />
                 </div>
                 <div>
                   <label className="block text-sm mb-2">Date of Revision</label>
-                  <input
+                  <Input
                     value={
                       selectedProposal.revisionDate ||
                       new Date(
@@ -291,34 +303,34 @@ export function DDMAWorkflow() {
                       ).toLocaleDateString()
                     }
                     readOnly
-                    className="w-full px-4 py-2 border rounded-lg bg-muted"
+                    className="bg-muted"
                   />
                 </div>
                 <div>
                   <label className="block text-sm mb-2">
                     Reason For Revision
                   </label>
-                  <textarea
+                  <Input.TextArea
                     rows={3}
                     value={selectedProposal.revisionReason || "N/A"}
                     readOnly
-                    className="w-full px-4 py-2 border rounded-lg bg-muted"
+                    className="bg-muted resize-none"
                   />
                 </div>
               </div>
             </div>
           )}
 
+          {/* Proposal Routing Configurations */}
           <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
             <h3 className="mb-4">Proposal Routing</h3>
             <div className="space-y-6">
               <div>
                 <label className="block text-sm mb-2">Proposal ID</label>
-                <input
-                  type="text"
+                <Input
                   value={selectedProposal.proposalRefNo}
                   disabled
-                  className="w-full px-4 py-2 bg-muted border border-border rounded-lg"
+                  size="large"
                 />
               </div>
 
@@ -326,47 +338,48 @@ export function DDMAWorkflow() {
                 <label className="block text-sm mb-2">
                   Collector Forward To
                 </label>
-                <select
-                  value={departmentId}
-                  onChange={(e) => setDepartmentId(e.target.value)}
+                <Select
+                  value={departmentId || undefined}
+                  onChange={(val) => setDepartmentId(val)}
                   disabled={
                     isLoadingDepartments || processWorkflowMutation.isPending
                   }
-                  className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
-                >
-                  <option value="">
-                    {isLoadingDepartments
+                  size="large"
+                  className="w-full"
+                  placeholder={
+                    isLoadingDepartments
                       ? "Loading departments..."
-                      : "Select Department"}
-                  </option>
-                  {departmentsData?.items?.map((dept: any) => (
-                    <option key={dept.id} value={dept.id}>
-                      {dept.name}
-                    </option>
-                  ))}
-                </select>
+                      : "Select Department"
+                  }
+                  options={departmentsData?.items?.map((dept: any) => ({
+                    label: dept.name,
+                    value: dept.id,
+                  }))}
+                />
               </div>
 
               <div>
                 <label className="block text-sm mb-2">
                   Cost Estimation (₹ Lakhs)
                 </label>
-                <input
+                <Input
                   type="number"
                   value={costEstimation}
                   onChange={(e) => setCostEstimation(e.target.value)}
                   disabled={processWorkflowMutation.isPending}
-                  className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
+                  size="large"
                   placeholder="Enter cost estimation"
                 />
               </div>
 
-              {/* --- UPLOAD RESOLUTION --- */}
+              {/* UPLOAD RESOLUTION */}
               <div>
                 <label className="block text-sm mb-2">Upload Resolution</label>
+
                 <div className="border-2 border-dashed border-border rounded-lg p-6">
                   <div className="text-center">
                     <Upload className="size-8 text-muted-foreground mx-auto mb-3" />
+
                     <input
                       type="file"
                       className="hidden"
@@ -378,6 +391,7 @@ export function DDMAWorkflow() {
                         }
                       }}
                     />
+
                     <button
                       type="button"
                       disabled={processWorkflowMutation.isPending}
@@ -392,14 +406,16 @@ export function DDMAWorkflow() {
                 </div>
               </div>
 
-              {/* --- UPLOAD TECHNICAL SANCTION --- */}
+              {/* UPLOAD TECHNICAL SANCTION */}
               <div>
                 <label className="block text-sm mb-2">
                   Upload Technical Sanction
                 </label>
+
                 <div className="border-2 border-dashed border-border rounded-lg p-6">
                   <div className="text-center">
                     <Upload className="size-8 text-muted-foreground mx-auto mb-3" />
+
                     <input
                       type="file"
                       className="hidden"
@@ -411,6 +427,7 @@ export function DDMAWorkflow() {
                         }
                       }}
                     />
+
                     <button
                       type="button"
                       disabled={processWorkflowMutation.isPending}
@@ -427,17 +444,19 @@ export function DDMAWorkflow() {
                 </div>
               </div>
 
-              <div className="flex gap-4">
+              {/* SAVE BUTTON */}
+              <div className="flex gap-4 pt-4">
                 <button
                   onClick={() => processWorkflowMutation.mutate()}
                   disabled={processWorkflowMutation.isPending || !departmentId}
-                  className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:opacity-90 flex items-center gap-2 disabled:opacity-50"
+                  className="px-6 py-3 cursor-pointer bg-primary text-primary-foreground rounded-lg hover:opacity-90 flex items-center gap-2 disabled:opacity-50"
                 >
                   {processWorkflowMutation.isPending ? (
                     <Loader2 className="size-5 animate-spin" />
                   ) : (
                     <Save className="size-5" />
                   )}
+
                   {processWorkflowMutation.isPending ? "Processing..." : "Save"}
                 </button>
               </div>

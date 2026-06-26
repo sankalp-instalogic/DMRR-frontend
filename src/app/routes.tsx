@@ -11,10 +11,7 @@ import { DocumentUploadScreen } from "./pages/DocumentUploadScreen";
 import { DocumentViewerScreen } from "./pages/DocumentViewerScreen";
 import { HierarchyMaster } from "./pages/HierarchyMaster";
 import { DDMAWorkflow } from "./pages/DDMAWorkflow";
-import { PACEvaluation } from "./pages/PACEvaluation";
-import { TACAppraisal } from "./pages/TACAppraisal";
-import { SECReview } from "./pages/SECReview";
-import { SDMAApproval } from "./pages/SDMAApproval";
+import { GenericEvaluation } from "./pages/GenericEvaluvation";
 import { Tendering } from "./pages/Tendering";
 import { ProjectExecution } from "./pages/ProjectExecution";
 import { Billing } from "./pages/Billing";
@@ -44,7 +41,6 @@ import { NDMAGuidelines } from "./pages/master/NDMAGuidelines";
 import { VendorMaster } from "./pages/master/VendorMaster";
 import { EquipmentCatalogue } from "./pages/master/EquipmentCatalogue";
 import { AdminConfiguration } from "./pages/AdminConfiguration";
-import { AdministrativeApproval } from "./pages/AdministrativeApproval";
 import { TendersList } from "./pages/procurement/tendering/TendersList";
 import { TenderDetails } from "./pages/procurement/tendering/TenderDetails";
 import { NewTender } from "./pages/procurement/tendering/NewTender";
@@ -55,12 +51,10 @@ import { Tenders } from "./pages/non-structural/Tenders";
 import { ResearchAndGrants } from "./pages/non-structural/ResearchAndGrants";
 import { FundsDistributedDistricts } from "./pages/funds-distributed/FundsDistributedDistricts";
 import { FundsDistributedOther } from "./pages/funds-distributed/FundsDistributedOther";
+import { ProcurementTenderClosureDetails } from "./pages/procurement/tendering/ProcurementTenderClosureDetails";
 
 // const RedLineBlueLine = () => <UnderDevelopment moduleName="Red Line Blue Line Survey" />;
 // const NatureBasedSolutions = () => <UnderDevelopment moduleName="Nature Based Solutions" />;
-const ResearchGrants = () => (
-  <UnderDevelopment moduleName="Research & Grants" />
-);
 const TrainingModule = () => <UnderDevelopment moduleName="Training" />;
 const ProcurementTraining = () => (
   <UnderDevelopment moduleName="Procurement + Training" />
@@ -91,14 +85,7 @@ export const router = createBrowserRouter([
           { path: "document-viewer", Component: DocumentViewerScreen },
           { path: "hierarchy-master", Component: HierarchyMaster },
           { path: "ddma-workflow", Component: DDMAWorkflow },
-          { path: "pac-evaluation", Component: PACEvaluation },
-          { path: "tac-appraisal", Component: TACAppraisal },
-          { path: "sec-review", Component: SECReview },
-          {
-            path: "administrative-approval",
-            Component: AdministrativeApproval,
-          },
-          { path: "sdma-approval", Component: SDMAApproval },
+          { path: "evaluation/:committeeType", Component: GenericEvaluation },
           { path: "tendering", Component: Tendering },
           { path: "project-execution", Component: ProjectExecution },
           { path: "billing", Component: Billing },
@@ -145,8 +132,12 @@ export const router = createBrowserRouter([
           },
           { path: "procurement-tendering/tenders", Component: TendersList },
           {
-            path: "procurement-tendering/tenders/:id",
+            path: "procurement-tendering/tenders/independent/:id",
             Component: TenderDetails,
+          },
+          {
+            path: "procurement-tendering/tenders/procurement/:id",
+            Component: ProcurementTenderClosureDetails,
           },
           { path: "procurement-tendering/new", Component: NewTender },
           {

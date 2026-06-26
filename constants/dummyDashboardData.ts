@@ -182,7 +182,7 @@ export const notifications = [
   {
     type: "alert",
     message: "15 proposals pending PAC approval for >30 days",
-    link: "/pac-evaluation",
+    link: "/evaluation/pac",
   },
   {
     type: "warning",

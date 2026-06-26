@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Save,
   FileText,
@@ -10,6 +10,10 @@ import {
 import toast from "react-hot-toast";
 import useAxPrivate from "../../hooks/useAxiosPrivate";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Input, Select, Radio, DatePicker } from "antd";
+import dayjs from "dayjs";
+import { Table } from "../components/Table";
+import { Link } from "react-router";
 
 // Document Type Mapping Configuration
 const DOCUMENT_TYPES: Record<string, string> = {
@@ -23,6 +27,9 @@ export function Tendering() {
   const axios = useAxPrivate();
   const queryClient = useQueryClient();
   const [selectedTender, setSelectedTender] = useState<any>(null);
+
+  // Table pagination state
+  const [page, setPage] = useState(1);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -210,12 +217,10 @@ export function Tendering() {
   const handleSave = async () => {
     if (!selectedTender) return;
 
-    // Find vendor name from the selected identifier code
     const selectedVendor = vendors.find(
       (v: any) => String(v.id) === String(formData.vendorId),
     );
 
-    // Structure payload parameters matching specified model contracts
     const payload = {
       l1VendorIdentified: formData.l1VendorIdentified === "yes",
       vendorName: selectedVendor ? selectedVendor.legalName : "",
@@ -269,6 +274,89 @@ export function Tendering() {
     );
   };
 
+  // AG Grid Column Definitions
+  const columnDefs = useMemo(
+    () => [
+      {
+        headerName: "Tender ID",
+        field: "proposalRefNo",
+        flex: 1,
+      },
+      {
+        headerName: "Project Name",
+        field: "title",
+        tooltipField: "title",
+        flex: 2,
+      },
+      {
+        headerName: "L1 Bidder",
+        valueGetter: () => "-",
+        flex: 1,
+      },
+      {
+        headerName: "L1 Amount",
+        valueGetter: () => "-",
+        flex: 1,
+      },
+      {
+        headerName: "Status",
+        field: "status",
+        flex: 1,
+        cellRenderer: (params: any) => {
+          return (
+            <div className="flex items-center h-full">
+              <span
+                className={`px-3 py-1 rounded-md text-xs font-medium border inline-block ${
+                  params.value === "Pending"
+                    ? "bg-amber-50 text-amber-700 border-amber-100"
+                    : "bg-blue-50 text-blue-700 border-blue-100"
+                }`}
+              >
+                {params.value}
+              </span>
+            </div>
+          );
+        },
+      },
+      {
+        headerName: "Actions",
+        flex: 1,
+        cellRenderer: (params: any) => {
+          const tender = params.data;
+          if (!tender.isEnsured) {
+            return (
+              <div className="flex items-center h-full">
+                <button
+                  onClick={() => ensureMutation.mutate(tender.proposalId)}
+                  disabled={ensureMutation.isPending}
+                  className="px-3 py-1.5 bg-[#0B1F4D] cursor-pointer text-white rounded-lg flex items-center justify-center gap-1.5 hover:bg-[#0B1F4D]/90 transition-all text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {ensureMutation.isPending &&
+                  ensureMutation.variables === tender.proposalId
+                    ? "Ensuring..."
+                    : "Ensure"}
+                </button>
+              </div>
+            );
+          } else {
+            return (
+              <div className="flex items-center h-full">
+                <button
+                  onClick={() => setSelectedTender(tender)}
+                  className="px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-100 rounded-lg flex items-center justify-center gap-1.5 hover:bg-blue-100 transition-all text-xs font-medium"
+                >
+                  <FileText size={14} />
+                  Open Details
+                </button>
+              </div>
+            );
+          }
+        },
+      },
+    ],
+    [ensureMutation],
+  );
+
   if (isTendersLoading)
     return <div className="p-4 text-gray-500">Loading tenders...</div>;
   if (isTendersError)
@@ -281,99 +369,23 @@ export function Tendering() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[30px] font-bold text-[#0B1F4D]">Tendering</h1>
+        <h1>Tendering</h1>
         <p className="text-[14px] font-medium text-gray-500 mt-1">
           Manage tender activities
         </p>
       </div>
 
-      {/* Tender List */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
-        <div className="overflow-x-auto">
-          <table className="w-full text-[13px] text-left">
-            <thead className="bg-[#F5F7FA] text-[#0B1F4D]">
-              <tr className="h-14">
-                <th className="px-4 font-semibold whitespace-nowrap">
-                  Tender ID
-                </th>
-                <th className="px-4 font-semibold whitespace-nowrap">
-                  Project Name
-                </th>
-                <th className="px-4 font-semibold whitespace-nowrap">
-                  L1 Bidder
-                </th>
-                <th className="px-4 font-semibold whitespace-nowrap">
-                  L1 Amount
-                </th>
-                <th className="px-4 font-semibold whitespace-nowrap">Status</th>
-                <th className="px-4 font-semibold whitespace-nowrap">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-
-            <tbody className="divide-y divide-gray-100">
-              {tenders.map((tender: any) => (
-                <tr
-                  key={tender.id || tender.proposalId}
-                  className="hover:bg-blue-50/50 transition-colors h-14 even:bg-gray-50/50"
-                >
-                  <td className="px-4 font-medium text-[#0B1F4D] whitespace-nowrap">
-                    {tender.proposalRefNo}
-                  </td>
-                  <td className="px-4 max-w-xs truncate" title={tender.title}>
-                    {tender.title}
-                  </td>
-                  <td className="px-4 text-gray-400">-</td>
-                  <td className="px-4 text-gray-400">-</td>
-                  <td className="px-4">
-                    <span
-                      className={`px-3 py-1 rounded-md text-xs font-medium border inline-block ${
-                        tender.status === "Pending"
-                          ? "bg-amber-50 text-amber-700 border-amber-100"
-                          : "bg-blue-50 text-blue-700 border-blue-100"
-                      }`}
-                    >
-                      {tender.status}
-                    </span>
-                  </td>
-                  <td className="px-4">
-                    {!tender.isEnsured ? (
-                      <button
-                        onClick={() => ensureMutation.mutate(tender.proposalId)}
-                        disabled={ensureMutation.isPending}
-                        className="px-3 py-1.5 bg-[#0B1F4D] cursor-pointer text-white rounded-lg flex items-center justify-center gap-1.5 hover:bg-[#0B1F4D]/90 transition-all text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {ensureMutation.isPending &&
-                        ensureMutation.variables === tender.proposalId
-                          ? "Ensuring..."
-                          : "Ensure"}
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => setSelectedTender(tender)}
-                        className="px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-100 rounded-lg flex items-center justify-center gap-1.5 hover:bg-blue-100 transition-all text-xs font-medium"
-                      >
-                        <FileText size={14} />
-                        Open Details
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-              {tenders.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="px-4 py-8 text-center text-gray-500"
-                  >
-                    No tenders in the queue.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+      {/* Tender List - Replacing HTML table with the custom Table */}
+      <div className="mb-6">
+        <Table
+          rowData={tenders}
+          columnDefs={columnDefs}
+          totalCount={tenders.length}
+          page={page}
+          totalPages={1} // Modify dynamically if your queue endpoint paginates in the future
+          onPageChange={setPage}
+          rowHeight={64} // Matches the previous h-14/16 visual feel
+        />
       </div>
 
       {/* Tender Form */}
@@ -387,82 +399,71 @@ export function Tendering() {
             Tender Details
           </h4>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 gap-6 mb-8">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 L1 Vendor Identified?
               </label>
-              <div className="flex gap-6 h-10 items-center">
-                <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="l1VendorIdentified"
-                    value="yes"
-                    checked={formData.l1VendorIdentified === "yes"}
-                    onChange={(e) =>
+              <div className="flex items-center h-10">
+                <Radio.Group
+                  value={formData.l1VendorIdentified}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "no") {
                       setFormData({
                         ...formData,
-                        l1VendorIdentified: e.target.value,
-                      })
-                    }
-                    className="w-4 h-4 text-[#0B1F4D] accent-[#0B1F4D] cursor-pointer"
-                  />
-                  Yes
-                </label>
-                <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="l1VendorIdentified"
-                    value="no"
-                    checked={formData.l1VendorIdentified === "no"}
-                    onChange={(e) => {
-                      setFormData({
-                        ...formData,
-                        l1VendorIdentified: e.target.value,
+                        l1VendorIdentified: val,
                         vendorId: "",
                         l1CostLakhs: "",
                       });
-                    }}
-                    className="w-4 h-4 text-[#0B1F4D] accent-[#0B1F4D] cursor-pointer"
-                  />
-                  No
-                </label>
+                    } else {
+                      setFormData({ ...formData, l1VendorIdentified: val });
+                    }
+                  }}
+                >
+                  <Radio value="yes">Yes</Radio>
+                  <Radio value="no">No</Radio>
+                </Radio.Group>
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Vendor Name
-              </label>
-              <select
-                value={formData.vendorId}
-                onChange={(e) =>
-                  setFormData({ ...formData, vendorId: e.target.value })
-                }
-                className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20 disabled:bg-gray-50 disabled:text-gray-400"
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Vendor Name
+                </label>
+                <Link
+                  to="/master/vendor"
+                  className="text-xs text-[#1E5AA8] hover:text-blue-700 hover:underline font-medium"
+                >
+                  + Add new vendor
+                </Link>
+              </div>
+              <Select
+                value={formData.vendorId || undefined}
+                onChange={(val) => setFormData({ ...formData, vendorId: val })}
+                className="w-full h-10"
                 disabled={
                   formData.l1VendorIdentified === "no" || isVendorsLoading
                 }
-              >
-                <option value="">
-                  {isVendorsLoading ? "Loading vendors..." : "Select a vendor"}
-                </option>
-                {vendors.map((vendor: any) => (
-                  <option key={vendor.id} value={vendor.id}>
-                    {vendor.legalName}
-                  </option>
-                ))}
-              </select>
+                placeholder={
+                  isVendorsLoading ? "Loading vendors..." : "Select a vendor"
+                }
+                options={vendors.map((vendor: any) => ({
+                  label: vendor.legalName,
+                  value: vendor.id,
+                }))}
+              />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 L1 Cost (Lakhs)
               </label>
-              <input
+              <Input
                 type="number"
                 placeholder="0.00"
-                className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20 disabled:bg-gray-50 disabled:text-gray-400"
+                className="w-full h-10 rounded-[10px]"
                 value={formData.l1CostLakhs}
                 onChange={(e) =>
                   setFormData({ ...formData, l1CostLakhs: e.target.value })
@@ -475,40 +476,25 @@ export function Tendering() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Work Order Issued?
               </label>
-              <div className="flex gap-6 h-10 items-center">
-                <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="workOrderIssued"
-                    value="yes"
-                    checked={formData.workOrderIssued === "yes"}
-                    onChange={(e) =>
+              <div className="flex items-center h-10">
+                <Radio.Group
+                  value={formData.workOrderIssued}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "no") {
                       setFormData({
                         ...formData,
-                        workOrderIssued: e.target.value,
-                      })
-                    }
-                    className="w-4 h-4 text-[#0B1F4D] accent-[#0B1F4D] cursor-pointer"
-                  />
-                  Yes
-                </label>
-                <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="workOrderIssued"
-                    value="no"
-                    checked={formData.workOrderIssued === "no"}
-                    onChange={(e) => {
-                      setFormData({
-                        ...formData,
-                        workOrderIssued: e.target.value,
+                        workOrderIssued: val,
                         workOrderDate: "",
                       });
-                    }}
-                    className="w-4 h-4 text-[#0B1F4D] accent-[#0B1F4D] cursor-pointer"
-                  />
-                  No
-                </label>
+                    } else {
+                      setFormData({ ...formData, workOrderIssued: val });
+                    }
+                  }}
+                >
+                  <Radio value="yes">Yes</Radio>
+                  <Radio value="no">No</Radio>
+                </Radio.Group>
               </div>
             </div>
 
@@ -516,14 +502,19 @@ export function Tendering() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Work Order Date
               </label>
-              <input
-                type="date"
-                className="w-full px-3 h-10 border border-gray-200 rounded-[10px] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0B1F4D]/20 disabled:bg-gray-50 disabled:text-gray-400"
-                value={formData.workOrderDate}
-                onChange={(e) =>
-                  setFormData({ ...formData, workOrderDate: e.target.value })
+              <DatePicker
+                className="w-full h-10 rounded-[10px]"
+                value={
+                  formData.workOrderDate ? dayjs(formData.workOrderDate) : null
+                }
+                onChange={(_, dateString) =>
+                  setFormData({
+                    ...formData,
+                    workOrderDate: dateString as string,
+                  })
                 }
                 disabled={formData.workOrderIssued === "no"}
+                format="YYYY-MM-DD"
               />
             </div>
           </div>

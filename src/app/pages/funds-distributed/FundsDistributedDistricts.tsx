@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
 import {
   Eye,
@@ -52,6 +52,7 @@ export function FundsDistributedDistricts() {
     "overview",
   );
   const [viewRecord, setViewRecord] = useState<FundRecord | null>(null);
+  const printRef = useRef<HTMLDivElement>(null);
 
   // Pagination states
   const [page, setPage] = useState(1);
@@ -286,6 +287,37 @@ export function FundsDistributedDistricts() {
     }
   };
 
+  const handlePrint = () => {
+  if (!printRef.current) return;
+
+  const printContents = printRef.current.innerHTML;
+  const printWindow = window.open("", "", "width=800,height=600");
+
+  if (printWindow) {
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Allocation Details</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              padding: 20px;
+            }
+          </style>
+        </head>
+        <body>
+          ${printContents}
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
+  }
+};
+
   return (
     <div className="space-y-6">
       <div>
@@ -447,7 +479,7 @@ export function FundsDistributedDistricts() {
                     <DatePicker
                       className="w-full h-10 rounded-[10px] text-[14px]"
                       value={field.value ? dayjs(field.value) : null}
-                      onChange={(date, dateString) =>
+                      onChange={(_date, dateString) =>
                         field.onChange(dateString)
                       }
                       onBlur={field.onBlur}
@@ -554,16 +586,19 @@ export function FundsDistributedDistricts() {
               <ArrowLeft className="size-4" />
               Back
             </button>
-            <button
-              onClick={() => window.print()}
+            {/* <button
+              onClick={handlePrint}
               className="inline-flex items-center gap-2 px-4 h-10 bg-white border border-[#0B1F4D] text-[#0B1F4D] rounded-[10px] text-[14px] font-medium hover:bg-gray-50 transition-colors cursor-pointer"
             >
               <Printer className="size-4" />
               Print
-            </button>
+            </button> */}
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div
+            ref={printRef}
+            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+          >
             <h2 className="text-[20px] font-semibold text-[#0B1F4D] mb-6 pb-4 border-b border-gray-200">
               Allocation Details
             </h2>

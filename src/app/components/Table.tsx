@@ -36,7 +36,7 @@ export function Table({
       resizable: true,
       ...defaultColDef,
     }),
-    [defaultColDef]
+    [defaultColDef],
   );
 
   return (
@@ -50,9 +50,10 @@ export function Table({
           rowHeight={rowHeight}
           animateRows={true}
           domLayout="autoHeight"
-          pagination={false} // Custom pagination is handled below
+          pagination={false}
           onRowClicked={onRowClicked}
           rowClassRules={rowClassRules}
+          rowClass={onRowClicked ? "clickable-row" : undefined}
         />
       </div>
 
