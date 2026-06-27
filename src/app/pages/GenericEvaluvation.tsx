@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import {
   CheckCircle2,
   XCircle,
@@ -19,6 +19,8 @@ import dayjs from "dayjs"; // Required for Ant Design DatePicker/TimePicker pars
 import { Input, Spin, DatePicker, TimePicker } from "antd";
 import type { ColDef } from "ag-grid-community";
 import { Table } from "../components/Table"; // Adjust path as needed
+import { cn } from "../components/ui/utils";
+import { buttonVariants } from "../components/ui/button";
 
 const { TextArea } = Input;
 
@@ -120,6 +122,23 @@ export function GenericEvaluation() {
   const [revisedApprovalDate, setRevisedApprovalDate] = useState("");
   const [revisedMomFile, setRevisedMomFile] = useState<File | null>(null);
 
+  // 👇 ADD THESE LINES FOR SMOOTH SCROLLING 👇
+  const evaluationContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (selectedProposal && evaluationContainerRef.current) {
+      // A small timeout ensures the DOM is fully painted and animations
+      // have started so the scroll position is calculated correctly.
+      setTimeout(() => {
+        evaluationContainerRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 150);
+    }
+  }, [selectedProposal]);
+  // 👆 END OF SMOOTH SCROLLING LOGIC 👆
+
   // Fallback if URL is invalid
   if (!config) {
     return <Navigate to="/" replace />;
@@ -182,43 +201,6 @@ export function GenericEvaluation() {
     activeTab === "new" ? pendingProposals : revisionList;
 
   // --- AG GRID ---
-  const columnDefs = useMemo<ColDef[]>(
-    () => [
-      {
-        headerName: "Proposal ID",
-        field: "proposalRefNo",
-        flex: 1,
-        valueGetter: (params) => params.data.proposalRefNo || params.data.id,
-      },
-      {
-        headerName: "Project Name",
-        field: "title",
-        flex: 2,
-        valueGetter: (params) => params.data.projectName || params.data.title,
-      },
-      { headerName: "District", field: "district", flex: 1 },
-      {
-        headerName: "Status",
-        field: "status",
-        flex: 1,
-        cellRenderer: (params: any) => {
-          const isPending = params.value === "Pending";
-          return (
-            <span
-              className={`px-3 py-1 rounded-full text-xs font-medium ${
-                isPending
-                  ? "bg-blue-100 text-blue-700"
-                  : "bg-orange-100 text-orange-700"
-              }`}
-            >
-              {params.value}
-            </span>
-          );
-        },
-      },
-    ],
-    [],
-  );
 
   const rowClassRules = useMemo(() => {
     return {
@@ -228,11 +210,6 @@ export function GenericEvaluation() {
           (selectedProposal.id || selectedProposal.proposalId),
     };
   }, [selectedProposal]);
-
-  const handleRowClick = (event: any) => {
-    resetForm();
-    setSelectedProposal(event.data);
-  };
 
   const addRow = () => {
     setMembers([
@@ -267,8 +244,70 @@ export function GenericEvaluation() {
   useEffect(() => {
     resetForm();
     setActiveTab("new"); // Optional: Also resets the tab to "new" on route change
-    setCurrentPage(1);   // Optional: Resets pagination on route change
+    setCurrentPage(1); // Optional: Resets pagination on route change
   }, [committeeType, resetForm]);
+
+  // --- AG GRID ---
+  const columnDefs = useMemo<ColDef[]>(
+    () => [
+      {
+        headerName: "Proposal ID",
+        field: "proposalRefNo",
+        flex: 1,
+        valueGetter: (params) => params.data.proposalRefNo || params.data.id,
+      },
+      {
+        headerName: "Project Name",
+        field: "title",
+        flex: 2,
+        valueGetter: (params) => params.data.projectName || params.data.title,
+      },
+      { headerName: "District", field: "district", flex: 1 },
+      {
+        headerName: "Status",
+        field: "status",
+        flex: 1,
+        cellRenderer: (params: any) => {
+          const isPending = params.value === "Pending";
+          return (
+            <span
+              className={`px-3 py-1 rounded-full text-xs font-medium ${
+                isPending
+                  ? "bg-blue-100 text-blue-700"
+                  : "bg-orange-100 text-orange-700"
+              }`}
+            >
+              {params.value}
+            </span>
+          );
+        },
+      },
+      // NEW ACTION COLUMN
+      {
+        headerName: "Action",
+        field: "action",
+        flex: 1,
+        cellRenderer: (params: any) => {
+          return (
+            <button
+              onClick={() => {
+                resetForm();
+                setSelectedProposal(params.data);
+              }}
+              className={cn(
+                buttonVariants({ variant: "default", size: "sm" }),
+                "cursor-pointer",
+              )}
+            >
+              Evaluate
+            </button>
+          );
+        },
+      },
+    ],
+    // ADD DEPENDENCIES HERE
+    [resetForm],
+  );
 
   // --- MUTATIONS ---
   const evaluateMutation = useMutation({
@@ -421,15 +460,17 @@ export function GenericEvaluation() {
   };
 
   const handleRevisedForward = () => {
-  // Add any specific validation for the revised tab here
-  if (!revisedApprovalDate || !revisedMomFile) {
-    toast.error("Please provide the approval date and upload the revised MoM document.");
-    return;
-  }
-  
-  // Trigger the correct mutation for revised proposals
-  revisedEvaluateMutation.mutate();
-};
+    // Add any specific validation for the revised tab here
+    if (!revisedApprovalDate || !revisedMomFile) {
+      toast.error(
+        "Please provide the approval date and upload the revised MoM document.",
+      );
+      return;
+    }
+
+    // Trigger the correct mutation for revised proposals
+    revisedEvaluateMutation.mutate();
+  };
 
   const handleRejectOrRevision = (type: number) => {
     if (
@@ -506,14 +547,16 @@ export function GenericEvaluation() {
             page={currentPage}
             totalPages={Math.ceil(currentTableData.length / 10) || 1}
             onPageChange={(p) => setCurrentPage(p)}
-            onRowClicked={handleRowClick}
             rowClassRules={rowClassRules}
           />
         )}
       </div>
 
       {selectedProposal && (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div
+          ref={evaluationContainerRef}
+          className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
+        >
           {/* REVISED TAB: Last Meeting Details */}
           {activeTab === "revised" && (
             <div className="bg-card border border-border rounded-xl p-6 shadow-sm relative">
@@ -580,7 +623,7 @@ export function GenericEvaluation() {
                           ? dayjs(meetingDate)
                           : null
                     }
-                    onChange={(date, dateString) =>
+                    onChange={(_date, dateString) =>
                       activeTab === "revised"
                         ? setRevisedApprovalDate(dateString as string)
                         : setMeetingDate(dateString as string)
@@ -610,7 +653,7 @@ export function GenericEvaluation() {
                       size="large"
                       format="HH:mm"
                       value={meetingTime ? dayjs(meetingTime, "HH:mm") : null}
-                      onChange={(time, timeString) =>
+                      onChange={(_time, timeString) =>
                         setMeetingTime(timeString as string)
                       }
                       disabled={evaluateMutation.isPending}
@@ -795,7 +838,7 @@ export function GenericEvaluation() {
                     <DatePicker
                       size="large"
                       value={momDate ? dayjs(momDate) : null}
-                      onChange={(date, dateString) =>
+                      onChange={(_date, dateString) =>
                         setMomDate(dateString as string)
                       }
                       disabled={evaluateMutation.isPending}

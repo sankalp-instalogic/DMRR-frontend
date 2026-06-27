@@ -30,7 +30,7 @@ export function DDMAWorkflow() {
   const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
 
-  // 1. Fetch NEW proposals
+  // 1. Fetch NEW proposals (Updated Endpoint)
   const {
     data: newProposalsData,
     isLoading: isLoadingNew,
@@ -38,7 +38,7 @@ export function DDMAWorkflow() {
   } = useQuery({
     queryKey: ["proposals", "new"],
     queryFn: async () => {
-      const response = await axiosPrivate.get("/api/v1/Proposals");
+      const response = await axiosPrivate.get("/api/v1/ddma/new");
       return response.data;
     },
   });
@@ -132,11 +132,12 @@ export function DDMAWorkflow() {
     },
   });
 
+  // Updated to handle array response directly for "new"
   const currentList =
     activeTab === "new"
-      ? newProposalsData?.items?.filter(
+      ? (newProposalsData || []).filter(
           (item: any) => item.currentStage !== "PAC",
-        ) || []
+        )
       : revisedProposalsData?.items || [];
 
   const isCurrentLoading =

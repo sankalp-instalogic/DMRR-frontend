@@ -17,6 +17,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 
+import { formatCurrencyLakhs } from "../../utils/currencyFormatter";
 import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
@@ -44,11 +45,6 @@ const formatDateTime = (dateString: string) => {
     minute: "2-digit",
     hour12: true,
   });
-};
-
-const formatCurrencyLakhs = (amount: number) => {
-  if (amount === undefined || amount === null) return "₹0";
-  return `₹${amount} Lakhs`;
 };
 
 const formatBytes = (bytes: number, decimals = 2) => {

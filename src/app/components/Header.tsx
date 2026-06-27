@@ -73,10 +73,10 @@ export default function Header() {
 
         {/* Right Section */}
         <div className="flex items-center gap-5">
-          <button className="relative cursor-pointer p-2 hover:bg-muted rounded-lg text-[#64748B] hover:text-[#0B1F4D] transition-colors">
+          {/* <button className="relative cursor-pointer p-2 hover:bg-muted rounded-lg text-[#64748B] hover:text-[#0B1F4D] transition-colors">
             <Bell className="size-5" />
             <span className="absolute top-1.5 right-1.5 size-2 bg-destructive rounded-full border border-white"></span>
-          </button>
+          </button> */}
 
           <div className="relative" ref={profileRef}>
             <button

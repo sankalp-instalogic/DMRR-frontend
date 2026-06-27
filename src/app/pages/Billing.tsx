@@ -110,7 +110,7 @@ export function Billing() {
     [],
   );
 
-  // --- FETCH FUNCTION ---
+  // --- FETCH FUNCTIONS ---
   const fetchBills = async ({ queryKey }: any) => {
     const [_key, currentPage, currentPageSize] = queryKey;
     const response = await axiosPrivate.get("/api/v1/billing", {
@@ -122,6 +122,13 @@ export function Billing() {
     return response.data;
   };
 
+  const fetchBillHistory = async ({ queryKey }: any) => {
+    const [_key, billId] = queryKey;
+    if (!billId) return [];
+    const response = await axiosPrivate.get(`/api/v1/Billing/${billId}/history`);
+    return response.data;
+  };
+
   // --- REACT QUERY ---
   const { data } = useQuery({
     queryKey: ["bills", page, pageSize],
@@ -129,10 +136,58 @@ export function Billing() {
     placeholderData: keepPreviousData,
   });
 
-  // --- DATA EXTRACTION ---
+  // Fetch History only when a bill is selected
+  const { data: historyData } = useQuery({
+    queryKey: ["billHistory", selectedBill?.id],
+    queryFn: fetchBillHistory,
+    enabled: !!selectedBill?.id,
+  });
+
+  // --- DATA EXTRACTION & FILTERING ---
   const bills = data?.items ?? [];
   const totalItems = data?.totalCount ?? 0;
   const totalPages = data?.totalPages ?? 1;
+
+  // Filter history strictly for the PaymentOrder gate
+  const paymentOrderHistory = useMemo(() => {
+    if (!historyData) return [];
+    return historyData.filter((item: any) => item.gate === "PaymentOrder");
+  }, [historyData]);
+
+  // Column definitions for the History Table
+  const historyColumnDefs = useMemo<ColDef[]>(
+    () => [
+      {
+        headerName: "Installment",
+        field: "installmentType",
+        flex: 1,
+      },
+      {
+        headerName: "Amount",
+        field: "amount",
+        flex: 1,
+        valueFormatter: (params) =>
+          `₹${params.value?.toLocaleString("en-IN") || "0"}`,
+      },
+      {
+        headerName: "Entry Date",
+        field: "entryDate",
+        flex: 1,
+        valueFormatter: (params) =>
+          params.value ? dayjs(params.value).format("DD MMM YYYY") : "N/A",
+      },
+      {
+        headerName: "Logged At",
+        field: "createdAtUtc",
+        flex: 1,
+        valueFormatter: (params) =>
+          params.value
+            ? dayjs(params.value).format("DD MMM YYYY, HH:mm")
+            : "N/A",
+      },
+    ],
+    []
+  );
 
   // --- SAVE SECTION 1 (DDMR) ---
   const handleSaveDDMR = async () => {
@@ -584,9 +639,7 @@ export function Billing() {
   return (
     <div className="space-y-6">
       <div>
-        <h1>
-          Billing & Fund Release
-        </h1>
+        <h1>Billing & Fund Release</h1>
         <p className="text-sm text-muted-foreground">
           Track billing workflow and fund release
         </p>
@@ -628,8 +681,7 @@ export function Billing() {
                 }
               />
 
-              {formData[section.yesNoKey as keyof typeof formData] ===
-                "Yes" && (
+              {formData[section.yesNoKey as keyof typeof formData] === "Yes" && (
                 <div className={section.gridClass}>
                   {section.fields.map((field, index) => {
                     if (field.type === "empty")
@@ -736,7 +788,7 @@ export function Billing() {
                   })}
 
                   <div
-                    className={`${section.btnContainerClass} flex justify-end mt-2`}
+                    className={`${section.btnContainerClass} flex justify-end mt-2 col-span-full`}
                   >
                     <button
                       onClick={section.onSave}
@@ -745,6 +797,28 @@ export function Billing() {
                       {section.buttonText}
                     </button>
                   </div>
+
+                  {/* INJECT HISTORY TABLE FOR PAYMENT ORDER SECTION ONLY */}
+                  {section.yesNoKey === "paymentOrderMade" &&
+                    paymentOrderHistory.length > 0 && (
+                      <div className="col-span-full mt-6 pt-6 border-t border-gray-200">
+                        <h4 className="font-semibold text-[#0B1F4D] mb-4">
+                          Previous Payment Orders
+                        </h4>
+                        <div className="bg-white rounded-lg overflow-hidden border border-gray-200">
+                          {/* Passing dummy pagination props assuming Table requires them */}
+                          <Table
+                            rowData={paymentOrderHistory}
+                            columnDefs={historyColumnDefs}
+                            totalCount={paymentOrderHistory.length}
+                            page={1}
+                            totalPages={1}
+                            onPageChange={() => {}}
+                            rowHeight={45}
+                          />
+                        </div>
+                      </div>
+                    )}
                 </div>
               )}
             </div>

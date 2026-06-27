@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router"; // note: might need to be 'react-router-dom' depending on your setup
+import { Link, useNavigate } from "react-router";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { useQuery } from "@tanstack/react-query";
-import { Select } from "antd"; // Imported Ant Design Select
+import { Select } from "antd";
+import { formatCurrencyLakhs } from "../../utils/currencyFormatter";
 import {
   FileText,
   CheckCircle2,
@@ -38,43 +39,14 @@ const financialYearOptions = [
   { value: "2025-26", label: "2025-26" },
 ];
 
-// --- Fallback Chart & Notification Data ---
-const procurementTrend = [
-  { year: "2020-21", value: 850 },
-  { year: "2021-22", value: 1100 },
-  { year: "2022-23", value: 1350 },
-  { year: "2023-24", value: 1600 },
-  { year: "2024-25", value: 1876 },
-];
-
-const budgetByDepartment = [
-  { name: "PWD", value: 520, color: "#0B1F4D" },
-  { name: "WRD", value: 435, color: "#1E5AA8" },
-  { name: "Health", value: 298, color: "#059669" },
-  { name: "Forest", value: 245, color: "#FBAC1B" },
-  { name: "Urban Dev", value: 198, color: "#D97706" },
-  { name: "Rural Dev", value: 120, color: "#7C3AED" },
-  { name: "PSU", value: 60, color: "#DC2626" },
-];
-
-const lineDeptProposals = [
-  { dept: "PWD", count: 320 },
-  { dept: "Water Resources", count: 280 },
-  { dept: "Health & FW", count: 195 },
-  { dept: "Forest", count: 145 },
-  { dept: "Urban Dev", count: 110 },
-  { dept: "Rural Dev", count: 90 },
-  { dept: "MJP", count: 65 },
-  { dept: "PSU", count: 42 },
-];
-
-const districtBudgetData = [
-  { district: "Mumbai", allocated: 450, utilized: 387 },
-  { district: "Pune", allocated: 380, utilized: 298 },
-  { district: "Nagpur", allocated: 290, utilized: 234 },
-  { district: "Nashik", allocated: 245, utilized: 189 },
-  { district: "Aurangabad", allocated: 220, utilized: 176 },
-  { district: "Thane", allocated: 315, utilized: 267 },
+const CHART_COLORS = [
+  "#0B1F4D",
+  "#1E5AA8",
+  "#059669",
+  "#FBAC1B",
+  "#D97706",
+  "#7C3AED",
+  "#DC2626",
 ];
 
 const notifications = [
@@ -123,10 +95,33 @@ export function Dashboard() {
   ];
 
   // 2. Fetch Dashboard Summary (Taking query parameters into account)
-  const { data, isLoading, error } = useQuery({
+  // 2. Fetch Dashboard Summary
+  const {
+    data: summaryData,
+    isLoading: isSummaryLoading,
+    error: summaryError,
+  } = useQuery({
     queryKey: ["dashboard-summary", selectedFY, selectedDistrict],
     queryFn: async () => {
       const response = await axiosPrivate.get("/api/v1/Dashboard/summary", {
+        params: {
+          financialYear: selectedFY || undefined,
+          districtId: selectedDistrict || undefined,
+        },
+      });
+      return response.data;
+    },
+  });
+
+  // 3. Fetch Dashboard Charts
+  const {
+    data: chartsData,
+    isLoading: isChartsLoading,
+    error: chartsError,
+  } = useQuery({
+    queryKey: ["dashboard-charts", selectedFY, selectedDistrict],
+    queryFn: async () => {
+      const response = await axiosPrivate.get("/api/v1/Dashboard/charts", {
         params: {
           financialYear: selectedFY || undefined,
           districtId: selectedDistrict || undefined,
@@ -143,7 +138,7 @@ export function Dashboard() {
   };
 
   // --- Handle Loading & Error States ---
-  if (isLoading) {
+  if (isSummaryLoading || isChartsLoading) {
     return (
       <div className="flex items-center justify-center h-125 text-[#0B1F4D] font-medium">
         Loading Dashboard Metrics...
@@ -151,7 +146,7 @@ export function Dashboard() {
     );
   }
 
-  if (error || !data) {
+  if (summaryError || !summaryData || chartsError) {
     return (
       <div className="flex items-center justify-center h-125 text-red-500 font-medium">
         Failed to load dashboard data. Please try again later.
@@ -160,7 +155,7 @@ export function Dashboard() {
   }
 
   // --- Transform API Data for UI ---
-  const apiProposals = data.proposals || {
+  const apiProposals = summaryData.proposals || {
     total: 0,
     approved: 0,
     rejected: 0,
@@ -179,7 +174,7 @@ export function Dashboard() {
   );
 
   // Budget Calculations
-  const apiBudget = data.budget || [];
+  const apiBudget = summaryData.budget || [];
   const totalAllocated = apiBudget.reduce(
     (sum: number, item: any) => sum + (item.allocated || 0),
     0,
@@ -197,7 +192,13 @@ export function Dashboard() {
     const segment = apiBudget.find((b: any) => b.segment === segmentName);
     return segment ? segment.utilized : 0;
   };
-
+  const budgetByDepartmentChartData = (chartsData.budgetByDepartment || []).map(
+    (item: any, index: number) => ({
+      name: item.label,
+      value: item.value,
+      color: CHART_COLORS[index % CHART_COLORS.length],
+    }),
+  );
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -498,7 +499,7 @@ export function Dashboard() {
               </div>
             </div>
             <div className="text-[32px] font-bold text-gray-900">
-              {data.procuredItems?.toLocaleString() || 0}
+              {summaryData.procuredItems?.toLocaleString() || 0}
             </div>
           </div>
 
@@ -510,25 +511,26 @@ export function Dashboard() {
               </div>
             </div>
             <div className="text-[32px] font-bold text-gray-900">
-              ₹{data.procurementValue?.toLocaleString() || 0}
+              ₹{formatCurrencyLakhs(summaryData.procurementValue) || 0}
             </div>
           </div>
         </div>
 
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* Trend Chart */}
           <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
             <h3 className="mb-6 text-[#0B1F4D] font-semibold text-[16px]">
               Year-wise Procurement Trend
             </h3>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart
-                data={procurementTrend}
+                data={chartsData?.procurementTrend || []}
                 margin={{ top: 20, right: 20, left: 10, bottom: 10 }}
               >
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis
-                  dataKey="year"
+                  dataKey="label"
                   axisLine={false}
                   tickLine={false}
                   tick={{ fontSize: 11 }}
@@ -546,6 +548,7 @@ export function Dashboard() {
             </ResponsiveContainer>
           </div>
 
+          {/* Pie Chart */}
           <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
             <h3 className="mb-6 text-[#0B1F4D] font-semibold text-[16px]">
               Budget Spent by Beneficiary Department
@@ -553,7 +556,7 @@ export function Dashboard() {
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
-                  data={budgetByDepartment}
+                  data={budgetByDepartmentChartData}
                   cx="50%"
                   cy="50%"
                   outerRadius={90}
@@ -564,30 +567,31 @@ export function Dashboard() {
                     `${name} ${(percent * 100).toFixed(0)}%`
                   }
                 >
-                  {budgetByDepartment.map((entry) => (
+                  {budgetByDepartmentChartData.map((entry: any) => (
                     <Cell key={entry.name} fill={entry.color} />
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(value: any) => `₹${value} Cr`}
+                  formatter={(value: any) => `₹${value.toLocaleString()}`}
                   contentStyle={{ borderRadius: "8px" }}
                 />
               </PieChart>
             </ResponsiveContainer>
           </div>
 
+          {/* Bar Chart 1 - Line Departments */}
           <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
             <h3 className="mb-6 text-[#0B1F4D] font-semibold text-[16px]">
               Line Department Proposals
             </h3>
             <ResponsiveContainer width="100%" height={320}>
               <BarChart
-                data={lineDeptProposals}
+                data={chartsData?.proposalsPerLineDepartment || []}
                 margin={{ top: 20, right: 20, left: 10, bottom: 50 }}
               >
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis
-                  dataKey="dept"
+                  dataKey="label"
                   axisLine={false}
                   tickLine={false}
                   tick={{ fontSize: 11, textAnchor: "end" }}
@@ -596,7 +600,8 @@ export function Dashboard() {
                 <YAxis axisLine={false} tickLine={false} />
                 <Tooltip contentStyle={{ borderRadius: "8px" }} />
                 <Bar
-                  dataKey="count"
+                  dataKey="value"
+                  name="Proposals"
                   fill="#FBAC1B"
                   radius={[4, 4, 0, 0]}
                   barSize={30}
@@ -605,18 +610,19 @@ export function Dashboard() {
             </ResponsiveContainer>
           </div>
 
+          {/* Bar Chart 2 - District Utilization */}
           <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
             <h3 className="mb-6 text-[#0B1F4D] font-semibold text-[16px]">
               District-wise Budget Utilization
             </h3>
             <ResponsiveContainer width="100%" height={320}>
               <BarChart
-                data={districtBudgetData}
+                data={chartsData?.districtBudgetUtilization || []}
                 margin={{ top: 20, right: 20, left: 10, bottom: 20 }}
               >
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis
-                  dataKey="district"
+                  dataKey="label"
                   axisLine={false}
                   tickLine={false}
                   tick={{ fontSize: 12 }}
@@ -624,15 +630,25 @@ export function Dashboard() {
                 <YAxis axisLine={false} tickLine={false} />
                 <Tooltip contentStyle={{ borderRadius: "8px" }} />
                 <Legend wrapperStyle={{ paddingTop: 20 }} />
-                <Bar dataKey="allocated" fill="#0B1F4D" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="utilized" fill="#FBAC1B" radius={[4, 4, 0, 0]} />
+                <Bar
+                  dataKey="value"
+                  name="Allocated"
+                  fill="#0B1F4D"
+                  radius={[4, 4, 0, 0]}
+                />
+                <Bar
+                  dataKey="value2"
+                  name="Utilized"
+                  fill="#FBAC1B"
+                  radius={[4, 4, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Notifications Panel */}
-        <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm mb-6">
+        {/* <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm mb-6">
           <h3 className="mb-6 text-[20px] font-semibold text-[#0B1F4D]">
             Recent Alerts & Notifications
           </h3>
@@ -664,7 +680,7 @@ export function Dashboard() {
               </Link>
             ))}
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

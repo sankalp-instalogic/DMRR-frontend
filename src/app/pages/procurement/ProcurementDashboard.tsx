@@ -161,6 +161,7 @@ export function ProcurementDashboard() {
         field: "awardCostInclGstLakhs",
         headerName: "Award Cost (Lakhs)",
         valueFormatter: (params) => `₹${params.value?.toFixed(2) || "0.00"}`,
+        
       },
       {
         field: "deliveryPct",
