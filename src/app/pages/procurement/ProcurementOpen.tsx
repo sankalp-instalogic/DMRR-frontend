@@ -229,7 +229,7 @@ export function ProcurementOpen() {
             </div>
             <div className="md:col-span-3">
               <label className="block text-sm font-medium mb-1 text-muted-foreground">Remarks</label>
-              <div className="w-full px-3 py-2 bg-muted/50 border border-border rounded-lg text-sm min-h-[80px]">{mockData.remarks}</div>
+              <div className="w-full px-3 py-2 bg-muted/50 border border-border rounded-lg text-sm min-h-20">{mockData.remarks}</div>
             </div>
           </div>
         </div>

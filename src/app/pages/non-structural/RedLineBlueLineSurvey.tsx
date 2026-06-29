@@ -18,6 +18,7 @@ import type { ColDef } from "ag-grid-community";
 import { DocumentPreviewModal } from "../../components/DocumentPreviewModal";
 import { cn } from "../../components/ui/utils";
 import { buttonVariants } from "../../components/ui/button";
+import formateDate from "../../../utils/dateFormatter"
 
 interface Survey {
   id?: string;
@@ -39,11 +40,6 @@ interface PaginatedResponse {
   totalCount: number;
   totalPages: number;
 }
-
-const formatDate = (dateString: string | null) => {
-  if (!dateString) return "-";
-  return dateString.split("T")[0];
-};
 
 const formatCurrency = (amount: number | string) => {
   if (amount === undefined || amount === null || amount === "") return "-";
@@ -282,7 +278,7 @@ export function RedLineBlueLineSurvey() {
       {
         headerName: "Date of GR Issued",
         field: "grIssuedDate",
-        valueFormatter: (params) => formatDate(params.value),
+        valueFormatter: (params) => formateDate(params.value),
       },
       {
         headerName: "Allocated Budget",
@@ -297,7 +293,7 @@ export function RedLineBlueLineSurvey() {
       {
         headerName: "Date of Completion",
         field: "completionDate",
-        valueFormatter: (params) => formatDate(params.value),
+        valueFormatter: (params) => formateDate(params.value),
       },
       {
         headerName: "Action",
@@ -368,7 +364,7 @@ export function RedLineBlueLineSurvey() {
                 Date of GR Issued
               </label>
               <p className="font-semibold text-[16px] text-[#0B1F4D]">
-                {formatDate(selectedSurvey.grIssuedDate)}
+                {formateDate(selectedSurvey.grIssuedDate!)}
               </p>
             </div>
             <div>
@@ -392,7 +388,7 @@ export function RedLineBlueLineSurvey() {
                 Date of Completion
               </label>
               <p className="font-semibold text-[16px] text-[#0B1F4D]">
-                {formatDate(selectedSurvey.completionDate)}
+                {formateDate(selectedSurvey.completionDate!)}
               </p>
             </div>
 

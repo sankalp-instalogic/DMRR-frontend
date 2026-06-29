@@ -154,7 +154,7 @@ export function ProcurementRegister() {
                   <td className="px-4 py-3 font-medium">{row.cost}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-full bg-gray-200 rounded-full h-1.5 max-w-[60px]">
+                      <div className="w-full bg-gray-200 rounded-full h-1.5 max-w-15">
                         <div className="bg-primary h-1.5 rounded-full" style={{ width: row.delivery }}></div>
                       </div>
                       <span className="text-xs text-muted-foreground">{row.delivery}</span>

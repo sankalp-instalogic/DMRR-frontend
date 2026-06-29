@@ -381,7 +381,7 @@ export function DetailScreen({
                     className="w-full h-10"
                     status={errors.date ? "error" : ""}
                     value={dateOfApproval ? dayjs(dateOfApproval) : null}
-                    onChange={(date, dateString) =>
+                    onChange={(_date, dateString) =>
                       setDateOfApproval(dateString as string)
                     }
                   />

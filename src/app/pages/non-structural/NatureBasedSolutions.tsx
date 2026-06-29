@@ -18,6 +18,7 @@ import { Table } from "../../components/Table";
 import type { ColDef } from "ag-grid-community";
 import { cn } from "../../components/ui/utils";
 import { buttonVariants } from "../../components/ui/button";
+import formattedDate from "../../../utils/dateFormatter";
 
 interface NBS {
   id?: string;
@@ -39,11 +40,6 @@ interface PaginatedResponse {
   totalCount: number;
   totalPages: number;
 }
-
-const formatDate = (dateString: string | null) => {
-  if (!dateString) return "-";
-  return dateString.split("T")[0];
-};
 
 const formatCurrency = (amount: number | string) => {
   if (amount === undefined || amount === null || amount === "") return "-";
@@ -274,7 +270,7 @@ export function NatureBasedSolutions() {
       {
         headerName: "Date of GR Issued",
         field: "grIssuedDate",
-        valueFormatter: (params) => formatDate(params.value),
+        valueFormatter: (params) => formattedDate(params.value),
       },
       {
         headerName: "Allocated Budget",
@@ -289,7 +285,7 @@ export function NatureBasedSolutions() {
       {
         headerName: "Date of Completion",
         field: "completionDate",
-        valueFormatter: (params) => formatDate(params.value),
+        valueFormatter: (params) => formattedDate(params.value),
       },
       {
         headerName: "Action",
@@ -366,7 +362,7 @@ export function NatureBasedSolutions() {
                 Date of GR Issued
               </label>
               <p className="font-semibold text-[16px] text-[#0B1F4D]">
-                {formatDate(selectedNBS.grIssuedDate)}
+                {formattedDate(selectedNBS.grIssuedDate!)}
               </p>
             </div>
             <div>
@@ -390,7 +386,7 @@ export function NatureBasedSolutions() {
                 Date of Completion
               </label>
               <p className="font-semibold text-[16px] text-[#0B1F4D]">
-                {formatDate(selectedNBS.completionDate)}
+                {formattedDate(selectedNBS.completionDate!)}
               </p>
             </div>
 
