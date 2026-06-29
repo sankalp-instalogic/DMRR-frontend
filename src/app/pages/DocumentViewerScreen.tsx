@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import {
-  FileText, Download, Shield, ArrowLeft, Eye, Copy, CheckCircle2, AlertCircle
+  FileText, Download, Shield, ArrowLeft, Eye, Copy, CheckCircle2
 } from "lucide-react";
 
 // Mock document data
@@ -116,7 +116,7 @@ export function DocumentViewerScreen() {
       <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-3">
-            <FileText className="size-6 text-primary flex-shrink-0 mt-1" />
+            <FileText className="size-6 text-primary shrink-0 mt-1" />
             <div>
               <h3 className="font-bold text-lg mb-1">{documentData.name}</h3>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -149,7 +149,7 @@ export function DocumentViewerScreen() {
               Original Document
             </h4>
           </div>
-          <div className="p-6 flex items-center justify-center bg-gray-100 min-h-[500px]">
+          <div className="p-6 flex items-center justify-center bg-gray-100 min-h-125">
             <div className="text-center">
               <FileText className="size-16 mx-auto text-muted-foreground mb-4" />
               <p className="text-sm text-muted-foreground mb-4">
@@ -177,7 +177,7 @@ export function DocumentViewerScreen() {
               OCR Extracted Text
             </h4>
           </div>
-          <div className="p-6 max-h-[500px] overflow-y-auto">
+          <div className="p-6 max-h-125 overflow-y-auto">
             <pre className="text-xs font-mono whitespace-pre-wrap leading-relaxed">
               {mockOCRText}
             </pre>
@@ -288,7 +288,7 @@ export function DocumentViewerScreen() {
       {/* Info Box */}
       <div className="bg-green-50 border border-green-200 rounded-xl p-4">
         <div className="flex items-start gap-3">
-          <CheckCircle2 className="size-5 text-green-600 flex-shrink-0 mt-0.5" />
+          <CheckCircle2 className="size-5 text-green-600 shrink-0 mt-0.5" />
           <div>
             <p className="font-semibold text-green-900 mb-1">Document Verified</p>
             <p className="text-sm text-green-700">

@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   Clock,
   AlertCircle,
+  Eye,
 } from "lucide-react";
 
 import { formatCurrencyLakhs } from "../../utils/currencyFormatter";
@@ -22,6 +23,7 @@ import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { Table } from "../components/Table"; // Adjust path to your custom Table component
+import { DocumentPreviewModal } from "../components/DocumentPreviewModal";
 
 // Helper functions for formatting
 const formatDate = (dateString: string) => {
@@ -58,6 +60,10 @@ const formatBytes = (bytes: number, decimals = 2) => {
 
 export function ProposalDetail() {
   const [activeTab, setActiveTab] = useState("overview");
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(
+    null,
+  );
 
   // Pagination State for Audit Trail
   const [auditPage, setAuditPage] = useState(1);
@@ -66,6 +72,10 @@ export function ProposalDetail() {
   const { id } = useParams();
   const axiosPrivate = useAxiosPrivate();
 
+  const handlePreview = (docId: string) => {
+    setSelectedDocumentId(docId);
+    setIsPreviewOpen(true);
+  };
   const getStatusColor = (status: string) => {
     if (!status) return "text-gray-600 bg-gray-100";
 
@@ -230,14 +240,23 @@ export function ProposalDetail() {
         headerName: "Actions",
         flex: 1,
         sortable: false,
+        pinned: "right",
         filter: false,
         cellRenderer: (params: any) => (
-          <div className="flex items-center h-full">
+          <div className="flex items-center gap-2 h-full">
+            <button
+              onClick={() => handlePreview(params.data.id)}
+              className="inline-flex cursor-pointer items-center gap-1 px-2 py-1 border border-border rounded hover:bg-muted transition-colors text-xs"
+            >
+              <Eye className="size-3" />
+              Preview
+            </button>
+
             <button
               onClick={() =>
                 handleDownload(params.data.id, params.data.fileName)
               }
-              className="inline-flex items-center gap-1 px-2 py-1 border border-border rounded hover:bg-muted transition-colors text-xs"
+              className="inline-flex cursor-pointer items-center gap-1 px-2 py-1 border border-border rounded hover:bg-muted transition-colors text-xs"
             >
               <Download className="size-3" />
               Download
@@ -628,6 +647,14 @@ export function ProposalDetail() {
 
       {/* Main Tab Navigation */}
       <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} />
+      <DocumentPreviewModal
+        isOpen={isPreviewOpen}
+        onClose={() => {
+          setIsPreviewOpen(false);
+          setSelectedDocumentId(null);
+        }}
+        documentId={selectedDocumentId}
+      />
     </div>
   );
 }
