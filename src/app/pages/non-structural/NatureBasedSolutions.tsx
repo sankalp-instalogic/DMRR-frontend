@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { Plus, Eye, Download, ArrowLeft } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
+import { DocumentPreviewModal } from "../../components/DocumentPreviewModal";
 import {
   Input,
   Select,
@@ -15,6 +16,8 @@ import dayjs from "dayjs";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 import { Table } from "../../components/Table";
 import type { ColDef } from "ag-grid-community";
+import { cn } from "../../components/ui/utils";
+import { buttonVariants } from "../../components/ui/button";
 
 interface NBS {
   id?: string;
@@ -54,6 +57,10 @@ const formatCurrency = (amount: number | string) => {
 export function NatureBasedSolutions() {
   const [activeTab, setActiveTab] = useState<"list" | "new">("list");
   const [selectedNBS, setSelectedNBS] = useState<NBS | null>(null);
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [previewDocumentId, setPreviewDocumentId] = useState<string | null>(
+    null,
+  );
 
   const [page, setPage] = useState<number>(1);
   const pageSize = 10;
@@ -304,6 +311,12 @@ export function NatureBasedSolutions() {
     [districtMap],
   );
 
+  const handleViewDocument = (doc: any) => {
+    if (!doc?.id) return;
+    setPreviewDocumentId(doc.id);
+    setPreviewModalOpen(true);
+  };
+
   if (selectedNBS) {
     return (
       <div className="space-y-6">
@@ -396,9 +409,21 @@ export function NatureBasedSolutions() {
                 <button
                   onClick={() => handleDownload(grDocumentObj)}
                   disabled={!grDocumentObj || isDocumentsLoading}
-                  className="flex cursor-pointer items-center gap-1.5 bg-[#0B1F4D] text-white px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-[#0B1F4D]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={cn(
+                    buttonVariants({ variant: "default", size: "lg" }),
+                    "cursor-pointer",
+                  )}
                 >
                   <Download className="size-4" /> Download
+                </button>
+                <button
+                  className={cn(
+                    buttonVariants({ variant: "outline", size: "lg" }),
+                    "cursor-pointer",
+                  )}
+                  onClick={() => handleViewDocument(grDocumentObj)}
+                >
+                  <Eye className="size-4" /> View
                 </button>
               </div>
             </div>
@@ -416,14 +441,34 @@ export function NatureBasedSolutions() {
                 <button
                   onClick={() => handleDownload(completionDocObj)}
                   disabled={!completionDocObj || isDocumentsLoading}
-                  className="flex cursor-pointer items-center gap-1.5 bg-[#0B1F4D] text-white px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-[#0B1F4D]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={cn(
+                    buttonVariants({ variant: "default", size: "lg" }),
+                    "cursor-pointer",
+                  )}
                 >
                   <Download className="size-4" /> Download
+                </button>
+                <button
+                  className={cn(
+                    buttonVariants({ variant: "outline", size: "lg" }),
+                    "cursor-pointer",
+                  )}
+                  onClick={() => handleViewDocument(completionDocObj)}
+                >
+                  <Eye className="size-4" /> View
                 </button>
               </div>
             </div>
           </div>
         </div>
+        <DocumentPreviewModal
+          isOpen={previewModalOpen}
+          onClose={() => {
+            setPreviewModalOpen(false);
+            setPreviewDocumentId(null);
+          }}
+          documentId={previewDocumentId}
+        />
       </div>
     );
   }
@@ -577,7 +622,7 @@ export function NatureBasedSolutions() {
                     className="w-full h-10 rounded-[10px] text-[14px]"
                     format="YYYY-MM-DD"
                     value={field.value ? dayjs(field.value) : null}
-                    onChange={(date, dateString) => {
+                    onChange={(_date, dateString) => {
                       field.onChange(
                         typeof dateString === "string" ? dateString : "",
                       );
@@ -632,7 +677,7 @@ export function NatureBasedSolutions() {
                     className="w-full h-10 rounded-[10px] text-[14px]"
                     format="YYYY-MM-DD"
                     value={field.value ? dayjs(field.value) : null}
-                    onChange={(date, dateString) => {
+                    onChange={(_date, dateString) => {
                       field.onChange(
                         typeof dateString === "string" ? dateString : "",
                       );

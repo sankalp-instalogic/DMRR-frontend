@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import {
   ArrowLeft,
@@ -5,21 +6,21 @@ import {
   Download,
   XCircle,
   Loader2,
+  Eye, // <-- Added Eye for preview icon
 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Input } from "antd"; // <-- Added antd import
+import { Input } from "antd"; 
 import useAxiosPrivate from "../../../../hooks/useAxiosPrivate";
+import { DocumentPreviewModal } from "../../../components/DocumentPreviewModal";
 
-// Constants pulled from the reference component
 const DOCUMENT_TYPES: Record<string, string> = {
   "Technical Bid Opening": "30",
   "Technical Evaluation": "31",
   "Financial Bid Opening": "32",
   "Financial Evaluation": "33",
-  AOC: "34", // Added AOC mapping
+  AOC: "34",
 };
 
-// Added AOC to the end of the stage list
 const stageList = [
   "Technical Bid Opening",
   "Technical Evaluation",
@@ -33,6 +34,9 @@ export function TenderDetails() {
   const navigate = useNavigate();
   const axiosPrivate = useAxiosPrivate();
 
+  // <-- Added state for the modal
+  const [previewDocument, setPreviewDocument] = useState<any>(null);
+
   // 1. Fetch Tender Basic Details
   const { data: tenderData, isLoading: isTenderLoading } = useQuery({
     queryKey: ["tender", id],
@@ -42,7 +46,7 @@ export function TenderDetails() {
       );
       return response.data;
     },
-    enabled: !!id, // Only fetch if ID exists
+    enabled: !!id,
   });
 
   // 2. Fetch Document List for this Tender
@@ -60,8 +64,6 @@ export function TenderDetails() {
   // 3. Mutation for Project Closure
   const completeStageMutation = useMutation({
     mutationFn: async () => {
-      // Assuming a POST request based on standard REST action routes.
-      // Change to .put() or .patch() if your API requires it.
       const response = await axiosPrivate.post(
         `/api/v1/procurement-tenders/${id}/stages/complete`,
         { stageName: "Completed", documentId: null }
@@ -69,16 +71,13 @@ export function TenderDetails() {
       return response.data;
     },
     onSuccess: () => {
-      // Redirect to the project closure route upon successful API execution
       navigate("/procurement-closure");
     },
     onError: (error) => {
-      // Handle any API errors here (e.g., triggering a toast notification)
       console.error("Failed to mark project for closure:", error);
     },
   });
 
-  // Helper function to find the corresponding document
   const getDocumentForStage = (stageName: string) => {
     const docs = Array.isArray(documentsData)
       ? documentsData
@@ -93,7 +92,6 @@ export function TenderDetails() {
     );
   };
 
-  // Download Handler
   const handleDownload = async (doc: any) => {
     if (!doc?.id) return;
     try {
@@ -209,7 +207,7 @@ export function TenderDetails() {
               <tr>
                 <th className="px-6 py-3 font-medium">Stages</th>
                 <th className="px-6 py-3 font-medium text-center">Status</th>
-                <th className="px-6 py-3 font-medium text-center">Download</th>
+                <th className="px-6 py-3 font-medium text-center">Actions</th> {/* <-- Changed header to Actions */}
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -238,14 +236,24 @@ export function TenderDetails() {
                       )}
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <button
-                        onClick={() => handleDownload(doc)}
-                        disabled={!doc}
-                        className="p-2 inline-flex justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-[#0B1F4D] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                        title="Download Document"
-                      >
-                        <Download className="size-4" />
-                      </button>
+                      <div className="flex items-center justify-center gap-2"> {/* <-- Added wrapper for buttons */}
+                        <button
+                          onClick={() => setPreviewDocument(doc)}
+                          disabled={!doc}
+                          className="p-2 inline-flex justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-[#0B1F4D] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          title="Preview Document"
+                        >
+                          <Eye className="size-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDownload(doc)}
+                          disabled={!doc}
+                          className="p-2 inline-flex justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-[#0B1F4D] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          title="Download Document"
+                        >
+                          <Download className="size-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -276,14 +284,24 @@ export function TenderDetails() {
                       )}
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <button
-                        onClick={() => handleDownload(doc)}
-                        disabled={!doc}
-                        className="p-2 inline-flex justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-[#0B1F4D] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                        title="Download Document"
-                      >
-                        <Download className="size-4" />
-                      </button>
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => setPreviewDocument(doc)}
+                          disabled={!doc}
+                          className="p-2 inline-flex justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-[#0B1F4D] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          title="Preview Document"
+                        >
+                          <Eye className="size-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDownload(doc)}
+                          disabled={!doc}
+                          className="p-2 inline-flex justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-[#0B1F4D] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          title="Download Document"
+                        >
+                          <Download className="size-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -306,14 +324,24 @@ export function TenderDetails() {
                       )}
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <button
-                        onClick={() => handleDownload(doc)}
-                        disabled={!doc}
-                        className="p-2 inline-flex justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-[#0B1F4D] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                        title="Download Document"
-                      >
-                        <Download className="size-4" />
-                      </button>
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => setPreviewDocument(doc)}
+                          disabled={!doc}
+                          className="p-2 inline-flex justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-[#0B1F4D] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          title="Preview Document"
+                        >
+                          <Eye className="size-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDownload(doc)}
+                          disabled={!doc}
+                          className="p-2 inline-flex justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-[#0B1F4D] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          title="Download Document"
+                        >
+                          <Download className="size-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -346,6 +374,17 @@ export function TenderDetails() {
           )}
         </button>
       </div>
+
+      {/* <-- Included Document Preview Modal --> */}
+      {previewDocument && (
+        <DocumentPreviewModal 
+          isOpen={!!previewDocument} 
+          onClose={() => setPreviewDocument(null)} 
+          documentId={previewDocument?.id} 
+          // Note: Adjust the props above depending on the exact props your DocumentPreviewModal expects 
+          // (e.g., you might need `documentId={previewDocument.id}` instead of passing the whole object).
+        />
+      )}
     </div>
   );
 }

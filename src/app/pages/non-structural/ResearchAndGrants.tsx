@@ -14,6 +14,9 @@ import dayjs from "dayjs";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 import { Table } from "../../components/Table";
 import type { ColDef } from "ag-grid-community";
+import { DocumentPreviewModal } from "../../components/DocumentPreviewModal";
+import { cn } from "../../components/ui/utils";
+import { buttonVariants } from "../../components/ui/button";
 
 interface Grant {
   id?: string;
@@ -52,6 +55,10 @@ const formatCurrency = (amount: number | string) => {
 export function ResearchAndGrants() {
   const [activeTab, setActiveTab] = useState<"list" | "new">("list");
   const [selectedGrant, setSelectedGrant] = useState<Grant | null>(null);
+
+  // --- PREVIEW MODAL STATE ---
+  const [previewDocId, setPreviewDocId] = useState<string | null>(null);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
   const [page, setPage] = useState<number>(1);
   const pageSize = 10;
@@ -225,6 +232,13 @@ export function ResearchAndGrants() {
     }
   };
 
+  const handlePreviewOpen = (doc: any) => {
+    if (doc?.id) {
+      setPreviewDocId(doc.id);
+      setIsPreviewModalOpen(true);
+    }
+  };
+
   // --- AG GRID COLUMNS ---
   const columnDefs = useMemo<ColDef[]>(
     () => [
@@ -370,14 +384,37 @@ export function ResearchAndGrants() {
                 <button
                   onClick={() => handleDownload(completionDoc)}
                   disabled={!completionDoc || isDocumentsLoading}
-                  className="flex cursor-pointer items-center gap-1.5 bg-[#0B1F4D] text-white px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-[#0B1F4D]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={cn(
+                    buttonVariants({ variant: "default", size: "lg" }),
+                    "cursor-pointer",
+                  )}
                 >
                   <Download className="size-4" /> Download
+                </button>
+                <button
+                  onClick={() => handlePreviewOpen(completionDoc)}
+                  disabled={!completionDoc || isDocumentsLoading}
+                  className={cn(
+                    buttonVariants({ variant: "outline", size: "lg" }),
+                    "cursor-pointer",
+                  )}
+                >
+                  <Eye className="size-4" /> View
                 </button>
               </div>
             </div>
           </div>
         </div>
+
+        {/* --- Document Preview Modal Component --- */}
+        <DocumentPreviewModal
+          isOpen={isPreviewModalOpen}
+          onClose={() => {
+            setIsPreviewModalOpen(false);
+            setPreviewDocId(null);
+          }}
+          documentId={previewDocId}
+        />
       </div>
     );
   }
@@ -540,7 +577,7 @@ export function ResearchAndGrants() {
                     className="w-full h-10 rounded-[10px] text-[14px]"
                     format="YYYY-MM-DD"
                     value={field.value ? dayjs(field.value) : null}
-                    onChange={(date, dateString) => {
+                    onChange={(_date, dateString) => {
                       field.onChange(
                         typeof dateString === "string" ? dateString : "",
                       );
@@ -598,7 +635,7 @@ export function ResearchAndGrants() {
                     className="w-full md:w-[calc(50%-0.5rem)] h-10 rounded-[10px] text-[14px]"
                     format="YYYY-MM-DD"
                     value={field.value ? dayjs(field.value) : null}
-                    onChange={(date, dateString) => {
+                    onChange={(_date, dateString) => {
                       field.onChange(
                         typeof dateString === "string" ? dateString : "",
                       );

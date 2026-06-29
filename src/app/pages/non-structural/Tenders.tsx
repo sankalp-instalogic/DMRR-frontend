@@ -6,6 +6,7 @@ import { UploadOutlined } from "@ant-design/icons";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 import { Table } from "../../components/Table";
 import type { ColDef } from "ag-grid-community";
+import { DocumentPreviewModal } from "../../components/DocumentPreviewModal";
 import {
   Save,
   Eye,
@@ -59,6 +60,9 @@ interface PaginatedResponse {
 export function Tenders() {
   const [activeTab, setActiveTab] = useState<"tenders" | "new">("tenders");
   const [viewTender, setViewTender] = useState<Tender | null>(null);
+  
+  // Modal State for Previewing Document
+  const [previewDocId, setPreviewDocId] = useState<string | null>(null);
 
   // Pagination State
   const [page, setPage] = useState<number>(1);
@@ -200,7 +204,7 @@ export function Tenders() {
         uploadData,
         {
           headers: { "Content-Type": "multipart/form-data" },
-        },
+        }
       );
       return response.data;
     },
@@ -220,7 +224,7 @@ export function Tenders() {
         payload,
         {
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
       return { responseData: response.data, formFiles };
     },
@@ -281,7 +285,7 @@ export function Tenders() {
     try {
       const response = await axiosPrivate.get(
         `/api/v1/Documents/${doc.id}/download`,
-        { responseType: "blob" },
+        { responseType: "blob" }
       );
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -321,7 +325,7 @@ export function Tenders() {
         ),
       },
     ],
-    [],
+    []
   );
 
   // ==========================================
@@ -398,6 +402,9 @@ export function Tenders() {
                     Status
                   </th>
                   <th className="px-4 font-semibold whitespace-nowrap text-center">
+                    Preview
+                  </th>
+                  <th className="px-4 font-semibold whitespace-nowrap text-center">
                     Download
                   </th>
                 </tr>
@@ -406,7 +413,7 @@ export function Tenders() {
                 {/* PROCESS 1 */}
                 <tr className="bg-[#F5F7FA] border-y border-gray-200">
                   <td
-                    colSpan={3}
+                    colSpan={4} // Increased colSpan to 4
                     className="px-4 py-3 font-semibold text-[#0B1F4D]"
                   >
                     Process 1
@@ -431,9 +438,20 @@ export function Tenders() {
                       </td>
                       <td className="px-4 text-center">
                         <button
+                          onClick={() => doc?.id && setPreviewDocId(doc.id)}
+                          disabled={!doc}
+                          className="text-gray-500 cursor-pointer hover:text-[#0B1F4D] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          title="Preview Document"
+                        >
+                          <Eye className="size-4 mx-auto" />
+                        </button>
+                      </td>
+                      <td className="px-4 text-center">
+                        <button
                           onClick={() => handleDownload(doc)}
                           disabled={!doc}
                           className="text-gray-500 cursor-pointer hover:text-[#0B1F4D] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          title="Download Document"
                         >
                           <Download className="size-4 mx-auto" />
                         </button>
@@ -445,7 +463,7 @@ export function Tenders() {
                 {/* PROCESS 2 */}
                 <tr className="bg-[#F5F7FA] border-y border-gray-200">
                   <td
-                    colSpan={3}
+                    colSpan={4} // Increased colSpan to 4
                     className="px-4 py-3 font-semibold text-[#0B1F4D]"
                   >
                     Process 2
@@ -470,9 +488,20 @@ export function Tenders() {
                       </td>
                       <td className="px-4 text-center">
                         <button
+                          onClick={() => doc?.id && setPreviewDocId(doc.id)}
+                          disabled={!doc}
+                          className="text-gray-500 cursor-pointer hover:text-[#0B1F4D] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          title="Preview Document"
+                        >
+                          <Eye className="size-4 mx-auto" />
+                        </button>
+                      </td>
+                      <td className="px-4 text-center">
+                        <button
                           onClick={() => handleDownload(doc)}
                           disabled={!doc}
                           className="text-gray-500 hover:text-[#0B1F4D] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          title="Download Document"
                         >
                           <Download className="size-4 mx-auto" />
                         </button>
@@ -484,13 +513,16 @@ export function Tenders() {
             </table>
           </div>
         </div>
+
+        {/* Document Preview Modal Component */}
+        <DocumentPreviewModal
+          isOpen={!!previewDocId}
+          onClose={() => setPreviewDocId(null)}
+          documentId={previewDocId}
+        />
       </div>
     );
   }
-
-  // ==========================================
-  // MAIN RENDER
-  // ==========================================
 
   return (
     <div className="space-y-6">

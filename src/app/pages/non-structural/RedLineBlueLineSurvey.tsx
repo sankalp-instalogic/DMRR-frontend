@@ -15,6 +15,9 @@ import dayjs from "dayjs";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 import { Table } from "../../components/Table";
 import type { ColDef } from "ag-grid-community";
+import { DocumentPreviewModal } from "../../components/DocumentPreviewModal";
+import { cn } from "../../components/ui/utils";
+import { buttonVariants } from "../../components/ui/button";
 
 interface Survey {
   id?: string;
@@ -54,6 +57,10 @@ const formatCurrency = (amount: number | string) => {
 export function RedLineBlueLineSurvey() {
   const [activeTab, setActiveTab] = useState<"list" | "new">("list");
   const [selectedSurvey, setSelectedSurvey] = useState<Survey | null>(null);
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [previewDocumentId, setPreviewDocumentId] = useState<string | null>(
+    null,
+  );
 
   const [page, setPage] = useState<number>(1);
   const pageSize = 10;
@@ -84,6 +91,12 @@ export function RedLineBlueLineSurvey() {
 
   const grDocumentFile = watch("grDocument");
   const completionCertificateFile = watch("completionCertificate");
+
+  const handleViewDocument = (doc: any) => {
+    if (!doc?.id) return;
+    setPreviewDocumentId(doc.id);
+    setPreviewModalOpen(true);
+  };
 
   // --- QUERIES ---
   const { data, isLoading, isError, isFetching } = useQuery<PaginatedResponse>({
@@ -398,9 +411,21 @@ export function RedLineBlueLineSurvey() {
                 <button
                   onClick={() => handleDownload(grDocumentInfo)}
                   disabled={!grDocumentInfo || isDocumentsLoading}
-                  className="flex cursor-pointer items-center gap-1.5 bg-[#0B1F4D] text-white px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-[#0B1F4D]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={cn(
+                    buttonVariants({ variant: "default", size: "lg" }),
+                    "cursor-pointer",
+                  )}
                 >
                   <Download className="size-4" /> Download
+                </button>
+                <button
+                  onClick={() => handleViewDocument(grDocumentInfo)}
+                  className={cn(
+                    buttonVariants({ variant: "outline", size: "lg" }),
+                    "cursor-pointer",
+                  )}
+                >
+                  <Eye className="size-4" /> View
                 </button>
               </div>
             </div>
@@ -418,14 +443,34 @@ export function RedLineBlueLineSurvey() {
                 <button
                   onClick={() => handleDownload(completionDocInfo)}
                   disabled={!completionDocInfo || isDocumentsLoading}
-                  className="flex cursor-pointer items-center gap-1.5 bg-[#0B1F4D] text-white px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-[#0B1F4D]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={cn(
+                    buttonVariants({ variant: "default", size: "lg" }),
+                    "cursor-pointer",
+                  )}
                 >
                   <Download className="size-4" /> Download
+                </button>
+                <button
+                  onClick={() => handleViewDocument(completionDocInfo)}
+                  className={cn(
+                    buttonVariants({ variant: "outline", size: "lg" }),
+                    "cursor-pointer",
+                  )}
+                >
+                  <Eye className="size-4" /> View
                 </button>
               </div>
             </div>
           </div>
         </div>
+        <DocumentPreviewModal
+          isOpen={previewModalOpen}
+          onClose={() => {
+            setPreviewModalOpen(false);
+            setPreviewDocumentId(null);
+          }}
+          documentId={previewDocumentId}
+        />
       </div>
     );
   }
@@ -580,7 +625,7 @@ export function RedLineBlueLineSurvey() {
                     className="w-full h-10 rounded-[10px] text-[14px]"
                     format="YYYY-MM-DD"
                     value={field.value ? dayjs(field.value) : null}
-                    onChange={(date, dateString) => {
+                    onChange={(_date, dateString) => {
                       field.onChange(
                         typeof dateString === "string" ? dateString : "",
                       );
@@ -635,7 +680,7 @@ export function RedLineBlueLineSurvey() {
                     className="w-full h-10 rounded-[10px] text-[14px]"
                     format="YYYY-MM-DD"
                     value={field.value ? dayjs(field.value) : null}
-                    onChange={(date, dateString) => {
+                    onChange={(_date, dateString) => {
                       field.onChange(
                         typeof dateString === "string" ? dateString : "",
                       );

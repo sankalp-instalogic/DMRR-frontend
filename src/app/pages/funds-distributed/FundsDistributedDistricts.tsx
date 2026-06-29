@@ -1,19 +1,15 @@
 import { useState, useMemo, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
-import {
-  Eye,
-  Printer,
-  Download,
-  ArrowLeft,
-  Plus,
-  FileText,
-} from "lucide-react";
+import { Eye, Download, ArrowLeft, Plus, FileText } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 import type { ColDef } from "ag-grid-community";
 import { Table } from "../../components/Table";
 import { Button } from "../../components/ui/button";
 import { Input, Select, DatePicker } from "antd";
+import { DocumentPreviewModal } from "../../components/DocumentPreviewModal";
+import { cn } from "../../components/ui/utils";
+import { buttonVariants } from "../../components/ui/button";
 import dayjs from "dayjs";
 
 // Defined the shape of the payload based on your form
@@ -61,6 +57,9 @@ export function FundsDistributedDistricts() {
   // File upload state
   const [utilizationCertificate, setUtilizationCertificate] =
     useState<File | null>(null);
+
+  // --- NEW: Modal State ---
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const axiosPrivate = useAxiosPrivate();
   const queryClient = useQueryClient();
@@ -287,36 +286,36 @@ export function FundsDistributedDistricts() {
     }
   };
 
-  const handlePrint = () => {
-  if (!printRef.current) return;
+  // const handlePrint = () => {
+  //   if (!printRef.current) return;
 
-  const printContents = printRef.current.innerHTML;
-  const printWindow = window.open("", "", "width=800,height=600");
+  //   const printContents = printRef.current.innerHTML;
+  //   const printWindow = window.open("", "", "width=800,height=600");
 
-  if (printWindow) {
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Allocation Details</title>
-          <style>
-            body {
-              font-family: Arial, sans-serif;
-              padding: 20px;
-            }
-          </style>
-        </head>
-        <body>
-          ${printContents}
-        </body>
-      </html>
-    `);
+  //   if (printWindow) {
+  //     printWindow.document.write(`
+  //     <html>
+  //       <head>
+  //         <title>Allocation Details</title>
+  //         <style>
+  //           body {
+  //             font-family: Arial, sans-serif;
+  //             padding: 20px;
+  //           }
+  //         </style>
+  //       </head>
+  //       <body>
+  //         ${printContents}
+  //       </body>
+  //     </html>
+  //   `);
 
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
-    printWindow.close();
-  }
-};
+  //     printWindow.document.close();
+  //     printWindow.focus();
+  //     printWindow.print();
+  //     printWindow.close();
+  //   }
+  // };
 
   return (
     <div className="space-y-6">
@@ -586,13 +585,6 @@ export function FundsDistributedDistricts() {
               <ArrowLeft className="size-4" />
               Back
             </button>
-            {/* <button
-              onClick={handlePrint}
-              className="inline-flex items-center gap-2 px-4 h-10 bg-white border border-[#0B1F4D] text-[#0B1F4D] rounded-[10px] text-[14px] font-medium hover:bg-gray-50 transition-colors cursor-pointer"
-            >
-              <Printer className="size-4" />
-              Print
-            </button> */}
           </div>
 
           <div
@@ -651,10 +643,24 @@ export function FundsDistributedDistricts() {
                   <div className="flex gap-3">
                     <button
                       onClick={() => handleDownload(utilDoc)}
-                      className="inline-flex cursor-pointer items-center gap-1.5 px-4 h-10 bg-[#0B1F4D] text-white rounded-[10px] transition-colors text-[14px] font-medium hover:bg-[#0B1F4D]/90"
+                      className={cn(
+                        buttonVariants({ variant: "default", size: "lg" }),
+                        "cursor-pointer",
+                      )}
                     >
                       <Download className="size-4" />
                       Download
+                    </button>
+                    {/* --- NEW: Wired the View button to set isPreviewOpen to true --- */}
+                    <button
+                      onClick={() => setIsPreviewOpen(true)}
+                      className={cn(
+                        buttonVariants({ variant: "outline", size: "lg" }),
+                        "cursor-pointer",
+                      )}
+                    >
+                      <Eye className="size-4" />
+                      View
                     </button>
                   </div>
                 </div>
@@ -667,6 +673,13 @@ export function FundsDistributedDistricts() {
           </div>
         </div>
       )}
+
+      {/* --- NEW: Render the modal at the root of the component --- */}
+      <DocumentPreviewModal 
+        isOpen={isPreviewOpen} 
+        onClose={() => setIsPreviewOpen(false)} 
+        documentId={utilDoc?.id || null} 
+      />
     </div>
   );
 }

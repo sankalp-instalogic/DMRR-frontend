@@ -8,6 +8,9 @@ import { Table } from "../../components/Table";
 import type { ColDef, ICellRendererParams } from "ag-grid-community";
 import { Input, Select, DatePicker } from "antd";
 import dayjs from "dayjs";
+import { DocumentPreviewModal } from "../../components/DocumentPreviewModal";
+import { cn } from "../../components/ui/utils";
+import { buttonVariants } from "../../components/ui/button";
 
 type RecordType = {
   id: string;
@@ -31,7 +34,9 @@ export function FundsDistributedOther() {
   const axiosPrivate = useAxiosPrivate();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  const [activeTab, setActiveTab] = useState<"overview" | "new" | "view">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "new" | "view">(
+    "overview",
+  );
   const [viewRecord, setViewRecord] = useState<RecordType | null>(null);
 
   // Pagination states for the Table component
@@ -49,15 +54,18 @@ export function FundsDistributedOther() {
     },
   });
 
-  // --- QUERIES ---
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   // 1. Fetch Departments for Dropdown and Mapping
   const { data: deptData, isLoading: isDepartmentsLoading } = useQuery({
     queryKey: ["departments-dropdown"],
     queryFn: async () => {
-      const response = await axiosPrivate.get("/api/v1/masters/line-departments", {
-        params: { page: 1, pageSize: 100 },
-      });
+      const response = await axiosPrivate.get(
+        "/api/v1/masters/line-departments",
+        {
+          params: { page: 1, pageSize: 100 },
+        },
+      );
       return response.data;
     },
   });
@@ -85,7 +93,8 @@ export function FundsDistributedOther() {
 
   const records: RecordType[] = utilsData?.items || utilsData || [];
   const totalCount = utilsData?.totalCount || records.length;
-  const totalPages = utilsData?.totalPages || Math.ceil(totalCount / pageSize) || 1;
+  const totalPages =
+    utilsData?.totalPages || Math.ceil(totalCount / pageSize) || 1;
 
   // 3. Fetch Document for View Tab
   const { data: documentsData, isLoading: isDocumentsLoading } = useQuery({
@@ -100,7 +109,9 @@ export function FundsDistributedOther() {
   });
 
   const getDocument = () => {
-    const docs = Array.isArray(documentsData) ? documentsData : documentsData?.items || [];
+    const docs = Array.isArray(documentsData)
+      ? documentsData
+      : documentsData?.items || [];
     return docs.length > 0 ? docs[0] : null;
   };
   const utilDoc = getDocument();
@@ -122,9 +133,13 @@ export function FundsDistributedOther() {
 
   const addMutation = useMutation({
     mutationFn: async (newData: any) => {
-      const response = await axiosPrivate.post("/api/v1/funds/utilizations", newData, {
-        headers: { "Content-Type": "application/json" },
-      });
+      const response = await axiosPrivate.post(
+        "/api/v1/funds/utilizations",
+        newData,
+        {
+          headers: { "Content-Type": "application/json" },
+        },
+      );
       return response.data;
     },
     onSuccess: async (responseData) => {
@@ -163,7 +178,9 @@ export function FundsDistributedOther() {
       utilizationHead: data.utilizationHead,
       allocatedCr: Number(data.allocatedCr),
       utilizedCr: Number(data.utilizedCr),
-      issuingDate: data.issuingDate ? new Date(data.issuingDate).toISOString() : null,
+      issuingDate: data.issuingDate
+        ? new Date(data.issuingDate).toISOString()
+        : null,
     };
 
     addMutation.mutate(payload);
@@ -172,9 +189,12 @@ export function FundsDistributedOther() {
   const handleDownload = async (doc: any) => {
     if (!doc?.id) return;
     try {
-      const response = await axiosPrivate.get(`/api/v1/Documents/${doc.id}/download`, {
-        responseType: "blob",
-      });
+      const response = await axiosPrivate.get(
+        `/api/v1/Documents/${doc.id}/download`,
+        {
+          responseType: "blob",
+        },
+      );
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
@@ -194,12 +214,14 @@ export function FundsDistributedOther() {
     () => [
       {
         headerName: "Sr No",
-        valueGetter: (params) => (params.node?.rowIndex ?? 0) + 1 + (page - 1) * pageSize,
+        valueGetter: (params) =>
+          (params.node?.rowIndex ?? 0) + 1 + (page - 1) * pageSize,
         width: 80,
       },
       {
         headerName: "Utilization Department",
-        valueGetter: (params) => departmentsMap[params.data.lineDepartmentId] || "Unknown Dept",
+        valueGetter: (params) =>
+          departmentsMap[params.data.lineDepartmentId] || "Unknown Dept",
         flex: 1,
       },
       {
@@ -244,7 +266,7 @@ export function FundsDistributedOther() {
         width: 130,
       },
     ],
-    [departmentsMap, page, pageSize]
+    [departmentsMap, page, pageSize],
   );
 
   if (isUtilsLoading) {
@@ -260,7 +282,9 @@ export function FundsDistributedOther() {
       <div className="flex items-center justify-center p-6">
         <div className="max-w-md rounded-xl border border-red-200 bg-red-50 p-4 shadow-sm">
           <h3 className="font-semibold text-red-800">Something went wrong</h3>
-          <p className="mt-1 text-sm text-red-600">{(error as Error).message}</p>
+          <p className="mt-1 text-sm text-red-600">
+            {(error as Error).message}
+          </p>
         </div>
       </div>
     );
@@ -320,11 +344,12 @@ export function FundsDistributedOther() {
 
       {activeTab === "new" && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-[20px] font-semibold text-[#0B1F4D] mb-6">New Utilization</h2>
+          <h2 className="text-[20px] font-semibold text-[#0B1F4D] mb-6">
+            New Utilization
+          </h2>
 
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              
               {/* Department Select */}
               <Controller
                 control={form.control}
@@ -340,7 +365,11 @@ export function FundsDistributedOther() {
                       value={field.value || undefined}
                       onChange={field.onChange}
                       onBlur={field.onBlur}
-                      placeholder={isDepartmentsLoading ? "Loading..." : "Select Department"}
+                      placeholder={
+                        isDepartmentsLoading
+                          ? "Loading..."
+                          : "Select Department"
+                      }
                       options={departments.map((d: any) => ({
                         label: `${d.name} ${d.code ? `(${d.code})` : ""}`,
                         value: d.id,
@@ -395,7 +424,9 @@ export function FundsDistributedOther() {
                     <DatePicker
                       className="w-full h-10 rounded-[10px] text-[14px]"
                       value={field.value ? dayjs(field.value) : null}
-                      onChange={(date, dateString) => field.onChange(dateString)}
+                      onChange={(_date, dateString) =>
+                        field.onChange(dateString)
+                      }
                       onBlur={field.onBlur}
                       status={error ? "error" : undefined}
                     />
@@ -486,7 +517,10 @@ export function FundsDistributedOther() {
                       e.target.value = "";
                     }}
                   />
-                  <label htmlFor="cert-upload" className="cursor-pointer flex flex-col items-center">
+                  <label
+                    htmlFor="cert-upload"
+                    className="cursor-pointer flex flex-col items-center"
+                  >
                     {selectedFile ? (
                       <>
                         <FileText className="size-6 text-[#0B1F4D] mb-2" />
@@ -494,7 +528,8 @@ export function FundsDistributedOther() {
                           {selectedFile.name}
                         </span>
                         <span className="text-[12px] text-gray-500 mt-1">
-                          Click to change file ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                          Click to change file (
+                          {(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
                         </span>
                       </>
                     ) : (
@@ -526,7 +561,9 @@ export function FundsDistributedOther() {
                 disabled={addMutation.isPending || uploadMutation.isPending}
                 className="px-4 h-10 bg-[#0B1F4D] text-white rounded-[10px] font-medium hover:bg-[#0B1F4D]/90 transition-colors text-[14px] disabled:opacity-50 cursor-pointer"
               >
-                {addMutation.isPending || uploadMutation.isPending ? "Saving..." : "Save"}
+                {addMutation.isPending || uploadMutation.isPending
+                  ? "Saving..."
+                  : "Save"}
               </button>
             </div>
           </form>
@@ -556,29 +593,38 @@ export function FundsDistributedOther() {
                   Utilization Department
                 </p>
                 <p className="font-semibold text-[16px] text-[#0B1F4D]">
-                  {departmentsMap[viewRecord.lineDepartmentId] || "Unknown Dept"}
+                  {departmentsMap[viewRecord.lineDepartmentId] ||
+                    "Unknown Dept"}
                 </p>
               </div>
               <div>
-                <p className="text-[14px] font-medium text-gray-500 mb-1">Utilization Head</p>
+                <p className="text-[14px] font-medium text-gray-500 mb-1">
+                  Utilization Head
+                </p>
                 <p className="font-semibold text-[16px] text-[#0B1F4D]">
                   {viewRecord.utilizationHead || "-"}
                 </p>
               </div>
               <div>
-                <p className="text-[14px] font-medium text-gray-500 mb-1">Allocated Amount</p>
+                <p className="text-[14px] font-medium text-gray-500 mb-1">
+                  Allocated Amount
+                </p>
                 <p className="font-semibold text-[16px] text-[#0B1F4D]">
                   ₹{((viewRecord.allocatedCr || 0) / 100).toFixed(2)} Cr
                 </p>
               </div>
               <div>
-                <p className="text-[14px] font-medium text-gray-500 mb-1">Utilized Amount</p>
+                <p className="text-[14px] font-medium text-gray-500 mb-1">
+                  Utilized Amount
+                </p>
                 <p className="font-semibold text-[16px] text-[#0B1F4D]">
                   ₹{((viewRecord.utilizedCr || 0) / 100).toFixed(2)} Cr
                 </p>
               </div>
               <div>
-                <p className="text-[14px] font-medium text-gray-500 mb-1">Date of Issuing</p>
+                <p className="text-[14px] font-medium text-gray-500 mb-1">
+                  Date of Issuing
+                </p>
                 <p className="font-semibold text-[16px] text-[#0B1F4D]">
                   {new Date(viewRecord.issuingDate).toLocaleDateString()}
                 </p>
@@ -589,7 +635,9 @@ export function FundsDistributedOther() {
               <p className="text-[16px] font-semibold text-[#0B1F4D] mb-4">
                 Utilization Certificate
                 {isDocumentsLoading && (
-                  <span className="text-sm text-gray-400 font-normal ml-2">(Loading...)</span>
+                  <span className="text-sm text-gray-400 font-normal ml-2">
+                    (Loading...)
+                  </span>
                 )}
               </p>
 
@@ -604,10 +652,23 @@ export function FundsDistributedOther() {
                   <div className="flex gap-3">
                     <button
                       onClick={() => handleDownload(utilDoc)}
-                      className="inline-flex items-center gap-1.5 px-4 h-10 bg-[#0B1F4D] text-white rounded-[10px] transition-colors text-[14px] font-medium hover:bg-[#0B1F4D]/90 cursor-pointer"
+                      className={cn(
+                        buttonVariants({ variant: "default", size: "lg" }),
+                        "cursor-pointer",
+                      )}
                     >
                       <Download className="size-4" />
                       Download
+                    </button>
+                    <button
+                      onClick={() => setIsPreviewOpen(true)}
+                      className={cn(
+                        buttonVariants({ variant: "outline", size: "lg" }),
+                        "cursor-pointer",
+                      )}
+                    >
+                      <Eye className="size-4" />
+                      View
                     </button>
                   </div>
                 </div>
@@ -620,6 +681,12 @@ export function FundsDistributedOther() {
           </div>
         </div>
       )}
+
+      <DocumentPreviewModal
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        documentId={utilDoc?.id || null}
+      />
     </div>
   );
 }
