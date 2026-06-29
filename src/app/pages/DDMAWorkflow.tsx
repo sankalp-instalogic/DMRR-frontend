@@ -229,7 +229,7 @@ export function DDMAWorkflow() {
     <div className="space-y-6">
       {/* Header and Tabs */}
       <div>
-        <h1>DDMA & Line Department Workflow</h1>
+        <h1 className="text-[30px] font-bold text-primary">DDMA & Line Department Workflow</h1>
         <p className="text-sm text-muted-foreground">
           Proposal routing and department assignment
         </p>

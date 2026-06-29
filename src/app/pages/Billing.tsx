@@ -654,7 +654,7 @@ export function Billing() {
   return (
     <div className="space-y-6">
       <div>
-        <h1>Billing & Fund Release</h1>
+        <h1 className="text-[30px] font-bold text-primary">Billing & Fund Release</h1>
         <p className="text-sm text-muted-foreground">
           Track billing workflow and fund release
         </p>

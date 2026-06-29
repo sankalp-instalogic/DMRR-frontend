@@ -11,6 +11,7 @@ import { DocumentPreviewModal } from "../../components/DocumentPreviewModal";
 import { cn } from "../../components/ui/utils";
 import { buttonVariants } from "../../components/ui/button";
 import dayjs from "dayjs";
+import formattedDate from "../../../utils/dateFormatter";
 
 // Defined the shape of the payload based on your form
 interface FundRecord {
@@ -36,12 +37,6 @@ interface AllocationFormValues {
   issuingDate: string;
   utilizedLakhs: string;
 }
-
-// Helpers for formatting
-const formatDate = (dateString: string) => {
-  if (!dateString) return "-";
-  return dateString.split("T")[0];
-};
 
 export function FundsDistributedDistricts() {
   const [activeTab, setActiveTab] = useState<"overview" | "new" | "view">(
@@ -149,7 +144,7 @@ export function FundsDistributedDistricts() {
       {
         headerName: "Date of Issuing",
         field: "issuingDate",
-        valueFormatter: (params) => formatDate(params.value),
+        valueFormatter: (params) =>formattedDate(params.value) ,
         flex: 1,
       },
       {
@@ -285,37 +280,6 @@ export function FundsDistributedDistricts() {
       console.error("Failed to download document:", error);
     }
   };
-
-  // const handlePrint = () => {
-  //   if (!printRef.current) return;
-
-  //   const printContents = printRef.current.innerHTML;
-  //   const printWindow = window.open("", "", "width=800,height=600");
-
-  //   if (printWindow) {
-  //     printWindow.document.write(`
-  //     <html>
-  //       <head>
-  //         <title>Allocation Details</title>
-  //         <style>
-  //           body {
-  //             font-family: Arial, sans-serif;
-  //             padding: 20px;
-  //           }
-  //         </style>
-  //       </head>
-  //       <body>
-  //         ${printContents}
-  //       </body>
-  //     </html>
-  //   `);
-
-  //     printWindow.document.close();
-  //     printWindow.focus();
-  //     printWindow.print();
-  //     printWindow.close();
-  //   }
-  // };
 
   return (
     <div className="space-y-6">
@@ -609,7 +573,7 @@ export function FundsDistributedDistricts() {
                   Date of Issuing
                 </p>
                 <p className="font-semibold text-[16px] text-[#0B1F4D]">
-                  {formatDate(viewRecord.issuingDate)}
+                  {formattedDate(viewRecord.issuingDate)}
                 </p>
               </div>
               <div>

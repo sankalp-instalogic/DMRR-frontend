@@ -407,7 +407,7 @@ export function BudgetMaster() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1>Budget Master</h1>
+          <h1 className="text-[30px] font-bold text-primary">Budget Master</h1>
           <p className="text-sm text-muted-foreground">
             Manage budget allocations
           </p>
@@ -725,8 +725,7 @@ export function BudgetMaster() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              budget entry and remove its data from our servers.
+              Are you sure you want to delete this budget entry? This action cannot be undone
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

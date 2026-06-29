@@ -316,7 +316,7 @@ export function OfficerMaster() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1>Officer Master</h1>
+          <h1 className="text-[30px] font-bold text-primary">Officer Master</h1>
           <p className="text-sm text-muted-foreground">
             Manage officer information
           </p>
@@ -543,8 +543,7 @@ export function OfficerMaster() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              officer and remove their data from our servers.
+              Are you sure you want to delete this officer entry? This action cannot be undone
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

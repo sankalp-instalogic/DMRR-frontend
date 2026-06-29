@@ -11,6 +11,7 @@ import dayjs from "dayjs";
 import { DocumentPreviewModal } from "../../components/DocumentPreviewModal";
 import { cn } from "../../components/ui/utils";
 import { buttonVariants } from "../../components/ui/button";
+import formattedDate from "../../../utils/dateFormatter";
 
 type RecordType = {
   id: string;
@@ -245,7 +246,7 @@ export function FundsDistributedOther() {
       {
         headerName: "Date of Issuing",
         field: "issuingDate",
-        valueFormatter: (params) => new Date(params.value).toLocaleDateString(),
+        valueFormatter: (params) => formattedDate(params.value),
         flex: 1,
       },
       {
@@ -626,7 +627,7 @@ export function FundsDistributedOther() {
                   Date of Issuing
                 </p>
                 <p className="font-semibold text-[16px] text-[#0B1F4D]">
-                  {new Date(viewRecord.issuingDate).toLocaleDateString()}
+                  {formattedDate(viewRecord.issuingDate)}
                 </p>
               </div>
             </div>

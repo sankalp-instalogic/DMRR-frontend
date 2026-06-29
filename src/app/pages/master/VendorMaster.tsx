@@ -275,7 +275,7 @@ export function VendorMaster() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1>Vendor Master</h1>
+          <h1 className="text-[30px] font-bold text-primary">Vendor Master</h1>
           <p className="text-sm text-muted-foreground">
             Manage vendor and supplier information
           </p>
@@ -449,8 +449,7 @@ export function VendorMaster() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              vendor and remove its data from our servers.
+              Are you sure you want to delete this vendor entry? This action cannot be undone
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

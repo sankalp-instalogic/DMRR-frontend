@@ -886,7 +886,7 @@ export function ProjectExecution() {
   return (
     <div className="space-y-6">
       <div>
-        <h1>Project Execution & Monitoring</h1>
+        <h1 className="text-[30px] font-bold text-primary">Project Execution & Monitoring</h1>
         <p className="text-sm text-muted-foreground">
           Manage project progress and monitoring
         </p>

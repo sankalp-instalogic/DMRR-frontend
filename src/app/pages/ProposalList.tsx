@@ -9,11 +9,12 @@ import {
   Building2,
   Calendar,
 } from "lucide-react";
-import { Input, Select } from "antd"; // Imported antd components
+import { Input, Select } from "antd";
 import type { ColDef, ICellRendererParams } from "ag-grid-community";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { useQuery } from "@tanstack/react-query";
-import { Table } from "../components/Table"; // Adjust this import path to your Custom Table
+import { Table } from "../components/Table";
+import formattedDate from "../../utils/dateFormatter";
 
 // Define the structure of a single item
 interface Proposal {
@@ -202,15 +203,6 @@ export function ProposalList() {
     }
   };
 
-  const formatDate = (utcDate: string) => {
-    return new Date(utcDate).toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-  };
-
-  // Define AG Grid Columns mapping your old table structure
   const columnDefs = useMemo<ColDef[]>(
     () => [
       {
@@ -306,7 +298,7 @@ export function ProposalList() {
         cellRenderer: (params: ICellRendererParams<Proposal>) => (
           <div className="flex items-center gap-1 text-sm text-muted-foreground h-full">
             <Calendar className="size-3 shrink-0" />
-            {formatDate(params.value)}
+            {formattedDate(params.value)}
           </div>
         ),
       },
@@ -340,7 +332,7 @@ export function ProposalList() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1>Proposal List</h1>
+          <h1 className="text-[30px] font-bold text-primary">Proposal List</h1>
           <p className="text-sm text-muted-foreground">
             View and manage all proposals across stages
           </p>

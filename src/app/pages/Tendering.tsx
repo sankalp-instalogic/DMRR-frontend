@@ -369,7 +369,7 @@ export function Tendering() {
   return (
     <div className="space-y-6">
       <div>
-        <h1>Tendering</h1>
+        <h1 className="text-[30px] font-bold text-primary">Tendering</h1>
         <p className="text-[14px] font-medium text-gray-500 mt-1">
           Manage tender activities
         </p>

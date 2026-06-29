@@ -1,7 +1,13 @@
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { AgGridReact } from "ag-grid-react";
-import type { ColDef, RowClickedEvent, RowClassRules } from "ag-grid-community";
-import { Button } from "./ui/button"; // Adjust the path to your Button component
+import type { 
+  ColDef, 
+  RowClickedEvent, 
+  RowClassRules, 
+  GridReadyEvent, 
+  GridSizeChangedEvent 
+} from "ag-grid-community";
+import { Button } from "./ui/button";
 
 interface DataTableProps {
   rowData: any[];
@@ -28,24 +34,63 @@ export function Table({
   onRowClicked,
   rowClassRules,
 }: DataTableProps) {
-  // Sensible defaults that can be overridden by the parent if needed
   const baseDefaultColDef = useMemo(
     () => ({
       sortable: true,
       filter: true,
       resizable: true,
+      minWidth: 100, 
       ...defaultColDef,
     }),
     [defaultColDef],
   );
 
+  // CHANGED: Use sizeColumnsToFit instead of autoSizeAllColumns
+  const sizeColumnsToFit = useCallback((params: GridReadyEvent | GridSizeChangedEvent) => {
+    params.api.sizeColumnsToFit();
+  }, []);
+
+  const finalColumnDefs = useMemo(() => {
+    const hasSrNoColumn = columnDefs.some((col) => {
+      const field = col.field?.toLowerCase();
+      const headerName = col.headerName?.toLowerCase();
+
+      return (
+        field === "srno" ||
+        field === "serialno" ||
+        field === "serialnumber" ||
+        field === "sno" ||
+        headerName === "sr no" ||
+        headerName === "sr. no" ||
+        headerName === "serial no" ||
+        headerName === "s.no"
+      );
+    });
+
+    if (hasSrNoColumn) return columnDefs;
+
+    const srNoColumn: ColDef = {
+      headerName: "Sr No.",
+      width: 90,
+      minWidth: 80,
+      maxWidth: 100,
+      sortable: false,
+      filter: false,
+      resizable: false,
+      valueGetter: (params) => {
+        return (page - 1) * rowData.length + (params?.node?.rowIndex ?? 0) + 1;
+      },
+    };
+
+    return [srNoColumn, ...columnDefs];
+  }, [columnDefs, page, rowData.length]);
+
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm flex flex-col w-full">
-      {/* AG Grid */}
       <div className="w-full ag-theme-alpine" style={{ height: "auto" }}>
         <AgGridReact
           rowData={rowData}
-          columnDefs={columnDefs}
+          columnDefs={finalColumnDefs}
           defaultColDef={baseDefaultColDef}
           rowHeight={rowHeight}
           animateRows={true}
@@ -54,10 +99,13 @@ export function Table({
           onRowClicked={onRowClicked}
           rowClassRules={rowClassRules}
           rowClass={onRowClicked ? "clickable-row" : undefined}
+          
+          // CHANGED: Attach the new handler here
+          onGridReady={sizeColumnsToFit}
+          onGridSizeChanged={sizeColumnsToFit}
         />
       </div>
 
-      {/* Custom Server-Side Pagination */}
       {totalCount > 0 && (
         <div className="flex items-center justify-between px-6 py-4 border-t mt-auto">
           <span className="text-sm text-muted-foreground">

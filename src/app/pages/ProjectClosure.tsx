@@ -526,7 +526,7 @@ export function ProjectClosure() {
   return (
     <div className="space-y-6">
       <div>
-        <h1>Project Completion & Closure</h1>
+        <h1 className="text-[30px] font-bold text-primary">Project Completion & Closure</h1>
         <p className="text-sm text-muted-foreground">
           Final asset handover and administrative closure
         </p>

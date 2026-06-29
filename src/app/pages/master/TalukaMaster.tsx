@@ -29,7 +29,7 @@ import {
   Checkbox as AntdCheckbox,
   Select as AntdSelect,
 } from "antd";
-import { Checkbox } from "../../components/ui/checkbox";
+import type { ColDef } from "ag-grid-community";
 import {
   Form,
   FormControl,
@@ -180,7 +180,7 @@ export function TalukaMaster() {
   };
 
   // --- AG GRID COLUMN DEFINITIONS ---
-  const columnDefs = useMemo(
+  const columnDefs = useMemo<ColDef[]>(
     () => [
       { field: "code", headerName: "Taluka Code", flex: 1 },
       { field: "name", headerName: "Taluka Name", flex: 1 },
@@ -282,7 +282,7 @@ export function TalukaMaster() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1>Taluka Master</h1>
+          <h1 className="text-[30px] font-bold text-primary">Taluka Master</h1>
           <p className="text-sm text-muted-foreground">
             Manage taluka information
           </p>
@@ -370,7 +370,9 @@ export function TalukaMaster() {
                         className="w-full"
                         placeholder="Select District"
                         value={field.value || undefined}
-                        getPopupContainer={(trigger) => trigger.parentElement as HTMLElement}
+                        getPopupContainer={(trigger) =>
+                          trigger.parentElement as HTMLElement
+                        }
                         onChange={field.onChange}
                         options={districts?.items?.map((district: any) => ({
                           value: district.id,
@@ -462,8 +464,8 @@ export function TalukaMaster() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              taluka and remove its data from our servers.
+              Are you sure you want to delete this taluka entry? This action
+              cannot be undone
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -2,9 +2,11 @@ import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate"; // Adjust path as needed
-import { Plus, Download } from "lucide-react";
+import { Plus, Download, Eye } from "lucide-react"; // Added Eye icon here
 import { Table } from "../../components/Table";
 import dayjs from "dayjs";
+import { DocumentPreviewModal } from "../../components/DocumentPreviewModal";
+import type { ColDef } from "ag-grid-community";
 
 import {
   Dialog,
@@ -48,9 +50,15 @@ export function NDMAGuidelines() {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(20);
 
-  // Modal & File States
+  // Add Guideline Modal & File States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  // Document Preview States
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [previewDocumentId, setPreviewDocumentId] = useState<string | null>(
+    null,
+  );
 
   const form = useForm<FormValues>({
     defaultValues: {
@@ -72,7 +80,7 @@ export function NDMAGuidelines() {
     queryFn: async () => {
       const response = await axiosPrivate.get(
         "/api/v1/masters/ndma-guidelines",
-        { params: { page, pageSize } }
+        { params: { page, pageSize } },
       );
       return response.data;
     },
@@ -84,7 +92,7 @@ export function NDMAGuidelines() {
     queryFn: async () => {
       const response = await axiosPrivate.get(
         "/api/v1/masters/disaster-types",
-        { params: { page: 1, pageSize: 100 } }
+        { params: { page: 1, pageSize: 100 } },
       );
       return response.data;
     },
@@ -97,7 +105,7 @@ export function NDMAGuidelines() {
 
   const disasterMap = useMemo(() => {
     return Object.fromEntries(
-      disasterTypes.map((disaster: any) => [disaster.id, disaster.name])
+      disasterTypes.map((disaster: any) => [disaster.id, disaster.name]),
     );
   }, [disasterTypes]);
 
@@ -122,7 +130,7 @@ export function NDMAGuidelines() {
       const response = await axiosPrivate.post(
         "/api/v1/Documents/upload",
         formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
+        { headers: { "Content-Type": "multipart/form-data" } },
       );
       return response.data;
     },
@@ -143,7 +151,7 @@ export function NDMAGuidelines() {
       const response = await axiosPrivate.post(
         "/api/v1/masters/ndma-guidelines",
         newData,
-        { headers: { "Content-Type": "application/json" } }
+        { headers: { "Content-Type": "application/json" } },
       );
       return response.data;
     },
@@ -168,7 +176,7 @@ export function NDMAGuidelines() {
     try {
       const response = await axiosPrivate.get(
         `/api/v1/Documents/${documentId}/download`,
-        { responseType: "blob" }
+        { responseType: "blob" },
       );
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -193,6 +201,12 @@ export function NDMAGuidelines() {
     } catch (error) {
       console.error("File download failed:", error);
     }
+  };
+
+  const handlePreview = (documentId: string) => {
+    if (!documentId) return;
+    setPreviewDocumentId(documentId);
+    setIsPreviewOpen(true);
   };
 
   const handleOpenAdd = () => {
@@ -238,7 +252,7 @@ export function NDMAGuidelines() {
   };
 
   // --- AG GRID COLUMN DEFINITIONS ---
-  const columnDefs = useMemo(
+  const columnDefs = useMemo<ColDef[]>(
     () => [
       { field: "code", headerName: "Guideline Code", flex: 1 },
       {
@@ -282,10 +296,19 @@ export function NDMAGuidelines() {
         flex: 0.5,
         sortable: false,
         filter: false,
+        pinned: "right",
         cellRenderer: (params: any) => {
           const isDownloadable = !!params.data.latestDocumentId;
           return (
             <div className="flex gap-2 mt-1">
+              <button
+                className="p-2 hover:bg-muted rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Preview"
+                disabled={!isDownloadable}
+                onClick={() => handlePreview(params.data.latestDocumentId)}
+              >
+                <Eye className="size-4" />
+              </button>
               <button
                 className="p-2 hover:bg-muted rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Download"
@@ -293,7 +316,7 @@ export function NDMAGuidelines() {
                 onClick={() =>
                   handleDownload(
                     params.data.latestDocumentId,
-                    params.data.title
+                    params.data.title,
                   )
                 }
               >
@@ -304,7 +327,7 @@ export function NDMAGuidelines() {
         },
       },
     ],
-    [disasterMap]
+    [disasterMap],
   );
 
   if (isLoading || isDisastersLoading) {
@@ -322,7 +345,9 @@ export function NDMAGuidelines() {
           <div className="flex items-start gap-3">
             <div className="text-red-500">⚠️</div>
             <div>
-              <h3 className="font-semibold text-red-800">Something went wrong</h3>
+              <h3 className="font-semibold text-red-800">
+                Something went wrong
+              </h3>
               <p className="mt-1 text-sm text-red-600">
                 {(error as Error).message}
               </p>
@@ -337,7 +362,7 @@ export function NDMAGuidelines() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1>NDMA Guidelines</h1>
+          <h1 className="text-[30px] font-bold text-primary">NDMA Guidelines</h1>
           <p className="text-sm text-muted-foreground">
             National Disaster Management Authority guidelines repository
           </p>
@@ -411,7 +436,10 @@ export function NDMAGuidelines() {
                   <FormItem className="md:col-span-2">
                     <FormLabel>Title</FormLabel>
                     <FormControl>
-                      <AntdInput placeholder="Enter guideline title" {...field} />
+                      <AntdInput
+                        placeholder="Enter guideline title"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -456,7 +484,7 @@ export function NDMAGuidelines() {
                       <AntdDatePicker
                         className="w-full"
                         value={field.value ? dayjs(field.value) : null}
-                        onChange={(date, dateString) =>
+                        onChange={(_date, dateString) =>
                           field.onChange(dateString)
                         }
                         getPopupContainer={(trigger) =>
@@ -542,6 +570,16 @@ export function NDMAGuidelines() {
           </Form>
         </DialogContent>
       </Dialog>
+
+      {/* --- PREVIEW MODAL --- */}
+      <DocumentPreviewModal
+        isOpen={isPreviewOpen}
+        onClose={() => {
+          setIsPreviewOpen(false);
+          setPreviewDocumentId(null);
+        }}
+        documentId={previewDocumentId}
+      />
     </div>
   );
 }

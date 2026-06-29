@@ -256,7 +256,7 @@ export function DistrictMaster() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1>District Master</h1>
+          <h1 className="text-[30px] font-bold text-primary">District Master</h1>
           <p className="text-sm text-muted-foreground">
             Manage district information
           </p>
@@ -426,8 +426,7 @@ export function DistrictMaster() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              district and remove its data from our servers.
+              Are you sure you want to delete this district entry? This action cannot be undone
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -426,7 +426,7 @@ export function ResearchAndGrants() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[30px] font-bold text-[#0B1F4D]">
+        <h1 className="text-[30px] font-bold text-primary">
           Research & Grants
         </h1>
         <p className="text-[14px] font-medium text-gray-500 mt-1">

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import {
-  Plus, Edit, Power, History, Upload, Download, Search, Eye
+  Plus, Edit, Power, History, Upload, Download, Search
 } from "lucide-react";
 
 type HierarchyLevel = "state" | "district" | "taluka";

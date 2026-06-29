@@ -198,7 +198,7 @@ export function ProcurementDashboard() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#0B1F4D]">
+          <h1 className="text-[30px] font-bold text-primary">
             Procurement Dashboard
           </h1>
           <p className="text-sm text-muted-foreground">

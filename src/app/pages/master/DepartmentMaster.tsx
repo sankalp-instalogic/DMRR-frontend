@@ -260,7 +260,7 @@ export function DepartmentMaster() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1>Department Master</h1>
+          <h1 className="text-[30px] font-bold text-primary">Department Master</h1>
           <p className="text-sm text-muted-foreground">
             Manage department information
           </p>
@@ -421,8 +421,7 @@ export function DepartmentMaster() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              department and remove its data from our servers.
+              Are you sure you want to delete this department entry? This action cannot be undone
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

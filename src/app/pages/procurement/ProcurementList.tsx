@@ -180,7 +180,7 @@ export function ProcurementList() {
     <div className="space-y-6 w-full">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#0B1F4D]">
+          <h1 className="text-[30px] font-bold text-primary">
             Procurement List
           </h1>
           <p className="text-sm text-muted-foreground">
