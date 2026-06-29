@@ -1,6 +1,10 @@
 import { useMemo, useState } from "react";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import {
+  useQuery,
+  keepPreviousData,
+  useQueryClient,
+} from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { getBillingSectionsConfig } from "../../../constants/billingYesNoQuestions";
 import { Table } from "../components/Table";
@@ -26,6 +30,7 @@ export function Billing() {
   const [ddoFile, setDdoFile] = useState<File | null>(null);
   const [treasuryFile, setTreasuryFile] = useState<File | null>(null);
   const [vendorFile, setVendorFile] = useState<File | null>(null);
+  const queryClient = useQueryClient();
 
   const [formData, setFormData] = useState({
     ddmrReceived: "",
@@ -125,7 +130,9 @@ export function Billing() {
   const fetchBillHistory = async ({ queryKey }: any) => {
     const [_key, billId] = queryKey;
     if (!billId) return [];
-    const response = await axiosPrivate.get(`/api/v1/Billing/${billId}/history`);
+    const response = await axiosPrivate.get(
+      `/api/v1/Billing/${billId}/history`,
+    );
     return response.data;
   };
 
@@ -186,7 +193,7 @@ export function Billing() {
             : "N/A",
       },
     ],
-    []
+    [],
   );
 
   // --- SAVE SECTION 1 (DDMR) ---
@@ -361,6 +368,14 @@ export function Billing() {
         `/api/v1/Billing/${selectedBill.id}/stages`,
         payload,
       );
+
+      queryClient.invalidateQueries({
+        queryKey: ["billHistory", selectedBill.id],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["bills"],
+      });
 
       toast.success("Payment Order Section saved successfully!");
     } catch (error) {
@@ -681,7 +696,8 @@ export function Billing() {
                 }
               />
 
-              {formData[section.yesNoKey as keyof typeof formData] === "Yes" && (
+              {formData[section.yesNoKey as keyof typeof formData] ===
+                "Yes" && (
                 <div className={section.gridClass}>
                   {section.fields.map((field, index) => {
                     if (field.type === "empty")
