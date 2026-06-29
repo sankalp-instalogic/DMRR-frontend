@@ -8,6 +8,16 @@ import type { ColDef } from "ag-grid-community";
 import { Table } from "../components/Table";
 import { cn } from "../components/ui/utils";
 import { buttonVariants } from "../components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../components/ui/alert-dialog";
 
 // --- Type Definitions ---
 export interface Project {
@@ -143,6 +153,9 @@ export function ProjectClosure() {
 
   // --- State ---
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [projectToClose, setProjectToClose] = useState<string | number | null>(
+    null,
+  );
   const [activeAction, setActiveAction] = useState<
     "checklist" | "completion" | null
   >(null);
@@ -279,9 +292,11 @@ export function ProjectClosure() {
     onSuccess: () => {
       toast.success("Project Closed Successfully");
       queryClient.invalidateQueries({ queryKey: ["closures"] });
+      setProjectToClose(null); // Clear state to close modal
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.message || "Failed to close project");
+      setProjectToClose(null); // Clear state to close modal on error too
     },
   });
 
@@ -438,7 +453,8 @@ export function ProjectClosure() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      closeProjectMutation.mutate(project.projectId);
+                      // Open the confirmation dialog instead of mutating directly
+                      setProjectToClose(project.projectId);
                     }}
                     disabled={closeProjectMutation.isPending}
                     className={`px-4 py-2 mt-2 cursor-pointer text-white rounded-lg text-xs font-medium transition-colors ${
@@ -526,7 +542,9 @@ export function ProjectClosure() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[30px] font-bold text-primary">Project Completion & Closure</h1>
+        <h1 className="text-[30px] font-bold text-primary">
+          Project Completion & Closure
+        </h1>
         <p className="text-sm text-muted-foreground">
           Final asset handover and administrative closure
         </p>
@@ -805,6 +823,34 @@ export function ProjectClosure() {
           </div>
         )}
       </div>
+      <AlertDialog
+        open={!!projectToClose}
+        onOpenChange={() => setProjectToClose(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to close this project?. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="cursor-pointer">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="cursor-pointer bg-red-600 text-white hover:bg-red-700"
+              onClick={() => {
+                if (projectToClose) {
+                  closeProjectMutation.mutate(projectToClose);
+                }
+              }}
+            >
+              {closeProjectMutation.isPending ? "Closing..." : "Close Project"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
