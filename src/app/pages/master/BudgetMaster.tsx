@@ -521,7 +521,7 @@ export function BudgetMaster() {
                   nameKey="name"
                   label
                 >
-                  {dynamicPieData.map((entry, index) => (
+                  {dynamicPieData.map((_entry, index) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={COLORS[index % COLORS.length]}
