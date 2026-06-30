@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Search, BrainCircuit, FileText, CheckCircle, ExternalLink, HelpCircle } from "lucide-react";
+import { useAiAsk } from "../../hooks/useAi";
 
 const predefinedQuestions = [
   "What is the total cumulative budget allocated to Mumbai district?",
@@ -11,22 +12,47 @@ const predefinedQuestions = [
 export function AIDocumentIntelligence() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
-  const [response, setResponse] = useState(null);
+  type AIResponse = {
+    text: string;
+    confidence?: number;
+    citations: string[];
+    related: string[];
+    intent?: string;
+    language?: string;
+  } | null;
+  const [response, setResponse] = useState<AIResponse>(null);
+  const ask = useAiAsk();
 
-  const handleSearch = (q = query) => {
+  const handleSearch = async (q = query) => {
     if (!q) return;
     setQuery(q);
     setLoading(true);
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      const res = await ask.mutateAsync({ question: q });
+      const citations = (res.citations ?? []).map(
+        (c) => c.source || c.snippet || "source",
+      );
       setResponse({
-        text: `Based on the latest documents, the requested information for "${q}" is verified. The cumulative allocation stands at ₹1,200 Lakhs, and the TAC has recommended it with a conditional note on the environmental clearance. The DPR indicates minor technical deviations that require justification.`,
-        confidence: 94,
-        citations: ["DPR_MUM_001.pdf (Page 14)", "TAC_MoM_June2025.pdf (Page 2)"],
-        related: ["Technical_Sanction_MUM.pdf", "PMU_Review_Notes_001.pdf"]
+        text: res.answer,
+        // Grounded answers (FAQ/RAG with citations) read as higher confidence.
+        confidence: citations.length ? 92 : res.intent === "project_status" ? 88 : 75,
+        citations: citations.length ? citations : ["No source citations returned"],
+        related: [],
+        intent: res.intent ?? undefined,
+        language: res.language ?? undefined,
       });
+    } catch (err: any) {
+      setResponse({
+        text:
+          err?.response?.data?.message ||
+          "The assistant is temporarily unavailable. Please try again shortly.",
+        confidence: 0,
+        citations: [],
+        related: [],
+      });
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -85,14 +111,13 @@ export function AIDocumentIntelligence() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-border">
-            <div>
+            {/* <div>
               <h4 className="text-sm font-bold text-muted-foreground mb-2 flex items-center gap-1"><CheckCircle className="size-4"/> Confidence Score</h4>
               <div className="flex items-end gap-2">
                 <span className="text-3xl font-black text-accent">{response.confidence}%</span>
                 <span className="text-sm text-muted-foreground pb-1">High Accuracy</span>
               </div>
-            </div>
-
+            </div> */}
             <div>
               <h4 className="text-sm font-bold text-muted-foreground mb-3 flex items-center gap-1"><FileText className="size-4"/> Source Citations</h4>
               <ul className="space-y-2">

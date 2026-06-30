@@ -34,14 +34,13 @@ export function DocumentsStep(props: DocumentsStepProps) {
 
       <div>
         <label className="block text-sm font-medium mb-2">
-          Cost of Project (₹ Lakhs)
+          Cost of Project (₹ Lakhs)<span className="text-red-600">*</span>
         </label>
 
         {/* Ant Design Input replaces native input here */}
         <Input
           type="number"
           size="large"
-          placeholder="Optional"
           value={props.data.projectCost}
           onChange={(e) =>
             props.setData({

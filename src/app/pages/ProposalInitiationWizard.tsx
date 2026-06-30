@@ -3,6 +3,12 @@ import { useNavigate } from "react-router";
 import { CheckCircle2, ArrowRight, ArrowLeft, Send } from "lucide-react";
 import toast from "react-hot-toast";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
+import {
+  useAiPreflight,
+  useIngestDocument,
+  toAiAssessment,
+  type PreflightResult,
+} from "../../hooks/useAi";
 
 import { ProposalStepper } from "./proposalInitialiation/ProposalStepper";
 import { LocationStep } from "./proposalInitialiation/LocationStep";
@@ -21,6 +27,9 @@ function currentFinancialYear(): string {
 export function ProposalInitiationWizard() {
   const navigate = useNavigate();
   const axiosPrivate = useAxiosPrivate();
+  const preflight = useAiPreflight();
+  const ingestDocument = useIngestDocument();
+  const [aiResult, setAiResult] = useState<PreflightResult | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -68,17 +77,87 @@ export function ProposalInitiationWizard() {
     }
   };
 
-  const handleRunNdmaValidation = () => {
+  const handleRunNdmaValidation = async () => {
     setNdmaValidationStatus("running");
-    setNdmaValidationMessage("Running NDMA compliance validation...");
+    setNdmaValidationMessage(
+      step4Data.proposalDemandFile
+        ? "Running AI checks: duplicate detection + reading your document (OCR) + NDMA readiness. Large scans may take a minute or two..."
+        : "Running AI checks: duplicate detection + NDMA readiness...",
+    );
+    setAiResult(null);
 
-    // Simulate validation
-    setTimeout(() => {
+    const toISO = (d: string) => (d ? new Date(d).toISOString() : null);
+
+    try {
+      const result = await preflight.mutateAsync({
+        payload: {
+          proposalRefNo: null,
+          title: step2Data.sourceName
+            ? `Structural Mitigation - ${step2Data.sourceName}`
+            : "Structural Mitigation Proposal",
+          financialYear: currentFinancialYear(),
+          disasterTypeId: step1Data.disasterType || null,
+          districtId: step1Data.district || null,
+          talukaId: step1Data.taluka || null,
+          lineDepartmentId: step2Data.lineDepartment || null,
+          receivedFromSourceId: step2Data.proposalReceivedFrom || null,
+          proposalReceivedDate: toISO(step2Data.proposalReceivedDate),
+          sourceName: step2Data.sourceName || null,
+          markedToAuthorityId: step2Data.receivingAuthority || null,
+          dateReceivedByAuthority: toISO(step2Data.authorityReceivedDate),
+          receivingOfficerId: step2Data.officerInCharge || null,
+          receivingOfficerName: null,
+          ndmaGuidelineId: step3Data.ndmaGuideline || null,
+          costOfProjectLakhs: step4Data.projectCost ? Number(step4Data.projectCost) : null,
+          costEstimationLakhs: null,
+          forwardedToDepartmentId: null,
+          description: step2Data.sourceName || null,
+          documentTypeName:"ProposalDocument"
+        },
+        // The uploaded proposal document — readiness is assessed against this (bot OCRs it).
+        file: step4Data.proposalDemandFile,
+      });
+
+      setAiResult(result);
+
+      // Stage 1/2 — duplicate blocks initiation.
+      if (!result.canProceed) {
+        setNdmaValidationStatus("failed");
+        const matches =
+          result.existence?.matchingProjects
+            ?.slice(0, 3)
+            .map((m) => `• ${m.title ?? m.projectId} (${Math.round((m.similarity ?? 0) * 100)}%)`)
+            .join("\n") ?? "";
+        setNdmaValidationMessage(
+          `${result.blockReason ?? "This proposal appears to be a duplicate."}` +
+            (matches ? `\n\nClosest existing proposals:\n${matches}` : ""),
+        );
+        return;
+      }
+
+      // Stage 3 — readiness is non-blocking; surface the score + observations.
+      const r = result.readiness;
+      const score = r?.readinessScore ?? 0;
+      const passed = result.readinessPassed;
+      const missing = (r?.missingItems ?? []).slice(0, 6).map((m) => `• ${m}`).join("\n");
+      const recs = (r?.recommendations ?? []).slice(0, 6).map((m) => `• ${m}`).join("\n");
+
       setNdmaValidationStatus("success");
       setNdmaValidationMessage(
-        `NDMA Validation Passed:\n- Guideline compliance verified\n- Budget alignment confirmed\n- Technical specifications met`,
+        `Readiness: ${score}/100 (${r?.category ?? "Assessed"})${passed ? " — meets threshold" : " — below threshold (you can still submit; AI notes will be saved)"}.` +
+          (r?.executiveSummary ? `\n\n${r.executiveSummary}` : "") +
+          (missing ? `\n\nMissing items:\n${missing}` : "") +
+          (recs ? `\n\nRecommendations:\n${recs}` : ""),
       );
-    }, 2000);
+    } catch (err: any) {
+      // AI service unreachable: the .NET side fails soft, but guard the UI too.
+      setNdmaValidationStatus("failed");
+      setNdmaValidationMessage(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Could not run AI checks. Please try again.",
+      );
+    }
   };
 
   const handleSubmit = async () => {
@@ -115,6 +194,8 @@ export function ProposalInitiationWizard() {
       title: step2Data.sourceName
         ? `Structural Mitigation - ${step2Data.sourceName}`
         : "Structural Mitigation Proposal",
+      // Persist the AI assessment captured during the preflight gate.
+      aiAssessment: toAiAssessment(aiResult),
     };
 
     setIsSubmitting(true);
@@ -146,11 +227,27 @@ export function ProposalInitiationWizard() {
         formData.append("documentType", "1");
         formData.append("file", step4Data.proposalDemandFile);
 
-        await axiosPrivate.post("/api/v1/Documents/upload", formData, {
+        const uploadResponse = await axiosPrivate.post("/api/v1/Documents/upload", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
+
+        // 3. Ingest the uploaded proposal document into the AI "projects" corpus
+        //    (powers future duplicate/existence detection). Best-effort: never blocks submit.
+        const documentId = uploadResponse.data?.id;
+        if (documentId) {
+          toast.loading("Indexing document for AI...", { id: toastId });
+          try {
+            await ingestDocument.mutateAsync({
+              documentId,
+              collection: "projects",
+              title: payload.title,
+            });
+          } catch {
+            // ingestion is best-effort; the proposal is already saved
+          }
+        }
       }
 
       toast.success("Proposal and document submitted successfully!", {
