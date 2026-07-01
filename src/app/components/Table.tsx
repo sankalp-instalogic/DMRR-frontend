@@ -1,13 +1,14 @@
 import { useMemo, useCallback } from "react";
 import { AgGridReact } from "ag-grid-react";
-import type { 
-  ColDef, 
-  RowClickedEvent, 
-  RowClassRules, 
-  GridReadyEvent, 
-  GridSizeChangedEvent 
+import type {
+  ColDef,
+  RowClickedEvent,
+  RowClassRules,
+  GridReadyEvent,
+  GridSizeChangedEvent,
 } from "ag-grid-community";
 import { Button } from "./ui/button";
+import { useSidebar } from "../../context/SidebarContext";
 
 interface DataTableProps {
   rowData: any[];
@@ -34,21 +35,38 @@ export function Table({
   onRowClicked,
   rowClassRules,
 }: DataTableProps) {
+  const { sidebarOpen } = useSidebar();
+
   const baseDefaultColDef = useMemo(
     () => ({
       sortable: true,
       filter: true,
       resizable: true,
-      minWidth: 100, 
+      minWidth: 100,
       ...defaultColDef,
     }),
     [defaultColDef],
   );
 
-  // CHANGED: Use sizeColumnsToFit instead of autoSizeAllColumns
-  const sizeColumnsToFit = useCallback((params: GridReadyEvent | GridSizeChangedEvent) => {
-    params.api.sizeColumnsToFit();
-  }, []);
+  // CHANGED: Dynamically size based on sidebar state
+  const handleColumnSizing = useCallback(
+    (params: GridReadyEvent | GridSizeChangedEvent) => {
+      if (!params?.api) return;
+
+      if (sidebarOpen) {
+        // Auto-size columns to fit their content
+        const allColumns = params.api.getColumns();
+        if (allColumns) {
+          const columnIds = allColumns.map((col) => col.getId());
+          params.api.autoSizeColumns(columnIds);
+        }
+      } else {
+        // Stretch columns to fill available grid width
+        params.api.sizeColumnsToFit();
+      }
+    },
+    [sidebarOpen], // Re-evaluates when sidebar toggles
+  );
 
   const finalColumnDefs = useMemo(() => {
     const hasSrNoColumn = columnDefs.some((col) => {
@@ -99,10 +117,9 @@ export function Table({
           onRowClicked={onRowClicked}
           rowClassRules={rowClassRules}
           rowClass={onRowClicked ? "clickable-row" : undefined}
-          
-          // CHANGED: Attach the new handler here
-          onGridReady={sizeColumnsToFit}
-          onGridSizeChanged={sizeColumnsToFit}
+          // CHANGED: Attach dynamic sizing handler
+          onGridReady={handleColumnSizing}
+          onGridSizeChanged={handleColumnSizing}
         />
       </div>
 

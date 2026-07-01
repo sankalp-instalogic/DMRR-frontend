@@ -259,6 +259,7 @@ export function Tendering() {
             <input
               type="file"
               className="hidden"
+              accept=".csv,.xls,.xlsx,.pdf,image/*"
               onChange={handleDocumentUpload(docKey)}
             />
           </label>
@@ -343,7 +344,7 @@ export function Tendering() {
               <div className="flex items-center h-full">
                 <button
                   onClick={() => setSelectedTender(tender)}
-                  className="px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-100 rounded-lg flex items-center justify-center gap-1.5 hover:bg-blue-100 transition-all text-xs font-medium"
+                  className="px-3 py-1.5 cursor-pointer bg-blue-50 text-blue-700 border border-blue-100 rounded-lg flex items-center justify-center gap-1.5 hover:bg-blue-100 transition-all text-xs font-medium"
                 >
                   <FileText size={14} />
                   Open Details
@@ -403,6 +404,7 @@ export function Tendering() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 L1 Vendor Identified?
+                <span className="text-red-500">*</span>
               </label>
               <div className="flex items-center h-10">
                 <Radio.Group
@@ -459,6 +461,7 @@ export function Tendering() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 L1 Cost (Lakhs)
+                <span className="text-red-500">*</span>
               </label>
               <Input
                 type="number"
@@ -475,6 +478,7 @@ export function Tendering() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Work Order Issued?
+                <span className="text-red-500">*</span>
               </label>
               <div className="flex items-center h-10">
                 <Radio.Group

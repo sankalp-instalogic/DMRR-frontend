@@ -431,7 +431,7 @@ export function ProposalDetail() {
                 </div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                {/* <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
                   <IndianRupee className="size-3" /> Budget Received
                 </div>
                 <div className="text-2xl font-bold text-[#1E5AA8]">
@@ -444,7 +444,7 @@ export function ProposalDetail() {
                 </div>
                 <div className="text-2xl font-bold text-[#059669]">
                   {formatCurrencyLakhs(proposalData?.budgetUtilized)}
-                </div>
+                </div> */}
               </div>
             </div>
           </div>

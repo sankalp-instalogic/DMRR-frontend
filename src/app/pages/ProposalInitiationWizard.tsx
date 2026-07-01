@@ -310,8 +310,8 @@ export function ProposalInitiationWizard() {
       case 3:
         return Boolean(step3Data.ndmaGuideline);
       case 4:
-        // Ignoring file validation for now; validating project cost only
-        return Boolean(step4Data.projectCost);
+        // Cost of project and file validation are optional for enabling the Next/Submit button
+        return true;
       default:
         return false;
     }

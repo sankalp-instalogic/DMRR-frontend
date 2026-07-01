@@ -352,7 +352,7 @@ export function GenericEvaluation() {
         ? new Date(momDate).toISOString()
         : meetingDateTime;
 
-      const payload = {
+const payload = {
         proposalId: proposalId,
         committee: config.id,
         meetingDate: meetingDateTime,
@@ -362,10 +362,13 @@ export function GenericEvaluation() {
         rejectionReason: actionDecision === DecisionEnum.Reject ? comments : "",
         revisionReason:
           actionDecision === DecisionEnum.Revision ? comments : "",
-        members: members.map((m) => ({
-          memberName: m.name,
-          designation: m.designation,
-        })),
+        // Update this line to filter out empty rows
+        members: members
+          .filter(m => m.name.trim() !== "" || m.designation.trim() !== "")
+          .map((m) => ({
+            memberName: m.name,
+            designation: m.designation,
+          })),
       };
 
       await axiosPrivate.post("/api/v1/Committees/evaluation", payload);
@@ -442,15 +445,13 @@ export function GenericEvaluation() {
   });
 
   // --- VALIDATION HANDLERS ---
-  const handleForwardToNextStage = () => {
+const handleForwardToNextStage = () => {
     if (
       !meetingDate ||
       !meetingTime ||
       !attendanceSheet ||
-      !momFile ||
-      members.some((m) => !m.name || !m.designation)
+      !momFile
     ) {
-      console.log(meetingDate, meetingTime, attendanceSheet, momFile, members);
       toast.error(
         "Please complete all mandatory fields and upload required files.",
       );
@@ -472,12 +473,11 @@ export function GenericEvaluation() {
     revisedEvaluateMutation.mutate();
   };
 
-  const handleRejectOrRevision = (type: number) => {
+const handleRejectOrRevision = (type: number) => {
     if (
       !meetingDate ||
       !meetingTime ||
       !attendanceSheet ||
-      members.some((m) => !m.name || !m.designation) ||
       !comments.trim()
     ) {
       toast.error(
@@ -611,6 +611,7 @@ export function GenericEvaluation() {
                     {activeTab === "revised"
                       ? "Approval Date (MoM Date)"
                       : "Meeting Date"}
+                      <span className="text-red-500">*</span>
                   </label>
                   <DatePicker
                     size="large"
@@ -640,6 +641,7 @@ export function GenericEvaluation() {
                     {activeTab === "revised"
                       ? "Committee Decision"
                       : "Meeting Time"}
+                      <span className="text-red-500">*</span>
                   </label>
                   {activeTab === "revised" ? (
                     <Input
@@ -666,7 +668,7 @@ export function GenericEvaluation() {
               {activeTab === "new" && (
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <h4 className="font-semibold text-sm">Members Present</h4>
+                    <h4 className="font-semibold text-sm">Members Present <span className="text-muted-foreground font-normal">(Optional)</span></h4>
                     <button
                       type="button"
                       onClick={addRow}
@@ -746,7 +748,7 @@ export function GenericEvaluation() {
               {activeTab === "new" && (
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    Upload Attendance Sheet
+                    Upload Attendance Sheet <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="file"
@@ -769,6 +771,7 @@ export function GenericEvaluation() {
                 <div>
                   <label className="block text-sm font-medium mb-2">
                     Committee Decision
+                    <span className="text-red-500">*</span>
                   </label>
                   <div className="flex gap-4">
                     <button
@@ -810,6 +813,7 @@ export function GenericEvaluation() {
                 <div>
                   <label className="block text-sm font-medium mb-2">
                     Upload Document (MoM)
+                    <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="file"
@@ -848,6 +852,7 @@ export function GenericEvaluation() {
                   <div>
                     <label className="block text-sm font-medium mb-2 text-green-800">
                       Upload MoM file
+                      <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="file"

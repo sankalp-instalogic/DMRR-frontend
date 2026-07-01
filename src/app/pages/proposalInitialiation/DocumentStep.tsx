@@ -34,7 +34,7 @@ export function DocumentsStep(props: DocumentsStepProps) {
 
       <div>
         <label className="block text-sm font-medium mb-2">
-          Cost of Project (₹ Lakhs)<span className="text-red-600">*</span>
+          Cost of Project (₹ Lakhs)
         </label>
 
         {/* Ant Design Input replaces native input here */}
@@ -42,6 +42,7 @@ export function DocumentsStep(props: DocumentsStepProps) {
           type="number"
           size="large"
           value={props.data.projectCost}
+          placeholder="Optional"
           onChange={(e) =>
             props.setData({
               ...props.data,
@@ -49,6 +50,7 @@ export function DocumentsStep(props: DocumentsStepProps) {
             })
           }
           className="w-full rounded-lg"
+          onWheel={(e) => e.currentTarget.blur()}
         />
       </div>
 

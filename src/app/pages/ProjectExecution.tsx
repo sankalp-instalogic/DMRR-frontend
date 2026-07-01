@@ -571,6 +571,7 @@ export function ProjectExecution() {
                 }
                 className="w-full rounded-lg"
                 size="large"
+                minDate={dayjs()}
               />
             </div>
             <div>

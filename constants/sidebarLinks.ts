@@ -136,11 +136,11 @@ export const sidebarLinks: NavItem[] = [
     ],
   },
 
-  {
-    title: "Document Management",
-    to: "/documents",
-    icon: FolderOpen,
-  },
+  // {
+  //   title: "Document Management",
+  //   to: "/documents",
+  //   icon: FolderOpen,
+  // },
 
   {
     title: "AI Document Intelligence",
@@ -148,11 +148,11 @@ export const sidebarLinks: NavItem[] = [
     icon: Brain,
   },
 
-  {
-    title: "Reports & Analytics",
-    to: "/reports",
-    icon: BarChart3,
-  },
+  // {
+  //   title: "Reports & Analytics",
+  //   to: "/reports",
+  //   icon: BarChart3,
+  // },
 
   {
     title: "Audit Trail",
