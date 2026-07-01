@@ -11,9 +11,9 @@ export default function Header() {
   const profileRef = useRef<HTMLDivElement>(null);
 
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { auth, logout } = useAuth();
 
-    const handleLogout = () => {
+  const handleLogout = () => {
     logout();
     navigate("/login");
   };
@@ -34,7 +34,6 @@ export default function Header() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-border shadow-sm">
@@ -89,11 +88,11 @@ export default function Header() {
 
               <div className="text-left hidden sm:block">
                 <p className="text-sm font-semibold text-[#0B1F4D] leading-none mb-1">
-                  Admin User
+                  {auth?.username ?? "Unknown User"}
                 </p>
 
                 <p className="text-[10px] text-[#64748B] leading-none">
-                  officer@disaster-management.gov
+                  {auth?.role ?? "No Role"}
                 </p>
               </div>
 

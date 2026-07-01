@@ -41,7 +41,6 @@ const formatBytes = (bytes: number, decimals = 2) => {
 export function DocumentPreviewModal({ isOpen, onClose, documentId }: DocumentPreviewModalProps) {
   const axios = useAxiosPrivate();
   const [fileUrl, setFileUrl] = useState<string | null>(null);
-  console.log("sankalp",documentId)
 
   // 1. Fetch Document Metadata
   const { 
