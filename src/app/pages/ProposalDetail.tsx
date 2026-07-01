@@ -243,23 +243,23 @@ export function ProposalDetail() {
         pinned: "right",
         filter: false,
         cellRenderer: (params: any) => (
-          <div className="flex items-center gap-2 h-full">
+          <div className="flex items-center gap-4 h-full">
             <button
               onClick={() => handlePreview(params.data.id)}
-              className="inline-flex cursor-pointer items-center gap-1 px-2 py-1 border border-border rounded hover:bg-muted transition-colors text-xs"
+              className="cursor-pointer text-slate-500 hover:text-primary transition-colors flex items-center"
+              title="Preview"
             >
-              <Eye className="size-3" />
-              Preview
+              <Eye className="size-5" />
             </button>
 
             <button
               onClick={() =>
                 handleDownload(params.data.id, params.data.fileName)
               }
-              className="inline-flex cursor-pointer items-center gap-1 px-2 py-1 border border-border rounded hover:bg-muted transition-colors text-xs"
+              className="cursor-pointer text-slate-500 hover:text-primary transition-colors flex items-center"
+              title="Download"
             >
-              <Download className="size-3" />
-              Download
+              <Download className="size-5" />
             </button>
           </div>
         ),
