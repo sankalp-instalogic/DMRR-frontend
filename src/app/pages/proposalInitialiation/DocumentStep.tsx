@@ -34,7 +34,7 @@ export function DocumentsStep(props: DocumentsStepProps) {
 
       <div>
         <label className="block text-sm font-medium mb-2">
-          Cost of Project (₹ Lakhs)
+          Cost of Project
         </label>
 
         {/* Ant Design Input replaces native input here */}
