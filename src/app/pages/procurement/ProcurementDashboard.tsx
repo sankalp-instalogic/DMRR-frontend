@@ -5,6 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Select } from "antd";
 import type { ColDef } from "ag-grid-community";
 import { Table } from "../../components/Table"; // Adjust the path to where your Table component is saved
+import { cn } from "../../components/ui/utils";
+import { buttonVariants } from "../../components/ui/button";
 
 // --- TypeScript Interfaces ---
 export interface ProcurementItem {
@@ -161,7 +163,6 @@ export function ProcurementDashboard() {
         field: "awardCostInclGstLakhs",
         headerName: "Award Cost (Lakhs)",
         valueFormatter: (params) => `₹${params.value?.toFixed(2) || "0.00"}`,
-        
       },
       {
         field: "deliveryPct",
@@ -264,13 +265,19 @@ export function ProcurementDashboard() {
               setDepartment("");
               setPage(1);
             }}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+            className={cn(
+              buttonVariants({ variant: "outline", size: "lg" }),
+              "cursor-pointer",
+            )}
           >
             Reset Filter
           </button>
           <button
             onClick={() => setPage(1)}
-            className="px-4 py-2 text-sm font-medium text-white bg-[#0B1F4D] hover:bg-opacity-90 rounded-lg transition-colors"
+            className={cn(
+              buttonVariants({ variant: "default", size: "lg" }),
+              "cursor-pointer",
+            )}
           >
             Apply Filter
           </button>

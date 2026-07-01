@@ -8,7 +8,8 @@ import type {
   GridSizeChangedEvent,
 } from "ag-grid-community";
 import { Button } from "./ui/button";
-import { useSidebar } from "../../context/SidebarContext";
+// You can remove useSidebar if it's no longer used for anything else in this component
+// import { useSidebar } from "../../context/SidebarContext";
 
 interface DataTableProps {
   rowData: any[];
@@ -35,8 +36,6 @@ export function Table({
   onRowClicked,
   rowClassRules,
 }: DataTableProps) {
-  const { sidebarOpen } = useSidebar();
-
   const baseDefaultColDef = useMemo(
     () => ({
       sortable: true,
@@ -48,24 +47,16 @@ export function Table({
     [defaultColDef],
   );
 
-  // CHANGED: Dynamically size based on sidebar state
+  // CHANGED: Unconditionally size columns to fit the available width
   const handleColumnSizing = useCallback(
     (params: GridReadyEvent | GridSizeChangedEvent) => {
-      if (!params?.api) return;
-
-      if (sidebarOpen) {
-        // Auto-size columns to fit their content
-        const allColumns = params.api.getColumns();
-        if (allColumns) {
-          const columnIds = allColumns.map((col) => col.getId());
-          params.api.autoSizeColumns(columnIds);
-        }
-      } else {
-        // Stretch columns to fill available grid width
+      if (params?.api) {
+        // This stretches columns to exactly fill the grid width, 
+        // preventing horizontal scrolling and empty space.
         params.api.sizeColumnsToFit();
       }
     },
-    [sidebarOpen], // Re-evaluates when sidebar toggles
+    [] 
   );
 
   const finalColumnDefs = useMemo(() => {
@@ -117,7 +108,6 @@ export function Table({
           onRowClicked={onRowClicked}
           rowClassRules={rowClassRules}
           rowClass={onRowClicked ? "clickable-row" : undefined}
-          // CHANGED: Attach dynamic sizing handler
           onGridReady={handleColumnSizing}
           onGridSizeChanged={handleColumnSizing}
         />

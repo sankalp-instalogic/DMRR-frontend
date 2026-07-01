@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "../../context/AuthContext";
 import { useSidebar } from "../../context/SidebarContext";
-import { Menu, X, Bell, User, ChevronDown, LogOut } from "lucide-react";
+import { Menu, X, User, ChevronDown, LogOut } from "lucide-react";
 
 export default function Header() {
   const { sidebarOpen, setSidebarOpen } = useSidebar();

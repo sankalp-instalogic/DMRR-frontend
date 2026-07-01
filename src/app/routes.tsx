@@ -52,6 +52,7 @@ import { ResearchAndGrants } from "./pages/non-structural/ResearchAndGrants";
 import { FundsDistributedDistricts } from "./pages/funds-distributed/FundsDistributedDistricts";
 import { FundsDistributedOther } from "./pages/funds-distributed/FundsDistributedOther";
 import { ProcurementTenderClosureDetails } from "./pages/procurement/tendering/ProcurementTenderClosureDetails";
+import { NotFound } from "./pages/NotFound";
 
 // const RedLineBlueLine = () => <UnderDevelopment moduleName="Red Line Blue Line Survey" />;
 // const NatureBasedSolutions = () => <UnderDevelopment moduleName="Nature Based Solutions" />;
@@ -182,5 +183,9 @@ export const router = createBrowserRouter([
         ],
       },
     ],
+  },
+  {
+    path: "*",
+    Component: NotFound,
   },
 ]);

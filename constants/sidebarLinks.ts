@@ -1,9 +1,9 @@
 import {
-  BarChart3,
+  // BarChart3,
   Brain,
   Database,
   FileText,
-  FolderOpen,
+  // FolderOpen,
   LayoutDashboard,
   Settings,
   Shield,
@@ -93,7 +93,7 @@ export const sidebarLinks: NavItem[] = [
         title: "A. Procurements",
         stateKey: "procurements",
         children: [
-          { title: "Procurement Dashboard", to: "/procurement" },
+          { title: "Procurement Dashboard", to: "/procurement", end: true },
           { title: "Procurement List", to: "/procurement-list" },
           // { title: "Procurement Register", to: "/procurement-register" },
           { title: "Proposal Scrutiny Committee", to: "/procurement-psc" },

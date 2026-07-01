@@ -38,10 +38,16 @@ interface ApiResponse {
   totalPages: number;
 }
 
+// Master Item Interface for dropdowns
+interface MasterItem {
+  id: string | number;
+  name: string;
+}
+
 const statuses = [
   "All Statuses",
   "Draft",
-  "Under Review",
+  "UnderReview",
   "Approved",
   "Pending",
   "Rejected",
@@ -55,27 +61,6 @@ const stages = [
   "TAC",
   "SEC",
   "SDMA",
-];
-const districts = [
-  "All Districts",
-  "Mumbai",
-  "Pune",
-  "Nagpur",
-  "Nashik",
-  "Aurangabad",
-  "Thane",
-  "Kolhapur",
-];
-const departments = [
-  "All Departments",
-  "SDRF",
-  "PWD",
-  "WRD",
-  "Health",
-  "Forest",
-  "Urban Development",
-  "Rural Development",
-  "PSU",
 ];
 
 export function ProposalList() {
@@ -93,6 +78,7 @@ export function ProposalList() {
 
   const axios = useAxiosPrivate();
 
+  // Fetch Proposals
   const { data, isLoading, isError } = useQuery<ApiResponse>({
     queryKey: ["proposals", page, pageSize],
     queryFn: async () => {
@@ -102,6 +88,28 @@ export function ProposalList() {
       return response.data;
     },
     retry: false,
+  });
+
+  // Fetch Districts dynamically
+  const { data: fetchedDistricts = [], isLoading: isLoadingDistricts } = useQuery<
+    MasterItem[]
+  >({
+    queryKey: ["districts"],
+    queryFn: async () => {
+      const response = await axios.get("/api/v1/masters/districts");
+      return response.data?.items || [];
+    },
+  });
+
+  // Fetch Line Departments dynamically
+  const { data: fetchedDepartments = [], isLoading: isLoadingDepartments } = useQuery<
+    MasterItem[]
+  >({
+    queryKey: ["lineDepartments"],
+    queryFn: async () => {
+      const response = await axios.get("/api/v1/masters/line-departments");
+      return response.data?.items || [];
+    },
   });
 
   // Apply filters from URL params on load
@@ -397,10 +405,16 @@ export function ProposalList() {
               value={districtFilter}
               onChange={setDistrictFilter}
               className="w-full"
-              options={districts.map((district) => ({
-                label: district,
-                value: district,
-              }))}
+              loading={isLoadingDistricts}
+              options={[
+                { label: "All Districts", value: "All Districts" },
+                ...(Array.isArray(fetchedDistricts)
+                  ? fetchedDistricts.map((district) => ({
+                      label: district.name,
+                      value: district.name,
+                    }))
+                  : []),
+              ]}
             />
           </div>
           <div>
@@ -411,10 +425,16 @@ export function ProposalList() {
               value={departmentFilter}
               onChange={setDepartmentFilter}
               className="w-full"
-              options={departments.map((dept) => ({
-                label: dept,
-                value: dept,
-              }))}
+              loading={isLoadingDepartments}
+              options={[
+                { label: "All Departments", value: "All Departments" },
+                ...(Array.isArray(fetchedDepartments)
+                  ? fetchedDepartments.map((dept) => ({
+                      label: dept.name,
+                      value: dept.name,
+                    }))
+                  : []),
+              ]}
             />
           </div>
         </div>
@@ -466,7 +486,7 @@ export function ProposalList() {
           page={page}
           totalPages={data?.totalPages || 0}
           onPageChange={setPage}
-          rowHeight={64} // Slightly increased to fit multiline content gracefully
+          rowHeight={64}
         />
       )}
     </div>

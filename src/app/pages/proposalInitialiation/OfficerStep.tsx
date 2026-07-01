@@ -118,7 +118,7 @@ export function OfficersStep({ data, setData }: OfficersStepProps) {
           size="large"
           className="w-full"
           value={data.proposalReceivedDate ? dayjs(data.proposalReceivedDate) : null}
-          onChange={(date, dateString) =>
+          onChange={(_date, dateString) =>
             setData({ ...data, proposalReceivedDate: dateString as string })
           }
         />
@@ -170,7 +170,7 @@ export function OfficersStep({ data, setData }: OfficersStepProps) {
           size="large"
           className="w-full"
           value={data.authorityReceivedDate ? dayjs(data.authorityReceivedDate) : null}
-          onChange={(date, dateString) =>
+          onChange={(_date, dateString) =>
             setData({ ...data, authorityReceivedDate: dateString as string })
           }
         />
