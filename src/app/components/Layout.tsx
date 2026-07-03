@@ -16,7 +16,10 @@ export function Layout() {
 
         {/* Main Content */}
         <main
+<<<<<<< HEAD
           id="main-content"
+=======
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
           className={`transition-all duration-300 min-w-0 p-6 min-h-[calc(100vh-73px)]
             ${sidebarOpen ? "ml-80 w-[calc(100%-20rem)]" : "w-full"}
           `}

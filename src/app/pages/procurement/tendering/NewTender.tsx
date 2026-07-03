@@ -148,11 +148,19 @@ export function NewTender() {
             <Button
               icon={<UploadIcon className="size-3.5" />}
               style={{
+<<<<<<< HEAD
                 backgroundColor: "var(--secondary)",
                 color: "var(--secondary-foreground)",
                 border: "none",
               }}
               className="hover:bg-info/90 font-medium"
+=======
+                backgroundColor: "#1E5AA8",
+                color: "white",
+                border: "none",
+              }}
+              className="hover:bg-blue-700 font-medium"
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
             >
               Upload Document
             </Button>
@@ -160,9 +168,15 @@ export function NewTender() {
         </td>
         <td className="px-6 py-4 text-center">
           {isUploaded ? (
+<<<<<<< HEAD
             <CheckCircle2 className="size-5 text-success mx-auto" />
           ) : (
             <XCircle className="size-5 text-destructive mx-auto" />
+=======
+            <CheckCircle2 className="size-5 text-green-500 mx-auto" />
+          ) : (
+            <XCircle className="size-5 text-red-500 mx-auto" />
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
           )}
         </td>
       </tr>
@@ -176,12 +190,20 @@ export function NewTender() {
       <div className="flex items-center gap-4">
         <Link
           to="/procurement-tendering/tenders"
+<<<<<<< HEAD
           className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground hover:text-primary"
+=======
+          className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground hover:text-[#0B1F4D]"
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
         >
           <ArrowLeft className="size-5" />
         </Link>
         <div>
+<<<<<<< HEAD
           <h1 className="text-2xl font-bold text-primary">
+=======
+          <h1 className="text-2xl font-bold text-[#0B1F4D]">
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
             Create New Tender
           </h1>
           <p className="text-muted-foreground mt-1">
@@ -191,9 +213,15 @@ export function NewTender() {
       </div>
 
       {/* Basic Information Section */}
+<<<<<<< HEAD
       <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
         <div className="px-6 py-4 border-b border-border bg-muted/50">
           <h2 className="text-lg font-semibold text-primary">
+=======
+      <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
+        <div className="px-6 py-4 border-b border-border bg-gray-50/50">
+          <h2 className="text-lg font-semibold text-[#0B1F4D]">
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
             Basic Information
           </h2>
         </div>
@@ -253,9 +281,15 @@ export function NewTender() {
       </div>
 
       {/* Tender Process Table */}
+<<<<<<< HEAD
       <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
         <div className="px-6 py-4 border-b border-border bg-muted/50">
           <h2 className="text-lg font-semibold text-primary">
+=======
+      <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
+        <div className="px-6 py-4 border-b border-border bg-gray-50/50">
+          <h2 className="text-lg font-semibold text-[#0B1F4D]">
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
             Tender Process
           </h2>
         </div>

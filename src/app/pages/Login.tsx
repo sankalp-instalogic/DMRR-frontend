@@ -123,7 +123,11 @@ export function Login() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-2">
+<<<<<<< HEAD
               <label htmlFor="login-username" className="text-sm font-semibold text-[#0F172A] ml-1">
+=======
+              <label className="text-sm font-semibold text-[#0F172A] ml-1">
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                 Username
               </label>
               <Controller
@@ -134,8 +138,12 @@ export function Login() {
                   <Input
                     {...field}
                     size="large"
+<<<<<<< HEAD
                     id="login-username"
                     prefix={<User className="h-5 w-5 text-gray-400 mr-1.5 transition-colors" aria-hidden="true" />}
+=======
+                    prefix={<User className="h-5 w-5 text-gray-400 mr-1.5 transition-colors" />}
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                     className="bg-[#F8F9FB] border-gray-200 rounded-xl text-[#0F172A] placeholder-gray-400 hover:border-[#1E5AA8] focus:border-[#1E5AA8] focus-within:border-[#1E5AA8] focus-within:ring-2 focus-within:ring-[#1E5AA8]/20 transition-all duration-200 py-3 [&>input]:bg-[#F8F9FB]"
                     placeholder="Enter your username"
                   />
@@ -149,7 +157,11 @@ export function Login() {
             </div>
 
             <div className="space-y-2">
+<<<<<<< HEAD
               <label htmlFor="login-password" className="text-sm font-semibold text-[#0F172A] ml-1">
+=======
+              <label className="text-sm font-semibold text-[#0F172A] ml-1">
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                 Password
               </label>
               <Controller
@@ -160,6 +172,7 @@ export function Login() {
                   <Input.Password
                     {...field}
                     size="large"
+<<<<<<< HEAD
                     id="login-password"
                     prefix={<Lock className="h-5 w-5 text-gray-400 mr-1.5 transition-colors" aria-hidden="true" />}
                     iconRender={(visible) =>
@@ -167,6 +180,14 @@ export function Login() {
                         <EyeOff className="h-5 w-5 text-gray-400 hover:text-[#0B1F4D] transition-colors cursor-pointer" aria-label="Hide password" />
                       ) : (
                         <Eye className="h-5 w-5 text-gray-400 hover:text-[#0B1F4D] transition-colors cursor-pointer" aria-label="Show password" />
+=======
+                    prefix={<Lock className="h-5 w-5 text-gray-400 mr-1.5 transition-colors" />}
+                    iconRender={(visible) =>
+                      visible ? (
+                        <EyeOff className="h-5 w-5 text-gray-400 hover:text-[#0B1F4D] transition-colors cursor-pointer" />
+                      ) : (
+                        <Eye className="h-5 w-5 text-gray-400 hover:text-[#0B1F4D] transition-colors cursor-pointer" />
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                       )
                     }
                     className="bg-[#F8F9FB] border-gray-200 rounded-xl text-[#0F172A] placeholder-gray-400 hover:border-[#1E5AA8] focus:border-[#1E5AA8] focus-within:border-[#1E5AA8] focus-within:ring-2 focus-within:ring-[#1E5AA8]/20 transition-all duration-200 py-3 [&>input]:bg-[#F8F9FB]"
@@ -193,7 +214,10 @@ export function Login() {
               {loading ? (
                 <>
                   <svg
+<<<<<<< HEAD
                     aria-hidden="true"
+=======
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                     className="h-5 w-5 animate-spin"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"

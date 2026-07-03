@@ -118,11 +118,18 @@ export function Table({
           <span className="text-sm text-muted-foreground">
             Total Records: {totalCount}
           </span>
+<<<<<<< HEAD
           <nav aria-label="Pagination" className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
               aria-label="Go to previous page"
+=======
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
               onClick={() => onPageChange(page - 1)}
               disabled={page === 1}
             >
@@ -134,13 +141,20 @@ export function Table({
             <Button
               variant="outline"
               size="sm"
+<<<<<<< HEAD
               aria-label="Go to next page"
+=======
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
               onClick={() => onPageChange(page + 1)}
               disabled={page >= totalPages}
             >
               Next
             </Button>
+<<<<<<< HEAD
           </nav>
+=======
+          </div>
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
         </div>
       )}
     </div>

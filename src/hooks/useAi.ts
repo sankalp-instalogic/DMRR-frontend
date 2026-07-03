@@ -44,6 +44,7 @@ export interface PreflightResult {
   existence?: ExistenceResult | null;
   readiness?: ReadinessResult | null;
   readinessPassed: boolean;
+<<<<<<< HEAD
   // When a file is uploaded, readiness runs as an async job (multi-minute OCR). The gate
   // returns immediately with this id + readiness=null; the client polls the job for the score.
   readinessJobId?: string | null;
@@ -56,6 +57,8 @@ export interface ReadinessJobStatus {
   readinessPassed: boolean;
   detail?: string | null;
   error?: string | null;
+=======
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
 }
 
 export interface PreflightPayload {
@@ -128,8 +131,11 @@ export function useAiPreflight() {
       payload: PreflightPayload;
       file?: File | null;
     }): Promise<PreflightResult> => {
+<<<<<<< HEAD
       let result: PreflightResult;
 
+=======
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
       // With a file, readiness is assessed against the actual document (bot OCRs it).
       if (args.file) {
         const fd = new FormData();
@@ -142,6 +148,7 @@ export function useAiPreflight() {
             headers: { "Content-Type": "multipart/form-data" },
           },
         );
+<<<<<<< HEAD
         result = data;
       } else {
         // No file: readiness falls back to form-text assessment (fast, returned inline).
@@ -198,6 +205,16 @@ export function useAiPreflight() {
       }
 
       return result;
+=======
+        return data;
+      }
+      // No file: readiness falls back to form-text assessment.
+      const { data } = await axiosPrivate.post(
+        "/api/v1/Ai/preflight",
+        args.payload,
+      );
+      return data;
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
     },
   });
 }

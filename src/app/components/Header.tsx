@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useNavigate } from "react-router";
 import { useAuth } from "../../context/AuthContext";
 import { useSidebar } from "../../context/SidebarContext";
@@ -12,6 +13,19 @@ import {
 
 export default function Header() {
   const { sidebarOpen, setSidebarOpen } = useSidebar();
+=======
+import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router";
+import { useAuth } from "../../context/AuthContext";
+import { useSidebar } from "../../context/SidebarContext";
+import { Menu, X, User, ChevronDown, LogOut } from "lucide-react";
+
+export default function Header() {
+  const { sidebarOpen, setSidebarOpen } = useSidebar();
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  const profileRef = useRef<HTMLDivElement>(null);
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
 
   const navigate = useNavigate();
   const { auth, logout } = useAuth();
@@ -21,6 +35,7 @@ export default function Header() {
     navigate("/login");
   };
 
+<<<<<<< HEAD
   const menuItems = [
     {
       key: "logout",
@@ -39,12 +54,34 @@ export default function Header() {
       >
         Skip to main content
       </a>
+=======
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(event.target as Node)
+      ) {
+        setProfileOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  return (
+    <header className="sticky top-0 z-50 bg-white border-b border-border shadow-sm">
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
       <div className="flex items-center justify-between px-6 py-3">
         {/* Left Section */}
         <div className="flex items-center gap-4">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="p-2 hover:bg-muted rounded-lg transition-colors cursor-pointer"
+<<<<<<< HEAD
             aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
             aria-expanded={sidebarOpen}
             aria-controls="sidebar-nav"
@@ -53,6 +90,13 @@ export default function Header() {
               <X className="size-5" aria-hidden="true" />
             ) : (
               <Menu className="size-5" aria-hidden="true" />
+=======
+          >
+            {sidebarOpen ? (
+              <X className="size-5" />
+            ) : (
+              <Menu className="size-5" />
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
             )}
           </button>
 
@@ -64,7 +108,11 @@ export default function Header() {
             />
 
             <div>
+<<<<<<< HEAD
               <h1 className="text-sm font-semibold leading-tight text-primary">
+=======
+              <h1 className="text-sm font-semibold leading-tight text-[#0B1F4D]">
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                 Disaster Management, Relief & Rehabilitation Department
               </h1>
 
@@ -77,6 +125,7 @@ export default function Header() {
 
         {/* Right Section */}
         <div className="flex items-center gap-5">
+<<<<<<< HEAD
           <Dropdown
             menu={{ items: menuItems }}
             placement="bottomRight"
@@ -100,15 +149,59 @@ export default function Header() {
                 </p>
 
                 <p className="text-[10px] text-muted-foreground leading-none">
+=======
+          {/* <button className="relative cursor-pointer p-2 hover:bg-muted rounded-lg text-[#64748B] hover:text-[#0B1F4D] transition-colors">
+            <Bell className="size-5" />
+            <span className="absolute top-1.5 right-1.5 size-2 bg-destructive rounded-full border border-white"></span>
+          </button> */}
+
+          <div className="relative" ref={profileRef}>
+            <button
+              onClick={() => setProfileOpen(!profileOpen)}
+              className="flex items-center cursor-pointer gap-2 px-3 py-2 hover:bg-muted rounded-lg transition-colors border border-transparent hover:border-border"
+            >
+              <div className="bg-[#1E5AA8] text-white p-1.5 rounded-full">
+                <User className="size-4" />
+              </div>
+
+              <div className="text-left hidden sm:block">
+                <p className="text-sm font-semibold text-[#0B1F4D] leading-none mb-1">
+                  {auth?.username ?? "Unknown User"}
+                </p>
+
+                <p className="text-[10px] text-[#64748B] leading-none">
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                   {auth?.role ?? "No Role"}
                 </p>
               </div>
 
+<<<<<<< HEAD
               <DownOutlined className="text-muted-foreground" aria-hidden="true" />
             </button>
           </Dropdown>
+=======
+              <ChevronDown className="size-4 text-[#64748B]" />
+            </button>
+
+            {profileOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-border py-1 z-50">
+                <button
+                  onClick={handleLogout}
+                  className="w-full cursor-pointer text-left flex items-center gap-2 px-4 py-2.5 text-sm text-destructive hover:bg-red-50 transition-colors rounded-xl"
+                >
+                  <LogOut className="size-4" />
+                  Sign Out
+                </button>
+              </div>
+            )}
+          </div>
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
         </div>
       </div>
     </header>
   );
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac

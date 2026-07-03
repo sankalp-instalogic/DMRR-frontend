@@ -51,7 +51,11 @@ import {
   FormMessage,
 } from "../../components/ui/form";
 
+<<<<<<< HEAD
 const COLORS = ["var(--chart-2)", "var(--chart-4)", "var(--chart-5)"];
+=======
+const COLORS = ["#2563eb", "#16a34a", "#f97316"];
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
 
 // --- TYPES ---
 type FormValues = {
@@ -377,7 +381,11 @@ export function BudgetMaster() {
   if (isLoading || isDepartmentsLoading || isDistrictsLoading) {
     return (
       <div className="flex items-center justify-center h-full">
+<<<<<<< HEAD
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-border border-t-info"></div>
+=======
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-blue-500"></div>
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
       </div>
     );
   }
@@ -385,6 +393,7 @@ export function BudgetMaster() {
   if (isError) {
     return (
       <div className="flex items-center justify-center p-6">
+<<<<<<< HEAD
         <div className="max-w-md rounded-lg border border-destructive-border bg-destructive-muted p-4 shadow-sm">
           <div className="flex items-start gap-3">
             <div className="text-destructive">⚠️</div>
@@ -393,6 +402,16 @@ export function BudgetMaster() {
                 Something went wrong
               </h3>
               <p className="mt-1 text-sm text-destructive">
+=======
+        <div className="max-w-md rounded-lg border border-red-200 bg-red-50 p-4 shadow-sm">
+          <div className="flex items-start gap-3">
+            <div className="text-red-500">⚠️</div>
+            <div>
+              <h3 className="font-semibold text-red-800">
+                Something went wrong
+              </h3>
+              <p className="mt-1 text-sm text-red-600">
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                 {(error as Error).message}
               </p>
             </div>

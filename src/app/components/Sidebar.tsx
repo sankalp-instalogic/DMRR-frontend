@@ -83,6 +83,7 @@ export default function Sidebar() {
       className={`fixed left-0 top-18.25 h-[calc(100vh-73px)] bg-sidebar text-sidebar-foreground transition-all duration-300 ${
         sidebarOpen ? "w-80" : "w-0"
       } overflow-hidden z-40`}
+<<<<<<< HEAD
       aria-hidden={!sidebarOpen}
     >
       <nav
@@ -90,6 +91,10 @@ export default function Sidebar() {
         className="p-4 space-y-2 overflow-y-auto h-full pb-20"
         aria-label="Main navigation"
       >
+=======
+    >
+      <nav className="p-4 space-y-2 overflow-y-auto h-full pb-20">
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
         {sidebarLinks.map((item) => {
           const Icon = item.icon;
 
@@ -106,25 +111,42 @@ export default function Sidebar() {
                 <button
                   onClick={() => toggleSection(item.stateKey!, isExpanded)}
                   className="flex items-center justify-between w-full px-4 py-3 rounded-lg hover:bg-sidebar-accent transition-colors cursor-pointer text-sidebar-foreground"
+<<<<<<< HEAD
                   aria-expanded={isExpanded}
                   aria-controls={`section-${item.stateKey}`}
                 >
                   <div className="flex items-center gap-3">
                     {/* Added shrink-0 to prevent icon from getting smaller */}
                     {Icon && <Icon className="size-5 shrink-0" aria-hidden="true" />}
+=======
+                >
+                  <div className="flex items-center gap-3">
+                    {/* Added shrink-0 to prevent icon from getting smaller */}
+                    {Icon && <Icon className="size-5 shrink-0" />}
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                     <span className="text-left leading-tight">
                       {item.title}
                     </span>
                   </div>
                   {isExpanded ? (
+<<<<<<< HEAD
                     <ChevronDown className="size-4 shrink-0" aria-hidden="true" />
                   ) : (
                     <ChevronRight className="size-4 shrink-0" aria-hidden="true" />
+=======
+                    <ChevronDown className="size-4 shrink-0" />
+                  ) : (
+                    <ChevronRight className="size-4 shrink-0" />
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                   )}
                 </button>
 
                 {isExpanded && (
+<<<<<<< HEAD
                   <div id={`section-${item.stateKey}`} className="ml-4 mt-1 space-y-1">
+=======
+                  <div className="ml-4 mt-1 space-y-1">
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                     {item.children.map((child) => {
                       // --- LEVEL 2: Nested Dropdown ---
                       if (child.children && child.stateKey) {
@@ -141,6 +163,7 @@ export default function Sidebar() {
                                 toggleSection(child.stateKey!, isChildExpanded)
                               }
                               className="flex items-center justify-between w-full px-4 py-2 rounded-lg hover:bg-sidebar-accent transition-colors text-sm font-medium cursor-pointer text-sidebar-foreground"
+<<<<<<< HEAD
                               aria-expanded={isChildExpanded}
                               aria-controls={`section-${child.stateKey}`}
                             >
@@ -149,12 +172,24 @@ export default function Sidebar() {
                                 <ChevronDown className="size-3.5 shrink-0" aria-hidden="true" />
                               ) : (
                                 <ChevronRight className="size-3.5 shrink-0" aria-hidden="true" />
+=======
+                            >
+                              <span className="text-left leading-tight pr-2">{child.title}</span>
+                              {isChildExpanded ? (
+                                <ChevronDown className="size-3.5 shrink-0" />
+                              ) : (
+                                <ChevronRight className="size-3.5 shrink-0" />
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                               )}
                             </button>
 
                             {/* --- LEVEL 3: Leaf Links --- */}
                             {isChildExpanded && (
+<<<<<<< HEAD
                               <div id={`section-${child.stateKey}`} className="ml-4 mt-1 space-y-1 border-l border-sidebar-border pl-2">
+=======
+                              <div className="ml-4 mt-1 space-y-1 border-l border-sidebar-border pl-2">
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                                 {child.children.map((subChild) => (
                                   <NavLink
                                     key={subChild.to}
@@ -198,7 +233,11 @@ export default function Sidebar() {
               className={topLevelLinkClass}
             >
               {/* Added shrink-0 to prevent icon from getting smaller */}
+<<<<<<< HEAD
               {Icon && <Icon className="size-5 shrink-0" aria-hidden="true" />}
+=======
+              {Icon && <Icon className="size-5 shrink-0" />}
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
               <span className="leading-tight">{item.title}</span>
             </NavLink>
           );

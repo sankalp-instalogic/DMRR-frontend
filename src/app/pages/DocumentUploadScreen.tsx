@@ -92,6 +92,7 @@ export function DocumentUploadScreen() {
   const getStatusIcon = (status: OCRStatus) => {
     switch (status) {
       case "pending":
+<<<<<<< HEAD
         return <AlertCircle className="size-5 text-gray-400" aria-hidden="true" />;
       case "processing":
         return <Loader2 className="size-5 text-blue-600 animate-spin" aria-hidden="true" />;
@@ -99,6 +100,15 @@ export function DocumentUploadScreen() {
         return <CheckCircle2 className="size-5 text-green-600" aria-hidden="true" />;
       case "failed":
         return <XCircle className="size-5 text-red-600" aria-hidden="true" />;
+=======
+        return <AlertCircle className="size-5 text-gray-400" />;
+      case "processing":
+        return <Loader2 className="size-5 text-blue-600 animate-spin" />;
+      case "done":
+        return <CheckCircle2 className="size-5 text-green-600" />;
+      case "failed":
+        return <XCircle className="size-5 text-red-600" />;
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
     }
   };
 
@@ -142,7 +152,11 @@ export function DocumentUploadScreen() {
           onClick={() => navigate("/proposal-detail")}
           className="px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors text-sm font-medium flex items-center gap-2"
         >
+<<<<<<< HEAD
           <ArrowLeft className="size-4" aria-hidden="true" />
+=======
+          <ArrowLeft className="size-4" />
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
           Back to Proposal
         </button>
       </div>
@@ -155,7 +169,11 @@ export function DocumentUploadScreen() {
             File Upload <span className="text-red-600">*</span>
           </label>
           <div className="border-2 border-dashed border-border rounded-lg p-8 text-center bg-muted/30">
+<<<<<<< HEAD
             <Upload className="size-12 mx-auto text-muted-foreground mb-4" aria-hidden="true" />
+=======
+            <Upload className="size-12 mx-auto text-muted-foreground mb-4" />
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
             <h4 className="font-semibold mb-2">Choose a file to upload</h4>
             <p className="text-sm text-muted-foreground mb-4">
               Allowed formats: PDF, DOCX, DOC, XLSX, JPG, PNG | Maximum size: {maxSizeMB} MB
@@ -166,13 +184,20 @@ export function DocumentUploadScreen() {
               onChange={handleFileSelect}
               className="hidden"
               id="file-input"
+<<<<<<< HEAD
               aria-label="Choose a file to upload"
+=======
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
             />
             <label
               htmlFor="file-input"
               className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity cursor-pointer font-medium"
             >
+<<<<<<< HEAD
               <Upload className="size-4" aria-hidden="true" />
+=======
+              <Upload className="size-4" />
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
               Select File
             </label>
 
@@ -180,7 +205,11 @@ export function DocumentUploadScreen() {
               <div className="mt-6 bg-white border border-border rounded-lg p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
+<<<<<<< HEAD
                     <FileText className="size-6 text-primary" aria-hidden="true" />
+=======
+                    <FileText className="size-6 text-primary" />
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                     <div className="text-left">
                       <p className="font-medium text-sm">{selectedFile.name}</p>
                       <p className="text-xs text-muted-foreground">
@@ -191,9 +220,14 @@ export function DocumentUploadScreen() {
                   <button
                     onClick={() => setSelectedFile(null)}
                     className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
+<<<<<<< HEAD
                     aria-label="Remove selected file"
                   >
                     <XCircle className="size-5" aria-hidden="true" />
+=======
+                  >
+                    <XCircle className="size-5" />
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                   </button>
                 </div>
               </div>
@@ -203,12 +237,19 @@ export function DocumentUploadScreen() {
 
         {/* Document Type */}
         <div>
+<<<<<<< HEAD
           <label htmlFor="document-type" className="block text-sm font-medium mb-2">
             Document Type <span className="text-red-600">*</span>
           </label>
           <select
             id="document-type"
             aria-required="true"
+=======
+          <label className="block text-sm font-medium mb-2">
+            Document Type <span className="text-red-600">*</span>
+          </label>
+          <select
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
             value={documentType}
             onChange={(e) => setDocumentType(e.target.value)}
             className="w-full px-4 py-3 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -224,9 +265,14 @@ export function DocumentUploadScreen() {
 
         {/* Version Note */}
         <div>
+<<<<<<< HEAD
           <label htmlFor="version-note" className="block text-sm font-medium mb-2">Version Note (Optional)</label>
           <textarea
             id="version-note"
+=======
+          <label className="block text-sm font-medium mb-2">Version Note (Optional)</label>
+          <textarea
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
             value={versionNote}
             onChange={(e) => setVersionNote(e.target.value)}
             className="w-full px-4 py-3 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -247,6 +293,7 @@ export function DocumentUploadScreen() {
             <div className="flex-1">
               <p className="font-semibold text-sm">{getStatusText(ocrStatus)}</p>
               {ocrStatus === "processing" && (
+<<<<<<< HEAD
                 <div
                   className="mt-2 bg-white/50 rounded-full h-2 overflow-hidden"
                   role="progressbar"
@@ -255,6 +302,9 @@ export function DocumentUploadScreen() {
                   aria-valuemin={0}
                   aria-valuemax={100}
                 >
+=======
+                <div className="mt-2 bg-white/50 rounded-full h-2 overflow-hidden">
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                   <div
                     className="bg-blue-600 h-full transition-all duration-300"
                     style={{ width: `${uploadProgress}%` }}
@@ -288,7 +338,11 @@ export function DocumentUploadScreen() {
                 : "bg-primary text-primary-foreground hover:opacity-90"
             }`}
           >
+<<<<<<< HEAD
             <Upload className="size-4" aria-hidden="true" />
+=======
+            <Upload className="size-4" />
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
             Upload Document
           </button>
         </div>
@@ -297,7 +351,11 @@ export function DocumentUploadScreen() {
       {/* Info Box */}
       <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
         <div className="flex items-start gap-3">
+<<<<<<< HEAD
           <AlertCircle className="size-5 text-blue-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
+=======
+          <AlertCircle className="size-5 text-blue-600 flex-shrink-0 mt-0.5" />
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
           <div>
             <p className="font-semibold text-blue-900 mb-1">Document Upload Guidelines</p>
             <ul className="text-sm text-blue-700 space-y-1 list-disc list-inside">

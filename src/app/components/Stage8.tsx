@@ -4,10 +4,17 @@ export function Stage8({ data, setData }: StageProps<Stage8Data>) {
   return (
     <div className="space-y-6">
       {/* L1 Vendor Identified */}
+<<<<<<< HEAD
       <fieldset>
         <legend className="block text-sm font-medium mb-3">
           Is L1 Vendor Identified?
         </legend>
+=======
+      <div>
+        <label className="block text-sm font-medium mb-3">
+          Is L1 Vendor Identified?
+        </label>
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
         <div className="flex gap-6">
           <label className="flex items-center gap-2">
             <input
@@ -32,12 +39,17 @@ export function Stage8({ data, setData }: StageProps<Stage8Data>) {
             No
           </label>
         </div>
+<<<<<<< HEAD
       </fieldset>
+=======
+      </div>
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
 
       {/* Vendor Name & Cost */}
       {data.l1VendorIdentified === "yes" && (
         <div className="grid grid-cols-2 gap-4">
           <div>
+<<<<<<< HEAD
             <label
               htmlFor="stage8-vendor-name"
               className="block text-sm font-medium mb-2"
@@ -46,6 +58,12 @@ export function Stage8({ data, setData }: StageProps<Stage8Data>) {
             </label>
             <input
               id="stage8-vendor-name"
+=======
+            <label className="block text-sm font-medium mb-2">
+              Vendor Name
+            </label>
+            <input
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
               type="text"
               value={data.vendorName}
               onChange={(e) =>
@@ -56,6 +74,7 @@ export function Stage8({ data, setData }: StageProps<Stage8Data>) {
           </div>
 
           <div>
+<<<<<<< HEAD
             <label
               htmlFor="stage8-l1-cost"
               className="block text-sm font-medium mb-2"
@@ -64,6 +83,10 @@ export function Stage8({ data, setData }: StageProps<Stage8Data>) {
             </label>
             <input
               id="stage8-l1-cost"
+=======
+            <label className="block text-sm font-medium mb-2">L1 Cost</label>
+            <input
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
               type="number"
               value={data.l1Cost}
               onChange={(e) => setData({ ...data, l1Cost: e.target.value })}
@@ -74,10 +97,17 @@ export function Stage8({ data, setData }: StageProps<Stage8Data>) {
       )}
 
       {/* Work Order */}
+<<<<<<< HEAD
       <fieldset>
         <legend className="block text-sm font-medium mb-3">
           Is Work Order Issued?
         </legend>
+=======
+      <div>
+        <label className="block text-sm font-medium mb-3">
+          Is Work Order Issued?
+        </label>
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
         <div className="flex gap-6">
           <label className="flex items-center gap-2">
             <input
@@ -102,11 +132,16 @@ export function Stage8({ data, setData }: StageProps<Stage8Data>) {
             No
           </label>
         </div>
+<<<<<<< HEAD
       </fieldset>
+=======
+      </div>
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
 
       {/* Work Order Date */}
       {data.workOrderIssued === "yes" && (
         <div>
+<<<<<<< HEAD
           <label
             htmlFor="stage8-work-order-issued-date"
             className="block text-sm font-medium mb-2"
@@ -115,6 +150,12 @@ export function Stage8({ data, setData }: StageProps<Stage8Data>) {
           </label>
           <input
             id="stage8-work-order-issued-date"
+=======
+          <label className="block text-sm font-medium mb-2">
+            Work Order Issued Date
+          </label>
+          <input
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
             type="date"
             value={data.workOrderIssuedDate}
             onChange={(e) =>
@@ -127,6 +168,7 @@ export function Stage8({ data, setData }: StageProps<Stage8Data>) {
 
       {/* Document Type */}
       <div>
+<<<<<<< HEAD
         <label
           htmlFor="stage8-supporting-doc-type"
           className="block text-sm font-medium mb-2"
@@ -135,6 +177,12 @@ export function Stage8({ data, setData }: StageProps<Stage8Data>) {
         </label>
         <select
           id="stage8-supporting-doc-type"
+=======
+        <label className="block text-sm font-medium mb-2">
+          Supporting Document Type
+        </label>
+        <select
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
           value={data.supportingDocType}
           onChange={(e) =>
             setData({ ...data, supportingDocType: e.target.value })
@@ -150,6 +198,7 @@ export function Stage8({ data, setData }: StageProps<Stage8Data>) {
 
       {/* Multiple Upload */}
       <div>
+<<<<<<< HEAD
         <label
           htmlFor="stage8-supporting-docs"
           className="block text-sm font-medium mb-2"
@@ -158,6 +207,12 @@ export function Stage8({ data, setData }: StageProps<Stage8Data>) {
         </label>
         <input
           id="stage8-supporting-docs"
+=======
+        <label className="block text-sm font-medium mb-2">
+          Upload Supporting Documents
+        </label>
+        <input
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
           type="file"
           multiple
           onChange={(e) =>

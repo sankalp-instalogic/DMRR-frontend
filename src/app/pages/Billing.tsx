@@ -11,7 +11,10 @@ import { Table } from "../components/Table";
 import type { ColDef } from "ag-grid-community";
 import { Input, Select, DatePicker } from "antd";
 import dayjs from "dayjs";
+<<<<<<< HEAD
 import { Button } from "@/app/components/ui/button";
+=======
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
 
 export function Billing() {
   const axiosPrivate = useAxiosPrivate();
@@ -104,9 +107,18 @@ export function Billing() {
         headerName: "Action",
         flex: 1,
         cellRenderer: (params: any) => (
+<<<<<<< HEAD
           <Button onClick={() => setSelectedBill(params.data)}>
             Update
           </Button>
+=======
+          <button
+            onClick={() => setSelectedBill(params.data)}
+            className="px-3 py-1.5 cursor-pointer bg-[#0B1F4D] text-white rounded-lg text-sm"
+          >
+            Update
+          </button>
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
         ),
       },
     ],
@@ -628,7 +640,11 @@ export function Billing() {
           onClick={() => onChange("Yes")}
           className={`px-4 py-2 rounded-lg transition-colors ${
             value === "Yes"
+<<<<<<< HEAD
               ? "bg-success text-success-foreground"
+=======
+              ? "bg-green-600 text-white"
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
               : "border border-border hover:bg-muted/50"
           }`}
         >
@@ -639,7 +655,11 @@ export function Billing() {
           onClick={() => onChange("No")}
           className={`px-4 py-2 rounded-lg transition-colors ${
             value === "No"
+<<<<<<< HEAD
               ? "bg-destructive text-destructive-foreground"
+=======
+              ? "bg-red-600 text-white"
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
               : "border border-border hover:bg-muted/50"
           }`}
         >
@@ -671,15 +691,24 @@ export function Billing() {
 
       {/* FORM */}
       {selectedBill && (
+<<<<<<< HEAD
         <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
           <h2 className="text-xl font-bold mb-6 text-primary">
+=======
+        <div className="bg-white border border-border rounded-xl p-6 shadow-sm">
+          <h2 className="text-xl font-bold mb-6 text-[#0B1F4D]">
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
             Billing Workflow - {selectedBill.proposalRefNo}
           </h2>
 
           {sectionsConfig.map((section) => (
             <div
               key={section.id}
+<<<<<<< HEAD
               className="mb-8 p-4 bg-muted rounded-lg border border-border"
+=======
+              className="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-100"
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
             >
               <YesNoField
                 label={section.yesNoLabel}
@@ -719,7 +748,11 @@ export function Billing() {
                               field.fileSetter &&
                               field.fileSetter(e.target.files?.[0] || null)
                             }
+<<<<<<< HEAD
                             className="w-full bg-card"
+=======
+                            className="w-full bg-white"
+>>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                           />
                         </div>
                       );
