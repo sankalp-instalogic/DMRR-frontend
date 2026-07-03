@@ -6,13 +6,8 @@ export function Stage10({ data, setData }: { data: any, setData: (data: any) => 
       {/* Section 1 */}
       <div className="border border-border rounded-xl p-4">
         <h4 className="font-bold text-primary mb-4">SECTION 1: DMRR Received Bill From Line Department</h4>
-<<<<<<< HEAD
         <div className="flex items-center gap-4 mb-4" role="radiogroup" aria-labelledby="s10-bill-linedept-q">
           <span id="s10-bill-linedept-q" className="text-sm font-medium">Did DMRR Receive Bill from Line Department?</span>
-=======
-        <div className="flex items-center gap-4 mb-4">
-          <span className="text-sm font-medium">Did DMRR Receive Bill from Line Department?</span>
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
           <label className="flex items-center gap-1 cursor-pointer text-sm">
             <input type="radio" name="billReceivedLineDept" checked={data.billReceivedLineDept === "yes"} onChange={() => setData({...data, billReceivedLineDept: "yes"})} /> Yes
           </label>
@@ -41,11 +36,7 @@ export function Stage10({ data, setData }: { data: any, setData: (data: any) => 
                 <option>Certification</option>
               </select>
               <label className="px-4 py-2 bg-primary text-primary-foreground rounded-lg cursor-pointer flex items-center gap-2">
-<<<<<<< HEAD
                 <Upload className="size-4" aria-hidden="true"/> Upload
-=======
-                <Upload className="size-4"/> Upload
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                 <input type="file" multiple className="hidden" onChange={e => { if(e.target.files) setData({...data, lineDeptDocs: [...data.lineDeptDocs, ...Array.from(e.target.files)]}) }} />
               </label>
             </div>
@@ -53,11 +44,7 @@ export function Stage10({ data, setData }: { data: any, setData: (data: any) => 
               {data.lineDeptDocs.map((doc: any, idx: number) => (
                 <div key={idx} className="flex justify-between items-center p-3 border rounded bg-background">
                   <div className="flex flex-col gap-1">
-<<<<<<< HEAD
                     <div className="flex items-center gap-2"><FileText className="size-4 text-primary" aria-hidden="true"/> <span className="text-sm font-medium">{doc.name}</span> <span className="text-xs bg-muted px-2 py-0.5 rounded">{data.lineDeptDocType}</span></div>
-=======
-                    <div className="flex items-center gap-2"><FileText className="size-4 text-primary"/> <span className="text-sm font-medium">{doc.name}</span> <span className="text-xs bg-muted px-2 py-0.5 rounded">{data.lineDeptDocType}</span></div>
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                     <div className="flex items-center gap-3 text-xs text-muted-foreground ml-6">
                       <span>Uploaded: Today</span>
                       <span>By: Current User</span>
@@ -66,17 +53,10 @@ export function Stage10({ data, setData }: { data: any, setData: (data: any) => 
                     </div>
                   </div>
                   <div className="flex gap-2">
-<<<<<<< HEAD
                     <button className="p-1.5 text-primary hover:bg-muted rounded" title="View" aria-label="View document"><Eye className="size-4" aria-hidden="true"/></button>
                     <button className="p-1.5 text-green-600 hover:bg-muted rounded" title="Download" aria-label="Download document"><Download className="size-4" aria-hidden="true"/></button>
                     <button className="p-1.5 text-blue-600 hover:bg-muted rounded" title="Replace Version" aria-label="Replace document version"><Upload className="size-4" aria-hidden="true"/></button>
                     <button onClick={() => { const docs = [...data.lineDeptDocs]; docs.splice(idx, 1); setData({...data, lineDeptDocs: docs}) }} className="p-1.5 text-red-500 hover:bg-red-50 rounded" title="Delete Draft" aria-label="Delete document"><Trash2 className="size-4" aria-hidden="true"/></button>
-=======
-                    <button className="p-1.5 text-primary hover:bg-muted rounded" title="View"><Eye className="size-4"/></button>
-                    <button className="p-1.5 text-green-600 hover:bg-muted rounded" title="Download"><Download className="size-4"/></button>
-                    <button className="p-1.5 text-blue-600 hover:bg-muted rounded" title="Replace Version"><Upload className="size-4"/></button>
-                    <button onClick={() => { const docs = [...data.lineDeptDocs]; docs.splice(idx, 1); setData({...data, lineDeptDocs: docs}) }} className="p-1.5 text-red-500 hover:bg-red-50 rounded" title="Delete Draft"><Trash2 className="size-4"/></button>
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                   </div>
                 </div>
               ))}
@@ -88,13 +68,8 @@ export function Stage10({ data, setData }: { data: any, setData: (data: any) => 
       {/* Section 2 */}
       <div className="border border-border rounded-xl p-4">
         <h4 className="font-bold text-primary mb-4">SECTION 2: Bill Received at DO</h4>
-<<<<<<< HEAD
         <div className="flex items-center gap-4 mb-4" role="radiogroup" aria-labelledby="s10-bill-do-q">
           <span id="s10-bill-do-q" className="text-sm font-medium">Bill Received at DO?</span>
-=======
-        <div className="flex items-center gap-4 mb-4">
-          <span className="text-sm font-medium">Bill Received at DO?</span>
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
           <label className="flex items-center gap-1 cursor-pointer text-sm">
             <input type="radio" name="billReceivedDO" checked={data.billReceivedDO === "yes"} onChange={() => setData({...data, billReceivedDO: "yes"})} /> Yes
           </label>
@@ -117,11 +92,7 @@ export function Stage10({ data, setData }: { data: any, setData: (data: any) => 
             </div>
             <div className="flex gap-2">
               <label className="px-4 py-2 bg-primary text-primary-foreground rounded-lg cursor-pointer flex items-center gap-2">
-<<<<<<< HEAD
                 <Upload className="size-4" aria-hidden="true"/> Upload Documents
-=======
-                <Upload className="size-4"/> Upload Documents
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                 <input type="file" multiple className="hidden" onChange={e => { if(e.target.files) setData({...data, doDocs: [...data.doDocs, ...Array.from(e.target.files)]}) }} />
               </label>
             </div>
@@ -129,11 +100,7 @@ export function Stage10({ data, setData }: { data: any, setData: (data: any) => 
               {data.doDocs?.map((doc: any, idx: number) => (
                 <div key={idx} className="flex justify-between items-center p-3 border rounded bg-background">
                   <div className="flex flex-col gap-1">
-<<<<<<< HEAD
                     <div className="flex items-center gap-2"><FileText className="size-4 text-primary" aria-hidden="true"/> <span className="text-sm font-medium">{doc.name}</span></div>
-=======
-                    <div className="flex items-center gap-2"><FileText className="size-4 text-primary"/> <span className="text-sm font-medium">{doc.name}</span></div>
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                     <div className="flex items-center gap-3 text-xs text-muted-foreground ml-6">
                       <span>Uploaded: Today</span>
                       <span>By: Current User</span>
@@ -142,17 +109,10 @@ export function Stage10({ data, setData }: { data: any, setData: (data: any) => 
                     </div>
                   </div>
                   <div className="flex gap-2">
-<<<<<<< HEAD
                     <button className="p-1.5 text-primary hover:bg-muted rounded" title="View" aria-label="View document"><Eye className="size-4" aria-hidden="true"/></button>
                     <button className="p-1.5 text-green-600 hover:bg-muted rounded" title="Download" aria-label="Download document"><Download className="size-4" aria-hidden="true"/></button>
                     <button className="p-1.5 text-blue-600 hover:bg-muted rounded" title="Replace Version" aria-label="Replace document version"><Upload className="size-4" aria-hidden="true"/></button>
                     <button onClick={() => { const docs = [...data.doDocs]; docs.splice(idx, 1); setData({...data, doDocs: docs}) }} className="p-1.5 text-red-500 hover:bg-red-50 rounded" title="Delete Draft" aria-label="Delete document"><Trash2 className="size-4" aria-hidden="true"/></button>
-=======
-                    <button className="p-1.5 text-primary hover:bg-muted rounded" title="View"><Eye className="size-4"/></button>
-                    <button className="p-1.5 text-green-600 hover:bg-muted rounded" title="Download"><Download className="size-4"/></button>
-                    <button className="p-1.5 text-blue-600 hover:bg-muted rounded" title="Replace Version"><Upload className="size-4"/></button>
-                    <button onClick={() => { const docs = [...data.doDocs]; docs.splice(idx, 1); setData({...data, doDocs: docs}) }} className="p-1.5 text-red-500 hover:bg-red-50 rounded" title="Delete Draft"><Trash2 className="size-4"/></button>
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                   </div>
                 </div>
               ))}
@@ -164,13 +124,8 @@ export function Stage10({ data, setData }: { data: any, setData: (data: any) => 
       {/* Section 3 */}
       <div className="border border-border rounded-xl p-4">
         <h4 className="font-bold text-primary mb-4">SECTION 3: Bill Sent to PS / Minister</h4>
-<<<<<<< HEAD
         <div className="flex items-center gap-4 mb-4" role="radiogroup" aria-labelledby="s10-bill-ps-q">
           <span id="s10-bill-ps-q" className="text-sm font-medium">Bill Sent to PS / Minister?</span>
-=======
-        <div className="flex items-center gap-4 mb-4">
-          <span className="text-sm font-medium">Bill Sent to PS / Minister?</span>
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
           <label className="flex items-center gap-1 cursor-pointer text-sm">
             <input type="radio" name="billSentPS" checked={data.billSentPS === "yes"} onChange={() => setData({...data, billSentPS: "yes"})} /> Yes
           </label>
@@ -193,21 +148,13 @@ export function Stage10({ data, setData }: { data: any, setData: (data: any) => 
             </div>
             <div>
               <label className="px-4 py-2 border border-border bg-background rounded-lg cursor-pointer inline-flex items-center justify-center gap-2">
-<<<<<<< HEAD
                 <Upload className="size-4" aria-hidden="true"/> Upload Single File
-=======
-                <Upload className="size-4"/> Upload Single File
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                 <input type="file" className="hidden" onChange={e => { if(e.target.files && e.target.files[0]) setData({...data, psDoc: e.target.files[0]}) }} />
               </label>
               {data.psDoc && (
                 <div className="flex justify-between items-center p-3 border rounded bg-background mt-2">
                   <div className="flex flex-col gap-1">
-<<<<<<< HEAD
                     <div className="flex items-center gap-2"><FileText className="size-4 text-primary" aria-hidden="true"/> <span className="text-sm font-medium">{data.psDoc.name}</span></div>
-=======
-                    <div className="flex items-center gap-2"><FileText className="size-4 text-primary"/> <span className="text-sm font-medium">{data.psDoc.name}</span></div>
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                     <div className="flex items-center gap-3 text-xs text-muted-foreground ml-6">
                       <span>Uploaded: Today</span>
                       <span>By: Current User</span>
@@ -216,17 +163,10 @@ export function Stage10({ data, setData }: { data: any, setData: (data: any) => 
                     </div>
                   </div>
                   <div className="flex gap-2">
-<<<<<<< HEAD
                     <button className="p-1.5 text-primary hover:bg-muted rounded" title="View" aria-label="View document"><Eye className="size-4" aria-hidden="true"/></button>
                     <button className="p-1.5 text-green-600 hover:bg-muted rounded" title="Download" aria-label="Download document"><Download className="size-4" aria-hidden="true"/></button>
                     <button className="p-1.5 text-blue-600 hover:bg-muted rounded" title="Replace Version" aria-label="Replace document version"><Upload className="size-4" aria-hidden="true"/></button>
                     <button onClick={() => setData({...data, psDoc: null})} className="p-1.5 text-red-500 hover:bg-red-50 rounded" title="Delete Draft" aria-label="Delete document"><Trash2 className="size-4" aria-hidden="true"/></button>
-=======
-                    <button className="p-1.5 text-primary hover:bg-muted rounded" title="View"><Eye className="size-4"/></button>
-                    <button className="p-1.5 text-green-600 hover:bg-muted rounded" title="Download"><Download className="size-4"/></button>
-                    <button className="p-1.5 text-blue-600 hover:bg-muted rounded" title="Replace Version"><Upload className="size-4"/></button>
-                    <button onClick={() => setData({...data, psDoc: null})} className="p-1.5 text-red-500 hover:bg-red-50 rounded" title="Delete Draft"><Trash2 className="size-4"/></button>
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                   </div>
                 </div>
               )}
@@ -238,13 +178,8 @@ export function Stage10({ data, setData }: { data: any, setData: (data: any) => 
       {/* Section 4 */}
       <div className="border border-border rounded-xl p-4">
         <h4 className="font-bold text-primary mb-4">SECTION 4: Payment Order Made</h4>
-<<<<<<< HEAD
         <div className="flex items-center gap-4 mb-4" role="radiogroup" aria-labelledby="s10-payment-q">
           <span id="s10-payment-q" className="text-sm font-medium">Payment Order Made?</span>
-=======
-        <div className="flex items-center gap-4 mb-4">
-          <span className="text-sm font-medium">Payment Order Made?</span>
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
           <label className="flex items-center gap-1 cursor-pointer text-sm">
             <input type="radio" name="paymentOrderMade" checked={data.paymentOrderMade === "yes"} onChange={() => setData({...data, paymentOrderMade: "yes"})} /> Yes
           </label>
@@ -309,22 +244,14 @@ export function Stage10({ data, setData }: { data: any, setData: (data: any) => 
                 <option>Sanction Letter</option>
               </select>
               <label className="px-4 py-2 bg-primary text-primary-foreground rounded-lg cursor-pointer flex items-center gap-2">
-<<<<<<< HEAD
                 <Upload className="size-4" aria-hidden="true"/> Upload Single File
-=======
-                <Upload className="size-4"/> Upload Single File
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                 <input type="file" className="hidden" onChange={e => { if(e.target.files && e.target.files[0]) setData({...data, paymentDoc: e.target.files[0]}) }} />
               </label>
             </div>
             {data.paymentDoc && (
               <div className="flex justify-between items-center p-3 border rounded bg-background mt-2">
                 <div className="flex flex-col gap-1">
-<<<<<<< HEAD
                   <div className="flex items-center gap-2"><FileText className="size-4 text-primary" aria-hidden="true"/> <span className="text-sm font-medium">{data.paymentDoc.name}</span> <span className="text-xs bg-muted px-2 py-0.5 rounded">{data.paymentDocType}</span></div>
-=======
-                  <div className="flex items-center gap-2"><FileText className="size-4 text-primary"/> <span className="text-sm font-medium">{data.paymentDoc.name}</span> <span className="text-xs bg-muted px-2 py-0.5 rounded">{data.paymentDocType}</span></div>
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                   <div className="flex items-center gap-3 text-xs text-muted-foreground ml-6">
                     <span>Uploaded: Today</span>
                     <span>By: Current User</span>
@@ -333,17 +260,10 @@ export function Stage10({ data, setData }: { data: any, setData: (data: any) => 
                   </div>
                 </div>
                 <div className="flex gap-2">
-<<<<<<< HEAD
                   <button className="p-1.5 text-primary hover:bg-muted rounded" title="View" aria-label="View document"><Eye className="size-4" aria-hidden="true"/></button>
                   <button className="p-1.5 text-green-600 hover:bg-muted rounded" title="Download" aria-label="Download document"><Download className="size-4" aria-hidden="true"/></button>
                   <button className="p-1.5 text-blue-600 hover:bg-muted rounded" title="Replace Version" aria-label="Replace document version"><Upload className="size-4" aria-hidden="true"/></button>
                   <button onClick={() => setData({...data, paymentDoc: null})} className="p-1.5 text-red-500 hover:bg-red-50 rounded" title="Delete Draft" aria-label="Delete document"><Trash2 className="size-4" aria-hidden="true"/></button>
-=======
-                  <button className="p-1.5 text-primary hover:bg-muted rounded" title="View"><Eye className="size-4"/></button>
-                  <button className="p-1.5 text-green-600 hover:bg-muted rounded" title="Download"><Download className="size-4"/></button>
-                  <button className="p-1.5 text-blue-600 hover:bg-muted rounded" title="Replace Version"><Upload className="size-4"/></button>
-                  <button onClick={() => setData({...data, paymentDoc: null})} className="p-1.5 text-red-500 hover:bg-red-50 rounded" title="Delete Draft"><Trash2 className="size-4"/></button>
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                 </div>
               </div>
             )}

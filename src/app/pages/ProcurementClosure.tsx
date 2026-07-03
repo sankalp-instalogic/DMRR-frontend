@@ -185,32 +185,19 @@ export function ProcurementClosure() {
       s.includes("active") ||
       s.includes("approved")
     ) {
-<<<<<<< HEAD
       return "bg-success-muted text-success border-success-border";
-=======
-      return "bg-green-100 text-green-700 border-green-200";
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
     }
     if (
       s.includes("closed") ||
       s.includes("rejected") ||
       s.includes("cancelled")
     ) {
-<<<<<<< HEAD
       return "bg-destructive-muted text-destructive border-destructive-border";
     }
     if (s.includes("draft") || s.includes("pending")) {
       return "bg-warning-muted text-warning border-warning-border";
     }
     return "bg-info-muted text-info border-info-border";
-=======
-      return "bg-red-100 text-red-700 border-red-200";
-    }
-    if (s.includes("draft") || s.includes("pending")) {
-      return "bg-amber-100 text-amber-700 border-amber-200";
-    }
-    return "bg-blue-50 text-blue-700 border-blue-200";
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
   };
 
   const filteredTenders = tenders.filter((tender: any) => {
@@ -451,15 +438,9 @@ export function ProcurementClosure() {
       </div>
 
       {/* --- TABLE 1: ALL TENDERS --- */}
-<<<<<<< HEAD
       <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
         <div className="p-4 border-b border-border flex justify-between items-center bg-muted/50">
           <h2 className="text-lg font-semibold text-primary">All Tenders</h2>
-=======
-      <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
-        <div className="p-4 border-b border-border flex justify-between items-center bg-gray-50/50">
-          <h2 className="text-lg font-semibold text-[#0B1F4D]">All Tenders</h2>
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
           <div className="relative w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <input
@@ -467,30 +448,18 @@ export function ProcurementClosure() {
               placeholder="Search tenders..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-<<<<<<< HEAD
               className="w-full pl-9 pr-4 py-2 bg-card border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20"
-=======
-              className="w-full pl-9 pr-4 py-2 bg-white border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E5AA8]/20"
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
             />
           </div>
         </div>
 
         {isTendersLoading ? (
           <div className="flex flex-col items-center justify-center p-8 text-muted-foreground">
-<<<<<<< HEAD
             <Loader2 className="size-6 animate-spin mb-2 text-secondary" />
             <p>Loading tenders...</p>
           </div>
         ) : isTendersError ? (
           <div className="p-8 text-center text-destructive">
-=======
-            <Loader2 className="size-6 animate-spin mb-2 text-[#1E5AA8]" />
-            <p>Loading tenders...</p>
-          </div>
-        ) : isTendersError ? (
-          <div className="p-8 text-center text-red-500">
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
             Failed to load tenders. Please try again later.
           </div>
         ) : filteredTenders.length === 0 ? (
@@ -507,11 +476,7 @@ export function ProcurementClosure() {
             onPageChange={() => {}}
             // onRowClicked is REMOVED
             rowClassRules={{
-<<<<<<< HEAD
               "bg-info-muted/80 border-l-4 border-secondary": (params) =>
-=======
-              "bg-blue-50/80 border-l-4 border-[#1E5AA8]": (params) =>
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                 selectedItem?.id ===
                 (params.data.id || params.data.procurementId),
               "hover:bg-muted/50": () => true, // Kept hover, removed cursor-pointer
@@ -521,34 +486,20 @@ export function ProcurementClosure() {
       </div>
 
       {/* --- TABLE 2: PROCUREMENT RECORDS --- */}
-<<<<<<< HEAD
       <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
         <div className="p-4 border-b border-border bg-muted/50">
           <h2 className="text-lg font-semibold text-primary">
-=======
-      <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
-        <div className="p-4 border-b border-border bg-gray-50/50">
-          <h2 className="text-lg font-semibold text-[#0B1F4D]">
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
             Pending Procurement Records
           </h2>
         </div>
 
         {isProcurementLoading ? (
           <div className="flex flex-col items-center justify-center p-8 text-muted-foreground">
-<<<<<<< HEAD
             <Loader2 className="size-6 animate-spin mb-2 text-secondary" />
             <p>Loading procurement data...</p>
           </div>
         ) : isProcurementError ? (
           <div className="p-8 text-center text-destructive font-medium">
-=======
-            <Loader2 className="size-6 animate-spin mb-2 text-[#1E5AA8]" />
-            <p>Loading procurement data...</p>
-          </div>
-        ) : isProcurementError ? (
-          <div className="p-8 text-center text-red-500 font-medium">
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
             Failed to fetch procurement records. Please try again.
           </div>
         ) : procurementItems.length === 0 ? (
@@ -565,11 +516,7 @@ export function ProcurementClosure() {
             onPageChange={setPage}
             // onRowClicked is REMOVED
             rowClassRules={{
-<<<<<<< HEAD
               "bg-info-muted/80 border-l-4 border-secondary": (params) =>
-=======
-              "bg-blue-50/80 border-l-4 border-[#1E5AA8]": (params) =>
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                 selectedItem?.id === params.data.id,
               "hover:bg-muted/50": () => true, // Kept hover, removed cursor-pointer
             }}
@@ -579,13 +526,8 @@ export function ProcurementClosure() {
 
       {/* --- CLOSURE FORM SECTION --- */}
       {selectedItem && (
-<<<<<<< HEAD
         <div ref={closureFormRef} className="bg-card border border-border rounded-xl p-6 shadow-sm mt-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
           <h3 className="mb-6 text-xl font-bold border-b pb-4 text-primary">
-=======
-        <div ref={closureFormRef} className="bg-white border border-border rounded-xl p-6 shadow-sm mt-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
-          <h3 className="mb-6 text-xl font-bold border-b pb-4 text-[#0B1F4D]">
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
             Project Closure:{" "}
             <span className="text-muted-foreground font-medium">
               {selectedItem.tenderRefNo ||
@@ -596,11 +538,7 @@ export function ProcurementClosure() {
 
           {/* PROJECT COMPLETED QUESTION */}
           <div className="mb-6">
-<<<<<<< HEAD
             <label className="block font-semibold mb-3 text-primary">
-=======
-            <label className="block font-semibold mb-3 text-[#0B1F4D]">
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
               Is Project Completed?
             </label>
             <div className="flex gap-3">
@@ -608,13 +546,8 @@ export function ProcurementClosure() {
                 onClick={() => setIsCompleted("Yes")}
                 className={`px-6 py-2 rounded-lg font-medium transition-all ${
                   isCompleted === "Yes"
-<<<<<<< HEAD
                     ? "bg-success text-success-foreground shadow-md"
                     : "border border-border hover:bg-muted"
-=======
-                    ? "bg-green-600 text-white shadow-md"
-                    : "border border-border hover:bg-gray-50"
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                 }`}
               >
                 Yes
@@ -623,13 +556,8 @@ export function ProcurementClosure() {
                 onClick={() => setIsCompleted("No")}
                 className={`px-6 py-2 rounded-lg font-medium transition-all ${
                   isCompleted === "No"
-<<<<<<< HEAD
                     ? "bg-destructive text-destructive-foreground shadow-md"
                     : "border border-border hover:bg-muted"
-=======
-                    ? "bg-red-600 text-white shadow-md"
-                    : "border border-border hover:bg-gray-50"
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                 }`}
               >
                 No

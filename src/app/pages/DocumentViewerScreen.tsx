@@ -102,19 +102,11 @@ export function DocumentViewerScreen() {
             onClick={() => navigate("/proposal-detail")}
             className="px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors text-sm font-medium flex items-center gap-2"
           >
-<<<<<<< HEAD
             <ArrowLeft className="size-4" aria-hidden="true" />
             Back to Proposal
           </button>
           <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity text-sm font-medium flex items-center gap-2">
             <Download className="size-4" aria-hidden="true" />
-=======
-            <ArrowLeft className="size-4" />
-            Back to Proposal
-          </button>
-          <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity text-sm font-medium flex items-center gap-2">
-            <Download className="size-4" />
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
             Download Original
           </button>
         </div>
@@ -124,11 +116,7 @@ export function DocumentViewerScreen() {
       <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-3">
-<<<<<<< HEAD
             <FileText className="size-6 text-primary shrink-0 mt-1" aria-hidden="true" />
-=======
-            <FileText className="size-6 text-primary shrink-0 mt-1" />
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
             <div>
               <h3 className="font-bold text-lg mb-1">{documentData.name}</h3>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -144,11 +132,7 @@ export function DocumentViewerScreen() {
           </div>
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-<<<<<<< HEAD
               <CheckCircle2 className="size-3" aria-hidden="true" />
-=======
-              <CheckCircle2 className="size-3" />
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
               OCR {documentData.ocrStatus}
             </span>
           </div>
@@ -161,21 +145,13 @@ export function DocumentViewerScreen() {
         <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
           <div className="p-4 border-b border-border bg-muted/30">
             <h4 className="font-bold text-primary flex items-center gap-2">
-<<<<<<< HEAD
               <Eye className="size-4" aria-hidden="true" />
-=======
-              <Eye className="size-4" />
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
               Original Document
             </h4>
           </div>
           <div className="p-6 flex items-center justify-center bg-gray-100 min-h-125">
             <div className="text-center">
-<<<<<<< HEAD
               <FileText className="size-16 mx-auto text-muted-foreground mb-4" aria-hidden="true" />
-=======
-              <FileText className="size-16 mx-auto text-muted-foreground mb-4" />
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
               <p className="text-sm text-muted-foreground mb-4">
                 PDF Document Preview
               </p>
@@ -186,11 +162,7 @@ export function DocumentViewerScreen() {
                 24 pages
               </p>
               <button className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity text-sm font-medium flex items-center gap-2 mx-auto">
-<<<<<<< HEAD
                 <Download className="size-4" aria-hidden="true" />
-=======
-                <Download className="size-4" />
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                 Download PDF
               </button>
             </div>
@@ -201,20 +173,12 @@ export function DocumentViewerScreen() {
         <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
           <div className="p-4 border-b border-border bg-muted/30">
             <h4 className="font-bold text-primary flex items-center gap-2">
-<<<<<<< HEAD
               <FileText className="size-4" aria-hidden="true" />
-=======
-              <FileText className="size-4" />
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
               OCR Extracted Text
             </h4>
           </div>
           <div className="p-6 max-h-125 overflow-y-auto">
-<<<<<<< HEAD
             <pre aria-label="Extracted OCR text" className="text-xs font-mono whitespace-pre-wrap leading-relaxed">
-=======
-            <pre className="text-xs font-mono whitespace-pre-wrap leading-relaxed">
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
               {mockOCRText}
             </pre>
           </div>
@@ -232,11 +196,7 @@ export function DocumentViewerScreen() {
         <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
           <div className="p-4 border-b border-border bg-muted/30">
             <h4 className="font-bold text-primary flex items-center gap-2">
-<<<<<<< HEAD
               <Shield className="size-4" aria-hidden="true" />
-=======
-              <Shield className="size-4" />
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
               Document Metadata
             </h4>
           </div>
@@ -247,29 +207,18 @@ export function DocumentViewerScreen() {
                 <span className="text-xs font-semibold text-blue-900">SHA-256 Hash</span>
                 <button
                   onClick={handleCopyHash}
-<<<<<<< HEAD
                   aria-label="Copy SHA-256 hash"
                   aria-live="polite"
-=======
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                   className="text-xs text-blue-700 hover:underline font-medium flex items-center gap-1"
                 >
                   {hashCopied ? (
                     <>
-<<<<<<< HEAD
                       <CheckCircle2 className="size-3" aria-hidden="true" />
-=======
-                      <CheckCircle2 className="size-3" />
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                       Copied!
                     </>
                   ) : (
                     <>
-<<<<<<< HEAD
                       <Copy className="size-3" aria-hidden="true" />
-=======
-                      <Copy className="size-3" />
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                       Copy
                     </>
                   )}
@@ -291,11 +240,7 @@ export function DocumentViewerScreen() {
               <span className="text-xs font-semibold text-muted-foreground">OCR Status</span>
               <div className="mt-1 flex items-center gap-2">
                 <span className="text-sm font-medium text-green-600">{documentData.ocrStatus}</span>
-<<<<<<< HEAD
                 <CheckCircle2 className="size-4 text-green-600" aria-hidden="true" />
-=======
-                <CheckCircle2 className="size-4 text-green-600" />
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
               </div>
             </div>
 
@@ -345,11 +290,7 @@ export function DocumentViewerScreen() {
       {/* Info Box */}
       <div className="bg-green-50 border border-green-200 rounded-xl p-4">
         <div className="flex items-start gap-3">
-<<<<<<< HEAD
           <CheckCircle2 className="size-5 text-green-600 shrink-0 mt-0.5" aria-hidden="true" />
-=======
-          <CheckCircle2 className="size-5 text-green-600 shrink-0 mt-0.5" />
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
           <div>
             <p className="font-semibold text-green-900 mb-1">Document Verified</p>
             <p className="text-sm text-green-700">

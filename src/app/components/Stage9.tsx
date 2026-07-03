@@ -43,11 +43,7 @@ export function Stage9({ data, setData }: { data: any, setData: (data: any) => v
         </div>
         <div className="flex gap-2">
           <label className="px-4 py-2 bg-primary text-primary-foreground rounded-lg cursor-pointer flex items-center gap-2">
-<<<<<<< HEAD
             <Upload className="size-4" aria-hidden="true"/> Upload MPR Docs
-=======
-            <Upload className="size-4"/> Upload MPR Docs
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
             <input type="file" multiple className="hidden" onChange={e => { if(e.target.files) setData({...data, mprDocs: [...data.mprDocs, ...Array.from(e.target.files)]}) }} />
           </label>
         </div>
@@ -55,11 +51,7 @@ export function Stage9({ data, setData }: { data: any, setData: (data: any) => v
           {data.mprDocs.map((doc: any, idx: number) => (
             <div key={idx} className="flex justify-between items-center p-3 border rounded">
               <div className="flex flex-col gap-1">
-<<<<<<< HEAD
                 <div className="flex items-center gap-2"><FileText className="size-4 text-primary" aria-hidden="true"/> <span className="text-sm font-medium">{doc.name}</span> <span className="text-xs bg-muted px-2 py-0.5 rounded">MPR</span></div>
-=======
-                <div className="flex items-center gap-2"><FileText className="size-4 text-primary"/> <span className="text-sm font-medium">{doc.name}</span> <span className="text-xs bg-muted px-2 py-0.5 rounded">MPR</span></div>
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                 <div className="flex items-center gap-3 text-xs text-muted-foreground ml-6">
                   <span>Uploaded: Today</span>
                   <span>By: Current User</span>
@@ -68,17 +60,10 @@ export function Stage9({ data, setData }: { data: any, setData: (data: any) => v
                 </div>
               </div>
               <div className="flex gap-2">
-<<<<<<< HEAD
                 <button className="p-1.5 text-primary hover:bg-muted rounded" title="View" aria-label="View document"><Eye className="size-4" aria-hidden="true"/></button>
                 <button className="p-1.5 text-green-600 hover:bg-muted rounded" title="Download" aria-label="Download document"><Download className="size-4" aria-hidden="true"/></button>
                 <button className="p-1.5 text-blue-600 hover:bg-muted rounded" title="Replace Version" aria-label="Replace document version"><Upload className="size-4" aria-hidden="true"/></button>
                 <button onClick={() => { const docs = [...data.mprDocs]; docs.splice(idx, 1); setData({...data, mprDocs: docs}) }} className="p-1.5 text-red-500 hover:bg-red-50 rounded" title="Delete Draft" aria-label="Delete document"><Trash2 className="size-4" aria-hidden="true"/></button>
-=======
-                <button className="p-1.5 text-primary hover:bg-muted rounded" title="View"><Eye className="size-4"/></button>
-                <button className="p-1.5 text-green-600 hover:bg-muted rounded" title="Download"><Download className="size-4"/></button>
-                <button className="p-1.5 text-blue-600 hover:bg-muted rounded" title="Replace Version"><Upload className="size-4"/></button>
-                <button onClick={() => { const docs = [...data.mprDocs]; docs.splice(idx, 1); setData({...data, mprDocs: docs}) }} className="p-1.5 text-red-500 hover:bg-red-50 rounded" title="Delete Draft"><Trash2 className="size-4"/></button>
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
               </div>
             </div>
           ))}
@@ -88,30 +73,17 @@ export function Stage9({ data, setData }: { data: any, setData: (data: any) => v
       <div>
         <div className="flex justify-between items-center border-b pb-2 mb-4">
           <h4 className="font-bold text-lg">Geo Tagged Photos</h4>
-<<<<<<< HEAD
           <button onClick={() => setData({...data, geoPhotos: [...data.geoPhotos, {file: new File([""], "placeholder"), lat: "", lng: "", date: "", desc: ""}]})} className="px-3 py-1 bg-secondary text-secondary-foreground rounded text-sm flex items-center gap-1"><Plus className="size-4" aria-hidden="true"/> Add Photo</button>
-=======
-          <button onClick={() => setData({...data, geoPhotos: [...data.geoPhotos, {file: new File([""], "placeholder"), lat: "", lng: "", date: "", desc: ""}]})} className="px-3 py-1 bg-secondary text-secondary-foreground rounded text-sm flex items-center gap-1"><Plus className="size-4"/> Add Photo</button>
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
         </div>
         <div className="space-y-4">
           {data.geoPhotos.map((photo: any, idx: number) => (
             <div key={idx} className="flex flex-wrap gap-2 items-center bg-muted/20 p-2 rounded">
-<<<<<<< HEAD
               <input type="file" aria-label={`Photo file for entry ${idx + 1}`} onChange={e => { if(e.target.files) { const newP = [...data.geoPhotos]; newP[idx].file = e.target.files[0]; setData({...data, geoPhotos: newP}); } }} className="text-sm w-48" />
               <input type="text" aria-label={`Latitude for photo ${idx + 1}`} placeholder="Latitude" value={photo.lat} onChange={e => { const newP = [...data.geoPhotos]; newP[idx].lat = e.target.value; setData({...data, geoPhotos: newP}); }} className="w-24 px-2 py-1 border rounded text-sm bg-background" />
               <input type="text" aria-label={`Longitude for photo ${idx + 1}`} placeholder="Longitude" value={photo.lng} onChange={e => { const newP = [...data.geoPhotos]; newP[idx].lng = e.target.value; setData({...data, geoPhotos: newP}); }} className="w-24 px-2 py-1 border rounded text-sm bg-background" />
               <input type="date" aria-label={`Date for photo ${idx + 1}`} value={photo.date} onChange={e => { const newP = [...data.geoPhotos]; newP[idx].date = e.target.value; setData({...data, geoPhotos: newP}); }} className="w-32 px-2 py-1 border rounded text-sm bg-background" />
               <input type="text" aria-label={`Site description for photo ${idx + 1}`} placeholder="Site Description" value={photo.desc} onChange={e => { const newP = [...data.geoPhotos]; newP[idx].desc = e.target.value; setData({...data, geoPhotos: newP}); }} className="flex-1 px-2 py-1 border rounded text-sm bg-background" />
               <button onClick={() => { const newP = [...data.geoPhotos]; newP.splice(idx, 1); setData({...data, geoPhotos: newP}); }} className="p-1 text-red-500 hover:bg-red-100 rounded" aria-label={`Delete photo ${idx + 1}`}><Trash2 className="size-4" aria-hidden="true"/></button>
-=======
-              <input type="file" onChange={e => { if(e.target.files) { const newP = [...data.geoPhotos]; newP[idx].file = e.target.files[0]; setData({...data, geoPhotos: newP}); } }} className="text-sm w-48" />
-              <input type="text" placeholder="Latitude" value={photo.lat} onChange={e => { const newP = [...data.geoPhotos]; newP[idx].lat = e.target.value; setData({...data, geoPhotos: newP}); }} className="w-24 px-2 py-1 border rounded text-sm bg-background" />
-              <input type="text" placeholder="Longitude" value={photo.lng} onChange={e => { const newP = [...data.geoPhotos]; newP[idx].lng = e.target.value; setData({...data, geoPhotos: newP}); }} className="w-24 px-2 py-1 border rounded text-sm bg-background" />
-              <input type="date" value={photo.date} onChange={e => { const newP = [...data.geoPhotos]; newP[idx].date = e.target.value; setData({...data, geoPhotos: newP}); }} className="w-32 px-2 py-1 border rounded text-sm bg-background" />
-              <input type="text" placeholder="Site Description" value={photo.desc} onChange={e => { const newP = [...data.geoPhotos]; newP[idx].desc = e.target.value; setData({...data, geoPhotos: newP}); }} className="flex-1 px-2 py-1 border rounded text-sm bg-background" />
-              <button onClick={() => { const newP = [...data.geoPhotos]; newP.splice(idx, 1); setData({...data, geoPhotos: newP}); }} className="p-1 text-red-500 hover:bg-red-100 rounded"><Trash2 className="size-4"/></button>
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
             </div>
           ))}
         </div>
@@ -154,11 +126,7 @@ export function Stage9({ data, setData }: { data: any, setData: (data: any) => v
             <option>Audit Compliance Report</option>
           </select>
           <label className="px-4 py-2 bg-primary text-primary-foreground rounded-lg cursor-pointer flex items-center gap-2">
-<<<<<<< HEAD
             <Upload className="size-4" aria-hidden="true"/> Upload
-=======
-            <Upload className="size-4"/> Upload
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
             <input type="file" multiple className="hidden" onChange={e => { if(e.target.files) setData({...data, supportingDocs: [...data.supportingDocs, ...Array.from(e.target.files)]}) }} />
           </label>
         </div>
@@ -166,11 +134,7 @@ export function Stage9({ data, setData }: { data: any, setData: (data: any) => v
           {data.supportingDocs.map((doc: any, idx: number) => (
             <div key={idx} className="flex justify-between items-center p-3 border rounded">
               <div className="flex flex-col gap-1">
-<<<<<<< HEAD
                 <div className="flex items-center gap-2"><FileText className="size-4 text-primary" aria-hidden="true"/> <span className="text-sm font-medium">{doc.name}</span> <span className="text-xs bg-muted px-2 py-0.5 rounded">{data.docType}</span></div>
-=======
-                <div className="flex items-center gap-2"><FileText className="size-4 text-primary"/> <span className="text-sm font-medium">{doc.name}</span> <span className="text-xs bg-muted px-2 py-0.5 rounded">{data.docType}</span></div>
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                 <div className="flex items-center gap-3 text-xs text-muted-foreground ml-6">
                   <span>Uploaded: Today</span>
                   <span>By: Current User</span>
@@ -179,17 +143,10 @@ export function Stage9({ data, setData }: { data: any, setData: (data: any) => v
                 </div>
               </div>
               <div className="flex gap-2">
-<<<<<<< HEAD
                 <button className="p-1.5 text-primary hover:bg-muted rounded" title="View" aria-label="View document"><Eye className="size-4" aria-hidden="true"/></button>
                 <button className="p-1.5 text-green-600 hover:bg-muted rounded" title="Download" aria-label="Download document"><Download className="size-4" aria-hidden="true"/></button>
                 <button className="p-1.5 text-blue-600 hover:bg-muted rounded" title="Replace Version" aria-label="Replace document version"><Upload className="size-4" aria-hidden="true"/></button>
                 <button onClick={() => { const docs = [...data.supportingDocs]; docs.splice(idx, 1); setData({...data, supportingDocs: docs}) }} className="p-1.5 text-red-500 hover:bg-red-50 rounded" title="Delete Draft" aria-label="Delete document"><Trash2 className="size-4" aria-hidden="true"/></button>
-=======
-                <button className="p-1.5 text-primary hover:bg-muted rounded" title="View"><Eye className="size-4"/></button>
-                <button className="p-1.5 text-green-600 hover:bg-muted rounded" title="Download"><Download className="size-4"/></button>
-                <button className="p-1.5 text-blue-600 hover:bg-muted rounded" title="Replace Version"><Upload className="size-4"/></button>
-                <button onClick={() => { const docs = [...data.supportingDocs]; docs.splice(idx, 1); setData({...data, supportingDocs: docs}) }} className="p-1.5 text-red-500 hover:bg-red-50 rounded" title="Delete Draft"><Trash2 className="size-4"/></button>
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
               </div>
             </div>
           ))}

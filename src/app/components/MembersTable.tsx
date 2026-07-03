@@ -50,17 +50,12 @@ export function MembersTable({ members, setMembers }: MembersTableProps) {
           onClick={addRow}
           className="px-3 py-2 bg-primary text-white rounded-lg flex items-center gap-2"
         >
-<<<<<<< HEAD
           <Plus className="size-4" aria-hidden="true" />
-=======
-          <Plus className="size-4" />
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
           Add Member
         </button>
       </div>
 
       <table className="w-full border border-border rounded-lg overflow-hidden">
-<<<<<<< HEAD
         <caption className="sr-only">Members present</caption>
         <thead className="bg-muted">
           <tr>
@@ -68,14 +63,6 @@ export function MembersTable({ members, setMembers }: MembersTableProps) {
             <th scope="col" className="p-3 border">Name</th>
             <th scope="col" className="p-3 border">Designation</th>
             <th scope="col" className="p-3 border">Action</th>
-=======
-        <thead className="bg-muted">
-          <tr>
-            <th className="p-3 border">Sr No</th>
-            <th className="p-3 border">Name</th>
-            <th className="p-3 border">Designation</th>
-            <th className="p-3 border">Action</th>
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
           </tr>
         </thead>
 
@@ -90,10 +77,7 @@ export function MembersTable({ members, setMembers }: MembersTableProps) {
                   value={member.name}
                   onChange={(e) => updateField(index, "name", e.target.value)}
                   className="w-full px-3 py-2 border rounded"
-<<<<<<< HEAD
                   aria-label={`Name for member ${member.srNo}`}
-=======
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                 />
               </td>
 
@@ -105,10 +89,7 @@ export function MembersTable({ members, setMembers }: MembersTableProps) {
                     updateField(index, "designation", e.target.value)
                   }
                   className="w-full px-3 py-2 border rounded"
-<<<<<<< HEAD
                   aria-label={`Designation for member ${member.srNo}`}
-=======
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                 />
               </td>
 
@@ -117,14 +98,9 @@ export function MembersTable({ members, setMembers }: MembersTableProps) {
                   <button
                     onClick={() => removeRow(index)}
                     className="text-red-600"
-<<<<<<< HEAD
                     aria-label={`Delete member ${member.srNo}`}
                   >
                     <Trash2 className="size-5" aria-hidden="true" />
-=======
-                  >
-                    <Trash2 className="size-5" />
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
                   </button>
                 )}
               </td>

@@ -4,19 +4,11 @@ import type { Stage1Data, StageProps } from "../../../constants/stageTypes";
 export function Stage1({ data, setData }: StageProps<Stage1Data>) {
   return (
     <div className="space-y-4">
-<<<<<<< HEAD
       <fieldset>
         <legend className="block text-sm font-medium mb-2">
           Desk Officer Approved DPR/PPR?{" "}
           <span className="text-red-600">*</span>
         </legend>
-=======
-      <div>
-        <label className="block text-sm font-medium mb-2">
-          Desk Officer Approved DPR/PPR?{" "}
-          <span className="text-red-600">*</span>
-        </label>
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
         <div className="flex gap-4">
           <label className="flex items-center gap-2 cursor-pointer">
             <input
@@ -45,7 +37,6 @@ export function Stage1({ data, setData }: StageProps<Stage1Data>) {
             <span>No</span>
           </label>
         </div>
-<<<<<<< HEAD
       </fieldset>
 
       {data.deskOfficerApproved === "yes" && (
@@ -55,16 +46,6 @@ export function Stage1({ data, setData }: StageProps<Stage1Data>) {
           </label>
           <input
             id="stage1-dpr-upload"
-=======
-      </div>
-
-      {data.deskOfficerApproved === "yes" && (
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Upload DPR & PPR <span className="text-red-600">*</span>
-          </label>
-          <input
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
             type="file"
             accept=".pdf,.doc,.docx"
             onChange={(e) =>
@@ -84,19 +65,12 @@ export function Stage1({ data, setData }: StageProps<Stage1Data>) {
 
       {data.deskOfficerApproved === "no" && (
         <div>
-<<<<<<< HEAD
           <label htmlFor="stage1-rejection-reason" className="block text-sm font-medium mb-2">
             Reason for Rejection <span className="text-red-600">*</span>
           </label>
           <textarea
             id="stage1-rejection-reason"
             aria-required="true"
-=======
-          <label className="block text-sm font-medium mb-2">
-            Reason for Rejection <span className="text-red-600">*</span>
-          </label>
-          <textarea
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
             value={data.rejectionReason}
             onChange={(e) =>
               setData({ ...data, rejectionReason: e.target.value })

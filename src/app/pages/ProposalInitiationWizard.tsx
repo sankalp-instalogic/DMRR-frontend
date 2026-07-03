@@ -60,11 +60,7 @@ export function ProposalInitiationWizard() {
 
   const [step4Data, setStep4Data] = useState({
     projectCost: "",
-<<<<<<< HEAD
     proposalDemandFile: null as File | null,
-=======
-    proposalDemandFile: null as File | null, // Kept in state for UI compatibility, but ignored in submission
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
   });
 
   const totalSteps = 4;
@@ -116,24 +112,14 @@ export function ProposalInitiationWizard() {
           costEstimationLakhs: null,
           forwardedToDepartmentId: null,
           description: step2Data.sourceName || null,
-<<<<<<< HEAD
           documentTypeName: "ProposalDocument"
         },
-=======
-          documentTypeName:"ProposalDocument"
-        },
-        // The uploaded proposal document — readiness is assessed against this (bot OCRs it).
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
         file: step4Data.proposalDemandFile,
       });
 
       setAiResult(result);
 
-<<<<<<< HEAD
       // --- CASE 1: BLOCKED STATUS ---
-=======
-      // Stage 1/2 — duplicate blocks initiation.
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
       if (!result.canProceed) {
         setNdmaValidationStatus("failed");
         const matches =
@@ -148,7 +134,6 @@ export function ProposalInitiationWizard() {
         return;
       }
 
-<<<<<<< HEAD
       // --- CASE 2: SUCCESS STATUS (PROCESS ALL METRICS) ---
       setNdmaValidationStatus("success");
       let messageOutput = "";
@@ -198,24 +183,6 @@ export function ProposalInitiationWizard() {
       setNdmaValidationMessage(messageOutput);
 
     } catch (err: any) {
-=======
-      // Stage 3 — readiness is non-blocking; surface the score + observations.
-      const r = result.readiness;
-      const score = r?.readinessScore ?? 0;
-      const passed = result.readinessPassed;
-      const missing = (r?.missingItems ?? []).slice(0, 6).map((m) => `• ${m}`).join("\n");
-      const recs = (r?.recommendations ?? []).slice(0, 6).map((m) => `• ${m}`).join("\n");
-
-      setNdmaValidationStatus("success");
-      setNdmaValidationMessage(
-        `Readiness: ${score}/100 (${r?.category ?? "Assessed"})${passed ? " — meets threshold" : " — below threshold (you can still submit; AI notes will be saved)"}.` +
-          (r?.executiveSummary ? `\n\n${r.executiveSummary}` : "") +
-          (missing ? `\n\nMissing items:\n${missing}` : "") +
-          (recs ? `\n\nRecommendations:\n${recs}` : ""),
-      );
-    } catch (err: any) {
-      // AI service unreachable: the .NET side fails soft, but guard the UI too.
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
       setNdmaValidationStatus("failed");
       setNdmaValidationMessage(
         err?.response?.data?.message ||
@@ -231,20 +198,12 @@ export function ProposalInitiationWizard() {
       return;
     }
 
-<<<<<<< HEAD
-=======
-    // Convert dates to ISO string to match the JSON example, assuming YYYY-MM-DD input
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
     const formatToISO = (dateString: string) => {
       return dateString
         ? new Date(dateString).toISOString()
         : new Date().toISOString();
     };
 
-<<<<<<< HEAD
-=======
-    // Build the payload matching the required JSON structure exactly
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
     const payload = {
       financialYear: currentFinancialYear(),
       disasterTypeId: step1Data.disasterType || null,
@@ -257,24 +216,12 @@ export function ProposalInitiationWizard() {
       markedToAuthorityId: step2Data.receivingAuthority || null,
       dateReceivedByAuthority: formatToISO(step2Data.authorityReceivedDate),
       receivingOfficerId: step2Data.officerInCharge || null,
-<<<<<<< HEAD
       receivingOfficerName: "", 
       ndmaGuidelineId: step3Data.ndmaGuideline || null,
       costOfProjectLakhs: step4Data.projectCost ? Number(step4Data.projectCost) : 0,
       title: step2Data.sourceName
         ? `Structural Mitigation - ${step2Data.sourceName}`
         : "Structural Mitigation Proposal",
-=======
-      receivingOfficerName: "", // Placeholder as per example
-      ndmaGuidelineId: step3Data.ndmaGuideline || null,
-      costOfProjectLakhs: step4Data.projectCost
-        ? Number(step4Data.projectCost)
-        : 0,
-      title: step2Data.sourceName
-        ? `Structural Mitigation - ${step2Data.sourceName}`
-        : "Structural Mitigation Proposal",
-      // Persist the AI assessment captured during the preflight gate.
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
       aiAssessment: toAiAssessment(aiResult),
     };
 
@@ -282,19 +229,11 @@ export function ProposalInitiationWizard() {
     const toastId = toast.loading("Creating proposal...");
 
     try {
-<<<<<<< HEAD
-=======
-      // 1. Post the text data to get the proposal ID
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
       const proposalResponse = await axiosPrivate.post(
         "/api/v1/Proposals",
         payload,
       );
 
-<<<<<<< HEAD
-=======
-      // Extract the ID from the response (adjust .data.id if your API nests it differently)
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
       const proposalId = proposalResponse.data?.id;
 
       if (!proposalId) {
@@ -303,14 +242,8 @@ export function ProposalInitiationWizard() {
         );
       }
 
-<<<<<<< HEAD
       if (step4Data.proposalDemandFile) {
         toast.loading("Uploading document...", { id: toastId });
-=======
-      // 2. If a file was selected, upload it using the returned ID
-      if (step4Data.proposalDemandFile) {
-        toast.loading("Uploading document...", { id: toastId }); // Update the toast message
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
 
         const formData = new FormData();
         formData.append("ownerType", "1");
@@ -324,11 +257,6 @@ export function ProposalInitiationWizard() {
           },
         });
 
-<<<<<<< HEAD
-=======
-        // 3. Ingest the uploaded proposal document into the AI "projects" corpus
-        //    (powers future duplicate/existence detection). Best-effort: never blocks submit.
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
         const documentId = uploadResponse.data?.id;
         if (documentId) {
           toast.loading("Indexing document for AI...", { id: toastId });
@@ -339,11 +267,7 @@ export function ProposalInitiationWizard() {
               title: payload.title,
             });
           } catch {
-<<<<<<< HEAD
             // Non-blocking catch block for best-effort storage
-=======
-            // ingestion is best-effort; the proposal is already saved
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
           }
         }
       }
@@ -370,18 +294,10 @@ export function ProposalInitiationWizard() {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-<<<<<<< HEAD
-=======
-      // Validate file size (25MB max)
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
       if (file.size > 25 * 1024 * 1024) {
         alert("File size exceeds 25MB limit.");
         return;
       }
-<<<<<<< HEAD
-=======
-      // Validate file type
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
       const allowedTypes = [
         "application/pdf",
         "application/msword",
@@ -414,10 +330,6 @@ export function ProposalInitiationWizard() {
       case 3:
         return Boolean(step3Data.ndmaGuideline);
       case 4:
-<<<<<<< HEAD
-=======
-        // Cost of project and file validation are optional for enabling the Next/Submit button
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
         return true;
       default:
         return false;
@@ -511,16 +423,6 @@ export function ProposalInitiationWizard() {
               Back
             </button>
           )}
-<<<<<<< HEAD
-=======
-          {/* <button
-            onClick={handleSaveDraft}
-            className="px-6 py-3 bg-secondary text-secondary-foreground rounded-lg hover:opacity-90 transition-opacity font-medium flex items-center gap-2"
-          >
-            <Save className="size-4" />
-            Save Draft
-          </button> */}
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
         </div>
 
         <div className="flex gap-3">
@@ -559,8 +461,4 @@ export function ProposalInitiationWizard() {
       </div>
     </div>
   );
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac

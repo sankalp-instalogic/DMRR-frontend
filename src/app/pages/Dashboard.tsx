@@ -3,10 +3,7 @@ import { Link, useNavigate } from "react-router";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { useQuery } from "@tanstack/react-query";
 import { Select } from "antd";
-<<<<<<< HEAD
 import { Button } from "@/app/components/ui/button";
-=======
->>>>>>> 771174a6c232478d1902ccf947dd94cb1e8cb2ac
 import { formatCurrencyLakhs } from "../../utils/currencyFormatter";
 import {
   FileText,
