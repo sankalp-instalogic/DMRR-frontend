@@ -169,7 +169,7 @@ export function Stage8({ data, setData }: StageProps<Stage8Data>) {
           className="w-full px-4 py-3 border border-border rounded-lg"
         />
         {data.supportingDocs.length > 0 && (
-          <div className="text-green-600 text-sm mt-2">
+          <div className="text-success text-sm mt-2">
             {data.supportingDocs.length} file(s) selected
           </div>
         )}

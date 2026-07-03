@@ -1,5 +1,7 @@
 import { Upload, Plus, Trash2, Eye, Download, FileText } from "lucide-react";
 
+import { Button } from "./ui/button";
+
 export function Stage9({ data, setData }: { data: any, setData: (data: any) => void }) {
   return (
     <div className="space-y-8">
@@ -56,14 +58,14 @@ export function Stage9({ data, setData }: { data: any, setData: (data: any) => v
                   <span>Uploaded: Today</span>
                   <span>By: Current User</span>
                   <span>v1.0</span>
-                  <span className="text-green-600 font-medium">OCR: Pending</span>
+                  <span className="text-success font-medium">OCR: Pending</span>
                 </div>
               </div>
               <div className="flex gap-2">
-                <button className="p-1.5 text-primary hover:bg-muted rounded" title="View" aria-label="View document"><Eye className="size-4" aria-hidden="true"/></button>
-                <button className="p-1.5 text-green-600 hover:bg-muted rounded" title="Download" aria-label="Download document"><Download className="size-4" aria-hidden="true"/></button>
-                <button className="p-1.5 text-blue-600 hover:bg-muted rounded" title="Replace Version" aria-label="Replace document version"><Upload className="size-4" aria-hidden="true"/></button>
-                <button onClick={() => { const docs = [...data.mprDocs]; docs.splice(idx, 1); setData({...data, mprDocs: docs}) }} className="p-1.5 text-red-500 hover:bg-red-50 rounded" title="Delete Draft" aria-label="Delete document"><Trash2 className="size-4" aria-hidden="true"/></button>
+                <Button variant="ghost" size="icon" className="text-primary" title="View" aria-label="View document"><Eye className="size-4" aria-hidden="true"/></Button>
+                <Button variant="ghost" size="icon" className="text-success" title="Download" aria-label="Download document"><Download className="size-4" aria-hidden="true"/></Button>
+                <Button variant="ghost" size="icon" className="text-info" title="Replace Version" aria-label="Replace document version"><Upload className="size-4" aria-hidden="true"/></Button>
+                <Button variant="ghost" size="icon" onClick={() => { const docs = [...data.mprDocs]; docs.splice(idx, 1); setData({...data, mprDocs: docs}) }} className="text-destructive hover:bg-destructive-muted" title="Delete Draft" aria-label="Delete document"><Trash2 className="size-4" aria-hidden="true"/></Button>
               </div>
             </div>
           ))}
@@ -73,7 +75,7 @@ export function Stage9({ data, setData }: { data: any, setData: (data: any) => v
       <div>
         <div className="flex justify-between items-center border-b pb-2 mb-4">
           <h4 className="font-bold text-lg">Geo Tagged Photos</h4>
-          <button onClick={() => setData({...data, geoPhotos: [...data.geoPhotos, {file: new File([""], "placeholder"), lat: "", lng: "", date: "", desc: ""}]})} className="px-3 py-1 bg-secondary text-secondary-foreground rounded text-sm flex items-center gap-1"><Plus className="size-4" aria-hidden="true"/> Add Photo</button>
+          <Button variant="secondary" size="sm" onClick={() => setData({...data, geoPhotos: [...data.geoPhotos, {file: new File([""], "placeholder"), lat: "", lng: "", date: "", desc: ""}]})}><Plus className="size-4" aria-hidden="true"/> Add Photo</Button>
         </div>
         <div className="space-y-4">
           {data.geoPhotos.map((photo: any, idx: number) => (
@@ -83,34 +85,34 @@ export function Stage9({ data, setData }: { data: any, setData: (data: any) => v
               <input type="text" aria-label={`Longitude for photo ${idx + 1}`} placeholder="Longitude" value={photo.lng} onChange={e => { const newP = [...data.geoPhotos]; newP[idx].lng = e.target.value; setData({...data, geoPhotos: newP}); }} className="w-24 px-2 py-1 border rounded text-sm bg-background" />
               <input type="date" aria-label={`Date for photo ${idx + 1}`} value={photo.date} onChange={e => { const newP = [...data.geoPhotos]; newP[idx].date = e.target.value; setData({...data, geoPhotos: newP}); }} className="w-32 px-2 py-1 border rounded text-sm bg-background" />
               <input type="text" aria-label={`Site description for photo ${idx + 1}`} placeholder="Site Description" value={photo.desc} onChange={e => { const newP = [...data.geoPhotos]; newP[idx].desc = e.target.value; setData({...data, geoPhotos: newP}); }} className="flex-1 px-2 py-1 border rounded text-sm bg-background" />
-              <button onClick={() => { const newP = [...data.geoPhotos]; newP.splice(idx, 1); setData({...data, geoPhotos: newP}); }} className="p-1 text-red-500 hover:bg-red-100 rounded" aria-label={`Delete photo ${idx + 1}`}><Trash2 className="size-4" aria-hidden="true"/></button>
+              <Button variant="ghost" size="icon" onClick={() => { const newP = [...data.geoPhotos]; newP.splice(idx, 1); setData({...data, geoPhotos: newP}); }} className="text-destructive hover:bg-destructive-muted" aria-label={`Delete photo ${idx + 1}`}><Trash2 className="size-4" aria-hidden="true"/></Button>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex gap-4">
+      <div className="bg-info-muted border border-info-border rounded-xl p-4 flex gap-4">
         <div className="flex-1">
-          <p className="text-xs text-blue-700 font-semibold mb-1 uppercase tracking-wide">Monitoring Dashboard</p>
+          <p className="text-xs text-info-muted-foreground font-semibold mb-1 uppercase tracking-wide">Monitoring Dashboard</p>
           <div className="flex justify-between items-end">
             <div>
-              <p className="text-sm font-medium text-blue-900">Physical Progress</p>
-              <p className="text-2xl font-bold text-blue-900">{data.progressPercent || "0"}%</p>
+              <p className="text-sm font-medium text-info-muted-foreground">Physical Progress</p>
+              <p className="text-2xl font-bold text-info-muted-foreground">{data.progressPercent || "0"}%</p>
             </div>
-            <div className="w-2/3 bg-blue-200 h-3 rounded-full overflow-hidden">
-              <div className="bg-blue-600 h-full" style={{width: `${data.progressPercent || 0}%`}}></div>
+            <div className="w-2/3 bg-info-muted h-3 rounded-full overflow-hidden">
+              <div className="bg-info h-full" style={{width: `${data.progressPercent || 0}%`}}></div>
             </div>
           </div>
         </div>
         <div className="flex-1">
-          <p className="text-xs text-blue-700 font-semibold mb-1 uppercase tracking-wide">Financial Progress</p>
+          <p className="text-xs text-info-muted-foreground font-semibold mb-1 uppercase tracking-wide">Financial Progress</p>
           <div className="flex justify-between items-end">
             <div>
-              <p className="text-sm font-medium text-blue-900">Amount Spent</p>
-              <p className="text-2xl font-bold text-blue-900">0%</p>
+              <p className="text-sm font-medium text-info-muted-foreground">Amount Spent</p>
+              <p className="text-2xl font-bold text-info-muted-foreground">0%</p>
             </div>
-            <div className="w-2/3 bg-blue-200 h-3 rounded-full overflow-hidden">
-              <div className="bg-green-500 h-full" style={{width: '0%'}}></div>
+            <div className="w-2/3 bg-info-muted h-3 rounded-full overflow-hidden">
+              <div className="bg-success h-full" style={{width: '0%'}}></div>
             </div>
           </div>
         </div>
@@ -139,14 +141,14 @@ export function Stage9({ data, setData }: { data: any, setData: (data: any) => v
                   <span>Uploaded: Today</span>
                   <span>By: Current User</span>
                   <span>v1.0</span>
-                  <span className="text-green-600 font-medium">OCR: Pending</span>
+                  <span className="text-success font-medium">OCR: Pending</span>
                 </div>
               </div>
               <div className="flex gap-2">
-                <button className="p-1.5 text-primary hover:bg-muted rounded" title="View" aria-label="View document"><Eye className="size-4" aria-hidden="true"/></button>
-                <button className="p-1.5 text-green-600 hover:bg-muted rounded" title="Download" aria-label="Download document"><Download className="size-4" aria-hidden="true"/></button>
-                <button className="p-1.5 text-blue-600 hover:bg-muted rounded" title="Replace Version" aria-label="Replace document version"><Upload className="size-4" aria-hidden="true"/></button>
-                <button onClick={() => { const docs = [...data.supportingDocs]; docs.splice(idx, 1); setData({...data, supportingDocs: docs}) }} className="p-1.5 text-red-500 hover:bg-red-50 rounded" title="Delete Draft" aria-label="Delete document"><Trash2 className="size-4" aria-hidden="true"/></button>
+                <Button variant="ghost" size="icon" className="text-primary" title="View" aria-label="View document"><Eye className="size-4" aria-hidden="true"/></Button>
+                <Button variant="ghost" size="icon" className="text-success" title="Download" aria-label="Download document"><Download className="size-4" aria-hidden="true"/></Button>
+                <Button variant="ghost" size="icon" className="text-info" title="Replace Version" aria-label="Replace document version"><Upload className="size-4" aria-hidden="true"/></Button>
+                <Button variant="ghost" size="icon" onClick={() => { const docs = [...data.supportingDocs]; docs.splice(idx, 1); setData({...data, supportingDocs: docs}) }} className="text-destructive hover:bg-destructive-muted" title="Delete Draft" aria-label="Delete document"><Trash2 className="size-4" aria-hidden="true"/></Button>
               </div>
             </div>
           ))}

@@ -1,5 +1,7 @@
 import { Upload, Plus, Trash2, Eye, Download, FileText } from "lucide-react";
 
+import { Button } from "./ui/button";
+
 export function Stage7({ data, setData }: { data: any, setData: (data: any) => void }) {
   return (
     <div className="space-y-8">
@@ -64,7 +66,7 @@ export function Stage7({ data, setData }: { data: any, setData: (data: any) => v
       <div>
         <div className="flex justify-between items-center border-b pb-2 mb-4">
           <h4 className="font-bold text-lg">Installment Capture</h4>
-          <button onClick={() => setData({...data, installments: [...data.installments, {no: "", date: "", amount: "", remarks: ""}]})} className="px-3 py-1 bg-secondary text-secondary-foreground rounded text-sm flex items-center gap-1"><Plus aria-hidden="true" className="size-4"/> Add</button>
+          <Button variant="secondary" size="sm" onClick={() => setData({...data, installments: [...data.installments, {no: "", date: "", amount: "", remarks: ""}]})}><Plus aria-hidden="true" className="size-4"/> Add</Button>
         </div>
         <div className="space-y-2">
           {data.installments.map((inst: any, idx: number) => (
@@ -73,7 +75,7 @@ export function Stage7({ data, setData }: { data: any, setData: (data: any) => v
               <input aria-label="Installment date" type="date" value={inst.date} onChange={e => { const newInst = [...data.installments]; newInst[idx].date = e.target.value; setData({...data, installments: newInst}); }} className="w-32 px-2 py-1 border rounded text-sm bg-background" />
               <input aria-label="Installment amount" type="number" placeholder="Amount" value={inst.amount} onChange={e => { const newInst = [...data.installments]; newInst[idx].amount = e.target.value; setData({...data, installments: newInst}); }} className="w-24 px-2 py-1 border rounded text-sm bg-background" />
               <input aria-label="Installment remarks" type="text" placeholder="Remarks" value={inst.remarks} onChange={e => { const newInst = [...data.installments]; newInst[idx].remarks = e.target.value; setData({...data, installments: newInst}); }} className="flex-1 px-2 py-1 border rounded text-sm bg-background" />
-              <button aria-label="Delete installment row" onClick={() => { const newInst = [...data.installments]; newInst.splice(idx, 1); setData({...data, installments: newInst}); }} className="p-1 text-red-500 hover:bg-red-100 rounded"><Trash2 aria-hidden="true" className="size-4"/></button>
+              <Button variant="ghost" size="icon" aria-label="Delete installment row" onClick={() => { const newInst = [...data.installments]; newInst.splice(idx, 1); setData({...data, installments: newInst}); }} className="text-destructive hover:bg-destructive-muted"><Trash2 aria-hidden="true" className="size-4"/></Button>
             </div>
           ))}
         </div>
@@ -103,14 +105,14 @@ export function Stage7({ data, setData }: { data: any, setData: (data: any) => v
                   <span>Uploaded: Today</span>
                   <span>By: Current User</span>
                   <span>v1.0</span>
-                  <span className="text-green-600 font-medium">OCR: Pending</span>
+                  <span className="text-success font-medium">OCR: Pending</span>
                 </div>
               </div>
               <div className="flex gap-2">
-                <button aria-label="View document" className="p-1.5 text-primary hover:bg-muted rounded" title="View"><Eye aria-hidden="true" className="size-4"/></button>
-                <button aria-label="Download document" className="p-1.5 text-green-600 hover:bg-muted rounded" title="Download"><Download aria-hidden="true" className="size-4"/></button>
-                <button aria-label="Replace document version" className="p-1.5 text-blue-600 hover:bg-muted rounded" title="Replace Version"><Upload aria-hidden="true" className="size-4"/></button>
-                <button aria-label="Delete document" onClick={() => { const docs = [...data.supportingDocs]; docs.splice(idx, 1); setData({...data, supportingDocs: docs}) }} className="p-1.5 text-red-500 hover:bg-red-50 rounded" title="Delete Draft"><Trash2 aria-hidden="true" className="size-4"/></button>
+                <Button variant="ghost" size="icon" aria-label="View document" className="text-primary" title="View"><Eye aria-hidden="true" className="size-4"/></Button>
+                <Button variant="ghost" size="icon" aria-label="Download document" className="text-success" title="Download"><Download aria-hidden="true" className="size-4"/></Button>
+                <Button variant="ghost" size="icon" aria-label="Replace document version" className="text-info" title="Replace Version"><Upload aria-hidden="true" className="size-4"/></Button>
+                <Button variant="ghost" size="icon" aria-label="Delete document" onClick={() => { const docs = [...data.supportingDocs]; docs.splice(idx, 1); setData({...data, supportingDocs: docs}) }} className="text-destructive hover:bg-destructive-muted" title="Delete Draft"><Trash2 aria-hidden="true" className="size-4"/></Button>
               </div>
             </div>
           ))}

@@ -6,7 +6,7 @@ import useAxiosPrivate from "../../../../hooks/useAxiosPrivate";
 import type { ColDef } from "ag-grid-community";
 import { Table } from "../../../components/Table";
 import { cn } from "../../../../utils/utils";
-import { buttonVariants } from "../../../components/ui/button";
+import { Button, buttonVariants } from "../../../components/ui/button";
 
 export function TendersList() {
   const navigate = useNavigate();
@@ -100,19 +100,19 @@ export function TendersList() {
       s.includes("active") ||
       s.includes("approved")
     ) {
-      return "bg-green-100 text-green-700 border-green-200";
+      return "bg-success-muted text-success-muted-foreground border-success-border";
     }
     if (
       s.includes("closed") ||
       s.includes("rejected") ||
       s.includes("cancelled")
     ) {
-      return "bg-red-100 text-red-700 border-red-200";
+      return "bg-destructive-muted text-destructive-muted-foreground border-destructive-border";
     }
     if (s.includes("draft") || s.includes("pending")) {
-      return "bg-amber-100 text-amber-700 border-amber-200";
+      return "bg-warning-muted text-warning-muted-foreground border-warning-border";
     }
-    return "bg-blue-50 text-blue-700 border-blue-200";
+    return "bg-info-muted text-info-muted-foreground border-info-border";
   };
 
   // Local filtering for Tenders
@@ -163,17 +163,19 @@ export function TendersList() {
         sortable: false,
         filter: false,
         cellRenderer: (params: any) => (
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() =>
               navigate(
                 `/procurement-tendering/tenders/independent/${params.data.id || params.data.procurementId}`,
               )
             }
-            className="p-2 inline-flex cursor-pointer justify-center hover:bg-muted rounded-lg text-muted-foreground hover:text-primary transition-colors"
+            className="text-muted-foreground hover:text-primary"
             title="View Details"
           >
             <Eye className="size-4" />
-          </button>
+          </Button>
         ),
       },
     ],
@@ -212,15 +214,17 @@ export function TendersList() {
           const row = params.data;
 
           return (
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() =>
                 navigate(`/procurement-tendering/tenders/procurement/${row.id}`)
               }
-              className="p-2 inline-flex cursor-pointer justify-center hover:bg-muted rounded-lg text-muted-foreground hover:text-primary transition-colors"
+              className="text-muted-foreground hover:text-primary"
               title="View Details"
             >
               <Eye className="size-4" />
-            </button>
+            </Button>
           );
         },
       },
@@ -257,12 +261,12 @@ export function TendersList() {
         </div>
 
         {isTendersLoading ? (
-          <div className="flex flex-col items-center justify-center p-8 bg-white rounded-xl border border-border text-muted-foreground">
-            <Loader2 className="size-6 animate-spin mb-2 text-[#1E5AA8]" />
+          <div className="flex flex-col items-center justify-center p-8 bg-card rounded-xl border border-border text-muted-foreground">
+            <Loader2 className="size-6 animate-spin mb-2 text-secondary" />
             <p>Loading tenders...</p>
           </div>
         ) : isTendersError ? (
-          <div className="p-8 text-center bg-white rounded-xl border border-border text-red-500">
+          <div className="p-8 text-center bg-card rounded-xl border border-border text-destructive">
             Failed to load tenders. Please try again later.
           </div>
         ) : (
@@ -284,12 +288,12 @@ export function TendersList() {
         </h2>
 
         {isProcurementLoading ? (
-          <div className="flex flex-col items-center justify-center p-8 bg-white rounded-xl border border-border text-muted-foreground">
-            <Loader2 className="size-6 animate-spin mb-2 text-[#1E5AA8]" />
+          <div className="flex flex-col items-center justify-center p-8 bg-card rounded-xl border border-border text-muted-foreground">
+            <Loader2 className="size-6 animate-spin mb-2 text-secondary" />
             <p>Loading procurement data...</p>
           </div>
         ) : isProcurementError ? (
-          <div className="p-8 text-center bg-white rounded-xl border border-border text-red-500">
+          <div className="p-8 text-center bg-card rounded-xl border border-border text-destructive">
             Failed to fetch procurement records. Please try again.
           </div>
         ) : (

@@ -24,7 +24,7 @@ export function ProposalStepper({
               {index < 3 && (
                 <div
                   className={`absolute top-5 left-1/2 w-full h-1 ${
-                    currentStep > step.id ? "bg-green-600" : "bg-muted"
+                    currentStep > step.id ? "bg-success" : "bg-muted"
                   }`}
                 />
               )}
@@ -35,7 +35,7 @@ export function ProposalStepper({
                   currentStep === step.id
                     ? "bg-primary text-primary-foreground"
                     : currentStep > step.id
-                      ? "bg-green-600 text-white"
+                      ? "bg-success text-primary-foreground"
                       : "bg-muted text-muted-foreground"
                 }`}
               >

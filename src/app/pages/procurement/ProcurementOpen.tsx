@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router";
 import { ArrowLeft, Printer, Download, FileText } from "lucide-react";
+import { Button } from "../../components/ui/button";
 
 export function ProcurementOpen() {
   const { id } = useParams();
@@ -40,24 +41,26 @@ export function ProcurementOpen() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button 
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => navigate(-1)}
-            className="p-2 hover:bg-muted rounded-full transition-colors"
+            className="rounded-full"
           >
             <ArrowLeft className="size-5 text-muted-foreground" />
-          </button>
+          </Button>
           <div>
             <h1 className="text-2xl font-bold text-primary">Procurement Details</h1>
             <p className="text-sm text-muted-foreground">Read-only view of procurement record {mockData.id}</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <button className="px-4 py-2 bg-white border border-border text-gray-700 font-medium rounded-lg hover:bg-gray-50 flex items-center gap-2 transition-colors">
+          <Button variant="outline">
             <Printer className="size-4" /> Print
-          </button>
-          <button className="px-4 py-2 bg-primary text-white font-medium rounded-lg hover:bg-opacity-90 flex items-center gap-2 transition-colors">
+          </Button>
+          <Button>
             <Download className="size-4" /> Download Summary
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -109,11 +112,11 @@ export function ProcurementOpen() {
                     <label className="block text-sm font-medium mb-1 text-muted-foreground">Approval Document</label>
                     <div className="w-full pointer-events-auto">
                       {mockData.secDocumentAvailable ? (
-                        <button className="flex items-center gap-2 w-full px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-100 text-sm font-medium transition-colors">
+                        <Button variant="outline" className="w-full bg-info-muted text-info-muted-foreground border-info-border hover:bg-info-muted">
                           <Download className="size-4" /> Download SEC Approval Document
-                        </button>
+                        </Button>
                       ) : (
-                        <div className="flex items-center gap-2 w-full px-3 py-2 bg-gray-50 text-gray-500 border border-gray-200 rounded-lg text-sm">
+                        <div className="flex items-center gap-2 w-full px-3 py-2 bg-muted text-muted-foreground border border-border rounded-lg text-sm">
                           <FileText className="size-4" /> No Document Uploaded
                         </div>
                       )}
@@ -142,11 +145,11 @@ export function ProcurementOpen() {
                     <label className="block text-sm font-medium mb-1 text-muted-foreground">Approval Document</label>
                     <div className="w-full pointer-events-auto">
                       {mockData.aaDocumentAvailable ? (
-                        <button className="flex items-center gap-2 w-full px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-100 text-sm font-medium transition-colors">
+                        <Button variant="outline" className="w-full bg-info-muted text-info-muted-foreground border-info-border hover:bg-info-muted">
                           <Download className="size-4" /> Download AA Approval Document
-                        </button>
+                        </Button>
                       ) : (
-                        <div className="flex items-center gap-2 w-full px-3 py-2 bg-gray-50 text-gray-500 border border-gray-200 rounded-lg text-sm">
+                        <div className="flex items-center gap-2 w-full px-3 py-2 bg-muted text-muted-foreground border border-border rounded-lg text-sm">
                           <FileText className="size-4" /> No Document Uploaded
                         </div>
                       )}
@@ -175,11 +178,11 @@ export function ProcurementOpen() {
                     <label className="block text-sm font-medium mb-1 text-muted-foreground">Contract Document</label>
                     <div className="w-full pointer-events-auto">
                       {mockData.contractDocumentAvailable ? (
-                        <button className="flex items-center gap-2 w-full px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-100 text-sm font-medium transition-colors">
+                        <Button variant="outline" className="w-full bg-info-muted text-info-muted-foreground border-info-border hover:bg-info-muted">
                           <Download className="size-4" /> Download Contract Award Document
-                        </button>
+                        </Button>
                       ) : (
-                        <div className="flex items-center gap-2 w-full px-3 py-2 bg-gray-50 text-gray-500 border border-gray-200 rounded-lg text-sm">
+                        <div className="flex items-center gap-2 w-full px-3 py-2 bg-muted text-muted-foreground border border-border rounded-lg text-sm">
                           <FileText className="size-4" /> No Document Uploaded
                         </div>
                       )}

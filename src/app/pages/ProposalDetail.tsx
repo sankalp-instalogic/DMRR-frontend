@@ -77,7 +77,7 @@ export function ProposalDetail() {
     setIsPreviewOpen(true);
   };
   const getStatusColor = (status: string) => {
-    if (!status) return "text-gray-600 bg-gray-100";
+    if (!status) return "text-muted-foreground bg-muted";
 
     const lowerStatus = status.toLowerCase();
     if (
@@ -85,19 +85,19 @@ export function ProposalDetail() {
       lowerStatus.includes("verified") ||
       lowerStatus.includes("approved")
     ) {
-      return "text-green-600 bg-green-100";
+      return "text-success bg-success-muted";
     }
     if (
       lowerStatus.includes("progress") ||
       lowerStatus.includes("revision") ||
       lowerStatus.includes("draft")
     ) {
-      return "text-blue-600 bg-blue-100";
+      return "text-info bg-info-muted";
     }
     if (lowerStatus.includes("pending") || lowerStatus.includes("pac")) {
-      return "text-orange-600 bg-orange-100";
+      return "text-warning bg-warning-muted";
     }
-    return "text-gray-600 bg-gray-100";
+    return "text-muted-foreground bg-muted";
   };
 
   // Fetch Proposal Data
@@ -246,7 +246,7 @@ export function ProposalDetail() {
           <div className="flex items-center gap-4 h-full">
             <button
               onClick={() => handlePreview(params.data.id)}
-              className="cursor-pointer text-slate-500 hover:text-primary transition-colors flex items-center"
+              className="cursor-pointer text-muted-foreground hover:text-primary transition-colors flex items-center"
               title="Preview"
             >
               <Eye className="size-5" />
@@ -256,7 +256,7 @@ export function ProposalDetail() {
               onClick={() =>
                 handleDownload(params.data.id, params.data.fileName)
               }
-              className="cursor-pointer text-slate-500 hover:text-primary transition-colors flex items-center"
+              className="cursor-pointer text-muted-foreground hover:text-primary transition-colors flex items-center"
               title="Download"
             >
               <Download className="size-5" />
@@ -418,7 +418,7 @@ export function ProposalDetail() {
                 <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
                   <IndianRupee className="size-3" /> Total Project Cost
                 </div>
-                <div className="text-2xl font-bold text-[#374151]">
+                <div className="text-2xl font-bold text-foreground">
                   {formatCurrencyLakhs(proposalData?.costOfProjectLakhs)}
                 </div>
               </div>
@@ -434,7 +434,7 @@ export function ProposalDetail() {
                 {/* <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
                   <IndianRupee className="size-3" /> Budget Received
                 </div>
-                <div className="text-2xl font-bold text-[#1E5AA8]">
+                <div className="text-2xl font-bold text-secondary">
                   {formatCurrencyLakhs(proposalData?.budgetReceived)}
                 </div>
               </div>
@@ -442,7 +442,7 @@ export function ProposalDetail() {
                 <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
                   <IndianRupee className="size-3" /> Budget Utilized
                 </div>
-                <div className="text-2xl font-bold text-[#059669]">
+                <div className="text-2xl font-bold text-success">
                   {formatCurrencyLakhs(proposalData?.budgetUtilized)}
                 </div> */}
               </div>
@@ -503,10 +503,10 @@ export function ProposalDetail() {
                       className={`absolute left-0 w-8 h-8 rounded-full flex items-center justify-center bg-background ${
                         item.status?.toLowerCase().includes("completed") ||
                         item.status?.toLowerCase().includes("approved")
-                          ? "bg-green-100 border-2 border-green-600 text-green-600"
+                          ? "bg-success-muted border-2 border-success text-success"
                           : item.status?.toLowerCase().includes("pending")
-                            ? "bg-gray-100 border-2 border-gray-300 text-gray-400"
-                            : "bg-blue-100 border-2 border-blue-600 text-blue-600"
+                            ? "bg-muted border-2 border-border text-muted-foreground"
+                            : "bg-info-muted border-2 border-info text-info"
                       }`}
                     >
                       {item.status?.toLowerCase().includes("completed") ||
@@ -547,12 +547,12 @@ export function ProposalDetail() {
                         <p className="text-sm mt-2">{item.remarks}</p>
                       )}
                       {item.revisionReson && (
-                        <p className="text-sm mt-2 text-orange-600">
+                        <p className="text-sm mt-2 text-warning">
                           <strong>Revision Reason:</strong> {item.revisionReson}
                         </p>
                       )}
                       {item.rejectionResion && (
-                        <p className="text-sm mt-2 text-red-600">
+                        <p className="text-sm mt-2 text-destructive">
                           <strong>Rejection Reason:</strong>{" "}
                           {item.rejectionResion}
                         </p>
@@ -617,7 +617,7 @@ export function ProposalDetail() {
 
   if (isProposalError || !proposalData) {
     return (
-      <div className="flex justify-center items-center h-64 text-red-500">
+      <div className="flex justify-center items-center h-64 text-destructive">
         <AlertCircle className="size-6 mr-2" /> Error loading proposal details.
       </div>
     );

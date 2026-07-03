@@ -10,8 +10,7 @@ import {
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import useAxiosPrivate from "../../../../hooks/useAxiosPrivate";
-import { cn } from "../../../../utils/utils";
-import { buttonVariants } from "../../../components/ui/button";
+import { Button } from "../../../components/ui/button";
 import { Upload, Button as AntdButton, Input } from "antd";
 
 const DOCUMENT_TYPES: Record<string, string> = {
@@ -186,11 +185,11 @@ export function ProcurementClosure() {
             <AntdButton
               icon={<UploadIcon className="size-3.5" />}
               style={{
-                backgroundColor: "#1E5AA8",
-                color: "white",
+                backgroundColor: "var(--info)",
+                color: "var(--info-foreground)",
                 border: "none",
               }}
-              className="hover:bg-blue-700 font-medium"
+              className="hover:bg-info font-medium"
             >
               Upload Document
             </AntdButton>
@@ -198,9 +197,9 @@ export function ProcurementClosure() {
         </td>
         <td className="px-6 py-4 text-center">
           {isUploaded ? (
-            <CheckCircle2 className="size-5 text-green-500 mx-auto" />
+            <CheckCircle2 className="size-5 text-success mx-auto" />
           ) : (
-            <XCircle className="size-5 text-red-500 mx-auto" />
+            <XCircle className="size-5 text-destructive mx-auto" />
           )}
         </td>
       </tr>
@@ -210,7 +209,7 @@ export function ProcurementClosure() {
   if (isProcurementLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="size-8 animate-spin text-[#1E5AA8]" />
+        <Loader2 className="size-8 animate-spin text-secondary" />
       </div>
     );
   }
@@ -219,12 +218,14 @@ export function ProcurementClosure() {
     <div className="space-y-6 pb-12 w-full max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => navigate(-1)}
-          className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground"
+          className="rounded-full text-muted-foreground"
         >
           <ArrowLeft className="size-5" />
-        </button>
+        </Button>
         <div>
           <h1 className="text-2xl font-bold text-primary">
             Procurement Closure
@@ -236,7 +237,7 @@ export function ProcurementClosure() {
       </div>
 
       {/* Procurement Read-Only Details */}
-      <div className="bg-white border border-border rounded-xl p-6 shadow-sm space-y-4">
+      <div className="bg-card border border-border rounded-xl p-6 shadow-sm space-y-4">
         <h3 className="text-lg font-semibold text-primary border-b pb-2">
           Procurement Details
         </h3>
@@ -297,8 +298,8 @@ export function ProcurementClosure() {
       </div>
 
       {/* Document Upload Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden mt-8">
-        <div className="px-6 py-4 border-b border-border bg-gray-50/50">
+      <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden mt-8">
+        <div className="px-6 py-4 border-b border-border bg-muted/50">
           <h2 className="text-lg font-semibold text-primary">
             Upload Documents
           </h2>
@@ -320,7 +321,7 @@ export function ProcurementClosure() {
             </thead>
             <tbody className="divide-y divide-border">
               {/* Process 1 */}
-              <tr className="bg-gray-50/30">
+              <tr className="bg-muted/30">
                 <td
                   colSpan={3}
                   className="px-6 py-2 font-medium text-primary text-xs uppercase tracking-wider"
@@ -332,7 +333,7 @@ export function ProcurementClosure() {
               {renderStageRow("Technical Evaluation", "techEvaluation")}
 
               {/* Process 2 */}
-              <tr className="bg-gray-50/30">
+              <tr className="bg-muted/30">
                 <td
                   colSpan={3}
                   className="px-6 py-2 font-medium text-primary text-xs uppercase tracking-wider"
@@ -348,29 +349,22 @@ export function ProcurementClosure() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-end gap-3 bg-white p-4 border-t border-border px-6">
-          <button
+        <div className="flex justify-end gap-3 bg-card p-4 border-t border-border px-6">
+          <Button
+            variant="outline"
             onClick={() => navigate(-1)}
-            className={cn(
-              buttonVariants({ variant: "outline" }),
-              "cursor-pointer",
-            )}
             disabled={isSavingClosure}
           >
             Cancel
-          </button>
-          <button
-            onClick={handleSaveClosure}
-            disabled={isSavingClosure}
-            className={cn(buttonVariants({ variant: "default" }),"cursor-pointer")}
-          >
+          </Button>
+          <Button onClick={handleSaveClosure} disabled={isSavingClosure}>
             {isSavingClosure ? (
               <Loader2 className="size-4 animate-spin mr-2" />
             ) : (
               <Save className="size-4 mr-2" />
             )}
             {isSavingClosure ? "Saving..." : "Save Closure"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

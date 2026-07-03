@@ -7,7 +7,7 @@ export function Stage1({ data, setData }: StageProps<Stage1Data>) {
       <fieldset>
         <legend className="block text-sm font-medium mb-2">
           Desk Officer Approved DPR/PPR?{" "}
-          <span className="text-red-600">*</span>
+          <span className="text-destructive">*</span>
         </legend>
         <div className="flex gap-4">
           <label className="flex items-center gap-2 cursor-pointer">
@@ -42,7 +42,7 @@ export function Stage1({ data, setData }: StageProps<Stage1Data>) {
       {data.deskOfficerApproved === "yes" && (
         <div>
           <label htmlFor="stage1-dpr-upload" className="block text-sm font-medium mb-2">
-            Upload DPR & PPR <span className="text-red-600">*</span>
+            Upload DPR & PPR <span className="text-destructive">*</span>
           </label>
           <input
             id="stage1-dpr-upload"
@@ -56,7 +56,7 @@ export function Stage1({ data, setData }: StageProps<Stage1Data>) {
             className="w-full px-4 py-3 border border-border rounded-lg bg-background"
           />
           {data.approvalDocument && (
-            <p className="text-sm text-green-600 mt-2">
+            <p className="text-sm text-success mt-2">
               ✓ {data.approvalDocument.name}
             </p>
           )}
@@ -66,7 +66,7 @@ export function Stage1({ data, setData }: StageProps<Stage1Data>) {
       {data.deskOfficerApproved === "no" && (
         <div>
           <label htmlFor="stage1-rejection-reason" className="block text-sm font-medium mb-2">
-            Reason for Rejection <span className="text-red-600">*</span>
+            Reason for Rejection <span className="text-destructive">*</span>
           </label>
           <textarea
             id="stage1-rejection-reason"

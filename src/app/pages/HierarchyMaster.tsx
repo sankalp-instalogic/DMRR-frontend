@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   Plus, Edit, Power, History, Upload, Download, Search
 } from "lucide-react";
+import { Button } from "../components/ui/button";
 
 type HierarchyLevel = "state" | "district" | "taluka";
 
@@ -158,28 +159,27 @@ export function HierarchyMaster() {
 
         {/* Action Buttons */}
         <div className="flex gap-2">
-          <button
+          <Button
             onClick={() => {
               setEditingItem(null);
               setNewItem({ code: "", name: "", parent: "" });
               setShowAddModal(true);
             }}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2 font-medium"
           >
             <Plus className="size-4" />
             Add
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="secondary"
             onClick={handleBulkUpload}
-            className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2 font-medium"
           >
             <Upload className="size-4" />
             Bulk Upload
-          </button>
-          <button className="px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors flex items-center gap-2 font-medium">
+          </Button>
+          <Button variant="outline">
             <Download className="size-4" />
             Export
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -224,8 +224,8 @@ export function HierarchyMaster() {
                     <span
                       className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
                         item.active
-                          ? "bg-green-100 text-green-700 border border-green-200"
-                          : "bg-gray-100 text-gray-700 border border-gray-200"
+                          ? "bg-success-muted text-success-muted-foreground border border-success-border"
+                          : "bg-muted text-foreground border border-border"
                       }`}
                     >
                       {item.active ? "Active" : "Inactive"}
@@ -235,26 +235,32 @@ export function HierarchyMaster() {
                   <td className="px-6 py-4 text-sm text-muted-foreground">{item.modifiedAt}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => handleEdit(item)}
-                        className="p-1.5 text-primary hover:bg-primary/10 rounded transition-colors"
+                        className="text-primary hover:bg-primary/10"
                         title="Edit"
                       >
                         <Edit className="size-4" />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => handleDeactivate(item)}
-                        className="p-1.5 text-orange-600 hover:bg-orange-100 rounded transition-colors"
+                        className="text-warning hover:bg-warning-muted"
                         title="Deactivate"
                       >
                         <Power className="size-4" />
-                      </button>
-                      <button
-                        className="p-1.5 text-secondary hover:bg-secondary/10 rounded transition-colors"
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-secondary hover:bg-secondary/10"
                         title="View History"
                       >
                         <History className="size-4" />
-                      </button>
+                      </Button>
                     </div>
                   </td>
                 </tr>
@@ -281,7 +287,7 @@ export function HierarchyMaster() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  Level Code <span className="text-red-600">*</span>
+                  Level Code <span className="text-destructive">*</span>
                 </label>
                 <input
                   type="text"
@@ -294,7 +300,7 @@ export function HierarchyMaster() {
 
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  Name <span className="text-red-600">*</span>
+                  Name <span className="text-destructive">*</span>
                 </label>
                 <input
                   type="text"
@@ -308,7 +314,7 @@ export function HierarchyMaster() {
               {activeLevel !== "state" && (
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    Parent <span className="text-red-600">*</span>
+                    Parent <span className="text-destructive">*</span>
                   </label>
                   <select
                     value={newItem.parent}
@@ -328,22 +334,21 @@ export function HierarchyMaster() {
             </div>
 
             <div className="flex items-center justify-end gap-3 mt-6">
-              <button
+              <Button
+                variant="outline"
                 onClick={() => {
                   setShowAddModal(false);
                   setEditingItem(null);
                   setNewItem({ code: "", name: "", parent: "" });
                 }}
-                className="px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleAdd}
-                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity"
               >
                 {editingItem ? "Save Changes" : "Add"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

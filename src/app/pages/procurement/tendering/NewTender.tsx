@@ -11,8 +11,7 @@ import {
   Save,
   Loader2,
 } from "lucide-react";
-import { cn } from "../../../../utils/utils";
-import { buttonVariants } from "../../../components/ui/button";
+import { Button as UIButton } from "../../../components/ui/button";
 
 // Document Type Mapping (ownerType is 8 for Tenders)
 const DOCUMENT_TYPES: Record<string, string> = {
@@ -272,7 +271,7 @@ export function NewTender() {
             </thead>
             <tbody className="divide-y divide-border">
               {/* Process 1 */}
-              <tr className="bg-gray-50/30">
+              <tr className="bg-muted/30">
                 <td
                   colSpan={4}
                   className="px-6 py-2 font-medium text-primary text-xs uppercase tracking-wider"
@@ -284,7 +283,7 @@ export function NewTender() {
               {renderStageRow("Technical Evaluation", "techEvaluation")}
 
               {/* Process 2 */}
-              <tr className="bg-gray-50/30">
+              <tr className="bg-muted/30">
                 <td
                   colSpan={4}
                   className="px-6 py-2 font-medium text-primary text-xs uppercase tracking-wider"
@@ -301,23 +300,16 @@ export function NewTender() {
       </div>
 
       {/* Action Bar */}
-      <div className="flex justify-end gap-3 sticky bottom-0 bg-white p-4 border-t border-border shadow-lg z-10 -mx-6 -mb-6 px-6">
+      <div className="flex justify-end gap-3 sticky bottom-0 bg-card p-4 border-t border-border shadow-lg z-10 -mx-6 -mb-6 px-6">
         {/* Replaced standard button with Antd Button and built-in loading state */}
-        <button
-          onClick={handleSave}
-          disabled={isSaving}
-          className={cn(
-            buttonVariants({ variant: "default" }),
-            "cursor-pointer",
-          )}
-        >
+        <UIButton onClick={handleSave} disabled={isSaving}>
           {isSaving ? (
             <Loader2 className="size-4 animate-spin" />
           ) : (
             <Save className="size-4" />
           )}
           {isSaving ? "Saving..." : "Save"}
-        </button>
+        </UIButton>
       </div>
     </div>
   );

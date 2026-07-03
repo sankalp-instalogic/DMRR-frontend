@@ -12,6 +12,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Input } from "antd"; 
 import useAxiosPrivate from "../../../../hooks/useAxiosPrivate";
 import { DocumentPreviewModal } from "../../../components/DocumentPreviewModal";
+import { Button } from "../../../components/ui/button";
 
 const DOCUMENT_TYPES: Record<string, string> = {
   "Technical Bid Opening": "30",
@@ -128,7 +129,7 @@ export function TenderDetails() {
           <h1 className="text-2xl font-bold text-primary flex items-center gap-2">
             Tender Details
             {(isTenderLoading || isDocsLoading) && (
-              <Loader2 className="size-5 animate-spin text-gray-400" />
+              <Loader2 className="size-5 animate-spin text-muted-foreground" />
             )}
           </h1>
           <p className="text-muted-foreground mt-1">
@@ -138,8 +139,8 @@ export function TenderDetails() {
       </div>
 
       {/* Basic Information Section */}
-      <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
-        <div className="px-6 py-4 border-b border-border bg-gray-50/50">
+      <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
+        <div className="px-6 py-4 border-b border-border bg-muted/50">
           <h2 className="text-lg font-semibold text-primary">
             Basic Information
           </h2>
@@ -195,8 +196,8 @@ export function TenderDetails() {
       </div>
 
       {/* Tender Process Tracking Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
-        <div className="px-6 py-4 border-b border-border bg-gray-50/50">
+      <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
+        <div className="px-6 py-4 border-b border-border bg-muted/50">
           <h2 className="text-lg font-semibold text-primary">
             Tender Process Tracking
           </h2>
@@ -212,7 +213,7 @@ export function TenderDetails() {
             </thead>
             <tbody className="divide-y divide-border">
               {/* Process 1 (Technical) */}
-              <tr className="bg-gray-50/30">
+              <tr className="bg-muted/30">
                 <td
                   colSpan={3}
                   className="px-6 py-2 font-medium text-primary text-xs uppercase tracking-wider"
@@ -230,29 +231,33 @@ export function TenderDetails() {
                     <td className="px-6 py-4 pl-10 font-medium">{stage}</td>
                     <td className="px-6 py-4 text-center">
                       {doc ? (
-                        <CheckCircle2 className="size-5 text-green-500 mx-auto" />
+                        <CheckCircle2 className="size-5 text-success mx-auto" />
                       ) : (
-                        <XCircle className="size-5 text-gray-300 mx-auto" />
+                        <XCircle className="size-5 text-muted-foreground mx-auto" />
                       )}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex items-center justify-center gap-2"> {/* <-- Added wrapper for buttons */}
-                        <button
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => setPreviewDocument(doc)}
                           disabled={!doc}
-                          className="p-2 inline-flex justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-primary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          className="text-muted-foreground hover:text-primary disabled:opacity-30"
                           title="Preview Document"
                         >
                           <Eye className="size-4" />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => handleDownload(doc)}
                           disabled={!doc}
-                          className="p-2 inline-flex justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-primary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          className="text-muted-foreground hover:text-primary disabled:opacity-30"
                           title="Download Document"
                         >
                           <Download className="size-4" />
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -260,7 +265,7 @@ export function TenderDetails() {
               })}
 
               {/* Process 2 (Financial) */}
-              <tr className="bg-gray-50/30">
+              <tr className="bg-muted/30">
                 <td
                   colSpan={3}
                   className="px-6 py-2 font-medium text-primary text-xs uppercase tracking-wider"
@@ -278,29 +283,33 @@ export function TenderDetails() {
                     <td className="px-6 py-4 pl-10 font-medium">{stage}</td>
                     <td className="px-6 py-4 text-center">
                       {doc ? (
-                        <CheckCircle2 className="size-5 text-green-500 mx-auto" />
+                        <CheckCircle2 className="size-5 text-success mx-auto" />
                       ) : (
-                        <XCircle className="size-5 text-gray-300 mx-auto" />
+                        <XCircle className="size-5 text-muted-foreground mx-auto" />
                       )}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex items-center justify-center gap-2">
-                        <button
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => setPreviewDocument(doc)}
                           disabled={!doc}
-                          className="p-2 inline-flex justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-primary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          className="text-muted-foreground hover:text-primary disabled:opacity-30"
                           title="Preview Document"
                         >
                           <Eye className="size-4" />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => handleDownload(doc)}
                           disabled={!doc}
-                          className="p-2 inline-flex justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-primary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          className="text-muted-foreground hover:text-primary disabled:opacity-30"
                           title="Download Document"
                         >
                           <Download className="size-4" />
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -318,29 +327,33 @@ export function TenderDetails() {
                     <td className="px-6 py-4 pl-10 font-medium">{stage}</td>
                     <td className="px-6 py-4 text-center">
                       {doc ? (
-                        <CheckCircle2 className="size-5 text-green-500 mx-auto" />
+                        <CheckCircle2 className="size-5 text-success mx-auto" />
                       ) : (
-                        <XCircle className="size-5 text-gray-300 mx-auto" />
+                        <XCircle className="size-5 text-muted-foreground mx-auto" />
                       )}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex items-center justify-center gap-2">
-                        <button
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => setPreviewDocument(doc)}
                           disabled={!doc}
-                          className="p-2 inline-flex justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-primary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          className="text-muted-foreground hover:text-primary disabled:opacity-30"
                           title="Preview Document"
                         >
                           <Eye className="size-4" />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => handleDownload(doc)}
                           disabled={!doc}
-                          className="p-2 inline-flex justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-primary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          className="text-muted-foreground hover:text-primary disabled:opacity-30"
                           title="Download Document"
                         >
                           <Download className="size-4" />
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -352,17 +365,16 @@ export function TenderDetails() {
       </div>
 
       {/* Bottom Action Bar */}
-      <div className="flex justify-end gap-3 sticky bottom-0 bg-white p-4 border-t border-border shadow-lg z-10 -mx-6 -mb-6 px-6">
-        <button
+      <div className="flex justify-end gap-3 sticky bottom-0 bg-card p-4 border-t border-border shadow-lg z-10 -mx-6 -mb-6 px-6">
+        <Button
+          variant="secondary"
           onClick={() => navigate("/procurement-tendering/tenders")}
-          className="px-6 py-2 cursor-pointer bg-muted text-primary rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
         >
           Back
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={() => completeStageMutation.mutate()}
           disabled={completeStageMutation.isPending}
-          className="px-6 py-2 flex items-center gap-2 cursor-pointer bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/80 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
         >
           {completeStageMutation.isPending ? (
             <>
@@ -372,7 +384,7 @@ export function TenderDetails() {
           ) : (
             "Mark for Closure"
           )}
-        </button>
+        </Button>
       </div>
 
       {/* <-- Included Document Preview Modal --> */}

@@ -3,6 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useSidebar } from "../../context/SidebarContext";
 import { Menu, X } from "lucide-react";
 
+import { Button } from "./ui/button";
 import { Dropdown, Avatar } from "antd";
 import {
   UserOutlined,
@@ -42,9 +43,10 @@ export default function Header() {
       <div className="flex items-center justify-between px-6 py-3">
         {/* Left Section */}
         <div className="flex items-center gap-4">
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 hover:bg-muted rounded-lg transition-colors cursor-pointer"
             aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
             aria-expanded={sidebarOpen}
             aria-controls="sidebar-nav"
@@ -54,7 +56,7 @@ export default function Header() {
             ) : (
               <Menu className="size-5" aria-hidden="true" />
             )}
-          </button>
+          </Button>
 
           <div className="flex items-center gap-3">
             <img

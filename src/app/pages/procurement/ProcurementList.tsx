@@ -6,18 +6,19 @@ import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 import { Input, Select } from "antd";
 import type { ColDef } from "ag-grid-community";
 import { Table } from "../../components/Table";
+import { Button } from "../../components/ui/button";
 
 const statusColors: Record<string, string> = {
-  Completed: "bg-green-100 text-green-800",
-  "In Progress": "bg-blue-100 text-blue-800",
-  "PSC Pending": "bg-yellow-100 text-yellow-800",
-  "Pending PSC": "bg-yellow-100 text-yellow-800",
-  "TAC Pending": "bg-orange-100 text-orange-800",
-  "Pending TAC": "bg-orange-100 text-orange-800",
-  "SEC Pending": "bg-purple-100 text-purple-800",
-  "Pending SEC": "bg-purple-100 text-purple-800",
-  Draft: "bg-gray-100 text-gray-800",
-  Delayed: "bg-red-100 text-red-800",
+  Completed: "bg-success-muted text-success-muted-foreground",
+  "In Progress": "bg-info-muted text-info-muted-foreground",
+  "PSC Pending": "bg-warning-muted text-warning-muted-foreground",
+  "Pending PSC": "bg-warning-muted text-warning-muted-foreground",
+  "TAC Pending": "bg-warning-muted text-warning-muted-foreground",
+  "Pending TAC": "bg-warning-muted text-warning-muted-foreground",
+  "SEC Pending": "bg-category-6/10 text-category-6",
+  "Pending SEC": "bg-category-6/10 text-category-6",
+  Draft: "bg-muted text-foreground",
+  Delayed: "bg-destructive-muted text-destructive-muted-foreground",
 };
 
 export function ProcurementList() {
@@ -162,7 +163,7 @@ export function ProcurementList() {
           const status = params.value;
           if (!status) return null;
           const colorClasses =
-            statusColors[status] ?? "bg-gray-100 text-gray-800";
+            statusColors[status] ?? "bg-muted text-foreground";
           return (
             <span
               className={`px-2 py-1 rounded-full text-xs font-medium ${colorClasses}`}
@@ -187,13 +188,13 @@ export function ProcurementList() {
             Browse and manage all procurement records
           </p>
         </div>
-        <button
+        <Button
           onClick={() => navigate("/procurement/new")}
-          className="px-4 py-2 cursor-pointer bg-[#FF5B1A] hover:bg-opacity-90 text-white rounded-lg flex items-center gap-2 transition-colors font-medium text-sm"
+          className="bg-accent hover:bg-accent/90 text-primary-foreground"
         >
           <Plus className="size-4" />
           New Procurement
-        </button>
+        </Button>
       </div>
 
       {/* Filters */}
@@ -234,20 +235,21 @@ export function ProcurementList() {
             ]}
           />
           <div className="flex gap-2">
-            <button
+            <Button
+              variant="secondary"
               onClick={handleReset}
-              className="px-4 py-2 cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg flex items-center justify-center gap-2 transition-colors font-medium text-sm flex-1"
+              className="flex-1"
             >
               <RotateCcw className="size-4" />
               Reset
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleSearchSubmit}
-              className="px-4 py-2 cursor-pointer bg-primary hover:bg-opacity-90 text-white rounded-lg flex items-center justify-center gap-2 transition-colors font-medium text-sm flex-1"
+              className="flex-1"
             >
               <Search className="size-4" />
               Search
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -255,15 +257,15 @@ export function ProcurementList() {
       {/* Table Content */}
       <div className="w-full">
         {isLoading ? (
-          <div className="bg-white border border-border rounded-xl shadow-sm p-8 text-center text-muted-foreground">
+          <div className="bg-card border border-border rounded-xl shadow-sm p-8 text-center text-muted-foreground">
             Loading procurement data...
           </div>
         ) : isError ? (
-          <div className="bg-white border border-border rounded-xl shadow-sm p-8 text-center text-red-500 font-medium">
+          <div className="bg-card border border-border rounded-xl shadow-sm p-8 text-center text-destructive font-medium">
             Failed to fetch procurement records. Please try again.
           </div>
         ) : procurementItems.length === 0 ? (
-          <div className="bg-white border border-border rounded-xl shadow-sm p-8 text-center text-muted-foreground">
+          <div className="bg-card border border-border rounded-xl shadow-sm p-8 text-center text-muted-foreground">
             No procurement records found.
           </div>
         ) : (

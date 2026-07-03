@@ -10,6 +10,7 @@ import dayjs from "dayjs";
 
 // Import your custom Table component (adjust path as needed)
 import { Table } from "../components/Table";
+import { Button } from "../components/ui/button";
 
 export function ProjectExecution() {
   const axiosPrivate = useAxiosPrivate();
@@ -442,8 +443,8 @@ export function ProjectExecution() {
     const isUploaded = documents[docKey] !== null;
 
     return (
-      <tr className="hover:bg-gray-50/50 transition-colors" key={docKey}>
-        <td className="px-6 py-4 font-medium text-gray-700">{docName}</td>
+      <tr className="hover:bg-muted/50 transition-colors" key={docKey}>
+        <td className="px-6 py-4 font-medium text-foreground">{docName}</td>
         <td className="px-6 py-4 text-center">
           <label className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-3 py-1.5 rounded-lg cursor-pointer hover:opacity-90 transition-opacity text-xs font-medium">
             <Upload className="w-3.5 h-3.5" />
@@ -457,9 +458,9 @@ export function ProjectExecution() {
         </td>
         <td className="px-6 py-4 text-center">
           {isUploaded ? (
-            <CheckCircle2 className="w-5 h-5 text-green-500 mx-auto" />
+            <CheckCircle2 className="w-5 h-5 text-success mx-auto" />
           ) : (
-            <XCircle className="w-5 h-5 text-red-500 mx-auto" />
+            <XCircle className="w-5 h-5 text-destructive mx-auto" />
           )}
         </td>
       </tr>
@@ -483,7 +484,7 @@ export function ProjectExecution() {
         headerName: "Status",
         field: "status",
         cellRenderer: (params: any) => (
-          <span className="px-2 py-1 bg-secondary rounded-full text-xs font-medium text-white">
+          <span className="px-2 py-1 bg-secondary rounded-full text-xs font-medium text-primary-foreground">
             {params.value}
           </span>
         ),
@@ -495,15 +496,16 @@ export function ProjectExecution() {
           return (
             <div className="flex items-center gap-2 h-full">
               {project.status !== "Completed" && (
-                <button
+                <Button
+                  size="sm"
+                  className="text-xs whitespace-nowrap"
                   onClick={() => {
                     setSelectedProject(project);
                     setActiveTab("entry");
                   }}
-                  className="px-2 py-1 text-xs bg-primary cursor-pointer text-primary-foreground rounded-md transition-opacity hover:opacity-90 whitespace-nowrap"
                 >
                   Add Data
-                </button>
+                </Button>
               )}
               {project.status === "In Progress" &&
                 !project.isBillingEnsured && (
@@ -512,7 +514,7 @@ export function ProjectExecution() {
                       ensureBillingMutation.mutate(project.proposalId)
                     }
                     disabled={ensureBillingMutation.isPending}
-                    className="px-2 py-1 text-xs bg-green-600 cursor-pointer text-white rounded-md transition-opacity hover:bg-green-700 disabled:opacity-50 whitespace-nowrap"
+                    className="px-2 py-1 text-xs bg-success cursor-pointer text-primary-foreground rounded-md transition-opacity hover:bg-success disabled:opacity-50 whitespace-nowrap"
                   >
                     {ensureBillingMutation.isPending &&
                     ensureBillingMutation.variables === project.proposalId
@@ -737,13 +739,15 @@ export function ProjectExecution() {
                         </td>
                         <td className="px-4 py-3 text-center">
                           {mpr.documentId ? (
-                            <button
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-primary hover:bg-primary/10"
                               onClick={() => handleDownloadDocument(mpr)}
-                              className="inline-flex items-center justify-center p-1.5 text-primary hover:bg-primary/10 rounded-md transition-colors"
                               title="Download Document"
                             >
                               <Download className="w-4 h-4" />
-                            </button>
+                            </Button>
                           ) : (
                             <span className="text-muted-foreground text-xs">
                               N/A
@@ -777,12 +781,9 @@ export function ProjectExecution() {
         <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div className="flex justify-between items-center mb-4">
             <h4 className="font-semibold">Geo Tagged Photos</h4>
-            <button
-              onClick={addPhotoRow}
-              className="px-3 py-1 bg-primary text-primary-foreground rounded text-sm transition-opacity hover:opacity-90"
-            >
+            <Button size="sm" onClick={addPhotoRow}>
               + Add Photo
-            </button>
+            </Button>
           </div>
 
           {photos.map((photo, index) => (
@@ -827,13 +828,15 @@ export function ProjectExecution() {
                 className="flex-1"
               />
               {photos.length > 1 && (
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-destructive hover:text-destructive-muted-foreground"
                   onClick={() => removePhotoRow(index)}
-                  className="text-red-500 hover:text-red-700 p-2"
                   title="Remove row"
                 >
                   <Trash2 className="w-5 h-5" />
-                </button>
+                </Button>
               )}
             </div>
           ))}
@@ -899,7 +902,7 @@ export function ProjectExecution() {
           Loading projects...
         </div>
       ) : isError ? (
-        <div className="p-8 text-center text-red-500 bg-card border border-border rounded-xl">
+        <div className="p-8 text-center text-destructive bg-card border border-border rounded-xl">
           Failed to load projects. Please try again.
         </div>
       ) : (
@@ -955,9 +958,9 @@ export function ProjectExecution() {
 
           {/* SAVE & ACTION BUTTONS */}
           <div className="flex justify-end gap-3 mt-8 pt-4 border-t border-border">
-            <button
+            <Button
+              variant="outline"
               onClick={() => setSelectedProject(null)}
-              className="px-6 py-2 cursor-pointer border border-border rounded-lg hover:bg-muted transition-colors"
               disabled={
                 saveEntryMutation.isPending ||
                 saveMprMutation.isPending ||
@@ -967,8 +970,8 @@ export function ProjectExecution() {
               }
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleSave}
               disabled={
                 saveEntryMutation.isPending ||
@@ -978,7 +981,6 @@ export function ProjectExecution() {
                 isDetailsLoading ||
                 markAsCompletedMutation.isPending
               }
-              className="px-6 py-2 cursor-pointer bg-primary text-primary-foreground rounded-lg transition-opacity hover:opacity-90 disabled:opacity-50"
             >
               {saveEntryMutation.isPending ||
               saveMprMutation.isPending ||
@@ -986,18 +988,17 @@ export function ProjectExecution() {
               saveDocumentsMutation.isPending
                 ? "Saving..."
                 : "Save Details"}
-            </button>
+            </Button>
 
             {isEntrySaved && (
-              <button
+              <Button
                 onClick={() => markAsCompletedMutation.mutate()}
                 disabled={markAsCompletedMutation.isPending}
-                className="px-6 py-2 cursor-pointer bg-primary text-primary-foreground rounded-lg transition-opacity hover:opacity-90 disabled:opacity-50"
               >
                 {markAsCompletedMutation.isPending
                   ? "Marking..."
                   : "Mark As Execution Completed"}
-              </button>
+              </Button>
             )}
           </div>
         </div>

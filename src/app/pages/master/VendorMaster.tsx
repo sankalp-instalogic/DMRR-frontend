@@ -187,7 +187,7 @@ export function VendorMaster() {
           const ratingValue = params.value ? (params.value / 10000).toFixed(2) : "0.00";
           return (
             <div className="flex items-center gap-1 mt-2">
-              <span className="text-yellow-500">★</span>
+              <span className="text-warning">★</span>
               <span>{ratingValue}</span>
             </div>
           );
@@ -203,13 +203,13 @@ export function VendorMaster() {
             <span
               className={`inline-flex items-center gap-2 rounded-full px-3 py-1 mt-2 text-xs font-medium ${
                 isActive
-                  ? "bg-green-100 text-green-700"
-                  : "bg-gray-100 text-gray-600"
+                  ? "bg-success-muted text-success-muted-foreground"
+                  : "bg-muted text-muted-foreground"
               }`}
             >
               <span
                 className={`h-2 w-2 rounded-full ${
-                  isActive ? "bg-green-500" : "bg-gray-400"
+                  isActive ? "bg-success" : "bg-muted-foreground"
                 }`}
               />
               {isActive ? "Active" : "Inactive"}
@@ -225,18 +225,20 @@ export function VendorMaster() {
         cellRenderer: (params: any) => {
           return (
             <div className="flex gap-2 mt-1">
-              <button
-                className="p-2 hover:bg-muted rounded cursor-pointer"
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => handleOpenEdit(params.data)}
               >
                 <Edit2 className="size-4" />
-              </button>
-              <button
-                className="p-2 hover:bg-destructive/20 rounded cursor-pointer"
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => setVendorToDelete(params.data.id)}
               >
                 <Trash2 className="size-4 text-destructive" />
-              </button>
+              </Button>
             </div>
           );
         },
@@ -248,7 +250,7 @@ export function VendorMaster() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-primary"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-border border-t-primary"></div>
       </div>
     );
   }
@@ -256,12 +258,12 @@ export function VendorMaster() {
   if (isError) {
     return (
       <div className="flex items-center justify-center p-6">
-        <div className="max-w-md rounded-lg border border-red-200 bg-red-50 p-4 shadow-sm">
+        <div className="max-w-md rounded-lg border border-destructive-border bg-destructive-muted p-4 shadow-sm">
           <div className="flex items-start gap-3">
-            <div className="text-red-500">⚠️</div>
+            <div className="text-destructive">⚠️</div>
             <div>
-              <h3 className="font-semibold text-red-800">Something went wrong</h3>
-              <p className="mt-1 text-sm text-red-600">
+              <h3 className="font-semibold text-destructive-muted-foreground">Something went wrong</h3>
+              <p className="mt-1 text-sm text-destructive">
                 {(error as Error).message}
               </p>
             </div>

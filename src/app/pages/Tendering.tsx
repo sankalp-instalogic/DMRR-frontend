@@ -14,6 +14,7 @@ import { Input, Select, Radio, DatePicker } from "antd";
 import dayjs from "dayjs";
 import { Table } from "../components/Table";
 import { Link } from "react-router";
+import { Button } from "../components/ui/button";
 
 // Document Type Mapping Configuration
 const DOCUMENT_TYPES: Record<string, string> = {
@@ -250,10 +251,10 @@ export function Tendering() {
     const isUploaded = documents[docKey] !== null;
 
     return (
-      <tr className="hover:bg-gray-50/50 transition-colors" key={docKey}>
-        <td className="px-6 py-4 font-medium text-gray-700">{docName}</td>
+      <tr className="hover:bg-muted/50 transition-colors" key={docKey}>
+        <td className="px-6 py-4 font-medium text-foreground">{docName}</td>
         <td className="px-6 py-4 text-center">
-          <label className="inline-flex items-center gap-2 bg-[#1E5AA8] text-white px-3 py-1.5 rounded-lg cursor-pointer hover:bg-blue-700 transition-colors text-xs font-medium">
+          <label className="inline-flex items-center gap-2 bg-secondary text-primary-foreground px-3 py-1.5 rounded-lg cursor-pointer hover:bg-info transition-colors text-xs font-medium">
             <Upload className="w-3.5 h-3.5" />
             <span>Upload Document</span>
             <input
@@ -266,9 +267,9 @@ export function Tendering() {
         </td>
         <td className="px-6 py-4 text-center">
           {isUploaded ? (
-            <CheckCircle2 className="w-5 h-5 text-green-500 mx-auto" />
+            <CheckCircle2 className="w-5 h-5 text-success mx-auto" />
           ) : (
-            <XCircle className="w-5 h-5 text-red-500 mx-auto" />
+            <XCircle className="w-5 h-5 text-destructive mx-auto" />
           )}
         </td>
       </tr>
@@ -309,8 +310,8 @@ export function Tendering() {
               <span
                 className={`px-3 py-1 rounded-md text-xs font-medium border inline-block ${
                   params.value === "Pending"
-                    ? "bg-amber-50 text-amber-700 border-amber-100"
-                    : "bg-blue-50 text-blue-700 border-blue-100"
+                    ? "bg-warning-muted text-warning-muted-foreground border-warning-border"
+                    : "bg-info-muted text-info-muted-foreground border-info-border"
                 }`}
               >
                 {params.value}
@@ -327,28 +328,31 @@ export function Tendering() {
           if (!tender.isEnsured) {
             return (
               <div className="flex items-center h-full">
-                <button
+                <Button
+                  size="sm"
                   onClick={() => ensureMutation.mutate(tender.proposalId)}
                   disabled={ensureMutation.isPending}
-                  className="px-3 py-1.5 bg-primary cursor-pointer text-white rounded-lg flex items-center justify-center gap-1.5 hover:bg-primary/90 transition-all text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="rounded-lg text-xs cursor-pointer"
                 >
                   {ensureMutation.isPending &&
                   ensureMutation.variables === tender.proposalId
                     ? "Ensuring..."
                     : "Ensure"}
-                </button>
+                </Button>
               </div>
             );
           } else {
             return (
               <div className="flex items-center h-full">
-                <button
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => setSelectedTender(tender)}
-                  className="px-3 py-1.5 cursor-pointer bg-blue-50 text-blue-700 border border-blue-100 rounded-lg flex items-center justify-center gap-1.5 hover:bg-blue-100 transition-all text-xs font-medium"
+                  className="cursor-pointer bg-info-muted text-info-muted-foreground border-info-border rounded-lg text-xs hover:bg-info-muted"
                 >
                   <FileText size={14} />
                   Open Details
-                </button>
+                </Button>
               </div>
             );
           }
@@ -359,9 +363,9 @@ export function Tendering() {
   );
 
   if (isTendersLoading)
-    return <div className="p-4 text-gray-500">Loading tenders...</div>;
+    return <div className="p-4 text-muted-foreground">Loading tenders...</div>;
   if (isTendersError)
-    return <div className="p-4 text-red-500">Failed to load tenders.</div>;
+    return <div className="p-4 text-destructive">Failed to load tenders.</div>;
 
   const isSaving =
     saveDetailsMutation.isPending || uploadDocumentMutation.isPending;
@@ -371,7 +375,7 @@ export function Tendering() {
     <div className="space-y-6">
       <div>
         <h1 className="text-[30px] font-bold text-primary">Tendering</h1>
-        <p className="text-[14px] font-medium text-gray-500 mt-1">
+        <p className="text-[14px] font-medium text-muted-foreground mt-1">
           Manage tender activities
         </p>
       </div>
@@ -391,20 +395,20 @@ export function Tendering() {
 
       {/* Tender Form */}
       {selectedTender && (
-        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+        <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
           <h3 className="font-semibold text-[20px] text-primary mb-6">
             Tendering : {selectedTender.proposalRefNo} - {selectedTender.title}
           </h3>
 
-          <h4 className="font-semibold text-[16px] text-gray-900 mb-4 border-b pb-2">
+          <h4 className="font-semibold text-[16px] text-foreground mb-4 border-b pb-2">
             Tender Details
           </h4>
 
           <div className="grid grid-cols-1 gap-6 mb-8">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 L1 Vendor Identified?
-                <span className="text-red-500">*</span>
+                <span className="text-destructive">*</span>
               </label>
               <div className="flex items-center h-10">
                 <Radio.Group
@@ -431,12 +435,12 @@ export function Tendering() {
 
             <div>
               <div className="flex justify-between items-center mb-2">
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-foreground">
                   Vendor Name
                 </label>
                 <Link
                   to="/master/vendor"
-                  className="text-xs text-[#1E5AA8] hover:text-blue-700 hover:underline font-medium"
+                  className="text-xs text-secondary hover:text-info-muted-foreground hover:underline font-medium"
                 >
                   + Add new vendor
                 </Link>
@@ -459,9 +463,9 @@ export function Tendering() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 L1 Cost (Lakhs)
-                <span className="text-red-500">*</span>
+                <span className="text-destructive">*</span>
               </label>
               <Input
                 type="number"
@@ -476,9 +480,9 @@ export function Tendering() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Work Order Issued?
-                <span className="text-red-500">*</span>
+                <span className="text-destructive">*</span>
               </label>
               <div className="flex items-center h-10">
                 <Radio.Group
@@ -503,7 +507,7 @@ export function Tendering() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Work Order Date
               </label>
               <DatePicker
@@ -524,14 +528,14 @@ export function Tendering() {
           </div>
 
           {/* Documents Table Section */}
-          <h4 className="font-semibold text-[16px] text-gray-900 mb-4 border-b pb-2">
+          <h4 className="font-semibold text-[16px] text-foreground mb-4 border-b pb-2">
             Supporting Documents
           </h4>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+          <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden mb-6">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
-                <thead className="bg-gray-50 text-gray-600 border-b border-gray-200">
+                <thead className="bg-muted text-muted-foreground border-b border-border">
                   <tr>
                     <th className="px-6 py-3 font-medium">Document Name</th>
                     <th className="px-6 py-3 font-medium text-center">
@@ -542,7 +546,7 @@ export function Tendering() {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-border">
                   {renderDocumentRow(
                     "Bid Evaluation Report",
                     "bidEvaluationReport",
@@ -555,11 +559,11 @@ export function Tendering() {
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 border-t border-gray-200 pt-4">
-            <button
+          <div className="flex justify-end gap-3 border-t border-border pt-4">
+            <Button
               onClick={handleSave}
               disabled={isSaving || isCompleting}
-              className="px-6 h-10 bg-primary cursor-pointer text-white rounded-[10px] flex items-center justify-center gap-2 hover:bg-primary/90 transition-all text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 h-10 rounded-[10px] cursor-pointer"
             >
               {isSaving ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -567,13 +571,13 @@ export function Tendering() {
                 <Save className="w-4 h-4" />
               )}
               {isSaving ? "Saving..." : "Save Details"}
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() =>
                 completeTenderMutation.mutate(selectedTender.proposalId)
               }
               disabled={isCompleting || isSaving}
-              className="px-6 h-10 bg-primary cursor-pointer text-white rounded-[10px] flex items-center justify-center gap-2 hover:bg-primary/90 transition-all text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 h-10 rounded-[10px] cursor-pointer"
             >
               {isCompleting ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -581,7 +585,7 @@ export function Tendering() {
                 <XCircle className="w-4 h-4" />
               )}
               {isCompleting ? "Closing..." : "Mark As Close"}
-            </button>
+            </Button>
           </div>
         </div>
       )}

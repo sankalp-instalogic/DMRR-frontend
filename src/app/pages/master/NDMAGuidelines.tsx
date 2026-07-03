@@ -301,16 +301,18 @@ export function NDMAGuidelines() {
           const isDownloadable = !!params.data.latestDocumentId;
           return (
             <div className="flex gap-2 mt-1">
-              <button
-                className="p-2 hover:bg-muted rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              <Button
+                variant="ghost"
+                size="icon"
                 title="Preview"
                 disabled={!isDownloadable}
                 onClick={() => handlePreview(params.data.latestDocumentId)}
               >
                 <Eye className="size-4" />
-              </button>
-              <button
-                className="p-2 hover:bg-muted rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
                 title="Download"
                 disabled={!isDownloadable}
                 onClick={() =>
@@ -321,7 +323,7 @@ export function NDMAGuidelines() {
                 }
               >
                 <Download className="size-4" />
-              </button>
+              </Button>
             </div>
           );
         },
@@ -333,7 +335,7 @@ export function NDMAGuidelines() {
   if (isLoading || isDisastersLoading) {
     return (
       <div className="flex items-center justify-center h-full min-h-25">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-primary"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-border border-t-primary"></div>
       </div>
     );
   }
@@ -341,14 +343,14 @@ export function NDMAGuidelines() {
   if (isError) {
     return (
       <div className="flex items-center justify-center p-6">
-        <div className="max-w-md rounded-lg border border-red-200 bg-red-50 p-4 shadow-sm">
+        <div className="max-w-md rounded-lg border border-destructive-border bg-destructive-muted p-4 shadow-sm">
           <div className="flex items-start gap-3">
-            <div className="text-red-500">⚠️</div>
+            <div className="text-destructive">⚠️</div>
             <div>
-              <h3 className="font-semibold text-red-800">
+              <h3 className="font-semibold text-destructive-muted-foreground">
                 Something went wrong
               </h3>
-              <p className="mt-1 text-sm text-red-600">
+              <p className="mt-1 text-sm text-destructive">
                 {(error as Error).message}
               </p>
             </div>

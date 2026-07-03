@@ -10,6 +10,7 @@ import {
   Upload
 } from "lucide-react";
 import { useNavigate } from "react-router";
+import { Button } from "../components/ui/button";
 
 const initialProposals = [
   { id: "DMRR/2025/MUM/001", district: "Mumbai", department: "PWD", cost: "450", compliance: "Pass", pendingDays: 12, status: "Under Review" },
@@ -108,7 +109,7 @@ const [uploadedDocument, setUploadedDocument] = useState<File | null>(null);
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex gap-2">
-                      <button onClick={(e) => { e.stopPropagation(); setSelectedProposal(proposal); }} className="p-2 hover:bg-muted rounded" title="View"><Eye className="size-4" /></button>
+                      <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setSelectedProposal(proposal); }} title="View"><Eye className="size-4" /></Button>
                     </div>
                   </td>
                 </tr>
@@ -167,15 +168,15 @@ const [uploadedDocument, setUploadedDocument] = useState<File | null>(null);
             <button onClick={() => handleAction('Forward')} className="px-6 py-3 bg-accent text-accent-foreground rounded-lg hover:opacity-90 flex items-center gap-2">
               <Forward className="size-5" /> Forward to PAC
             </button>
-            <button onClick={() => handleAction('Return')} className="px-6 py-3 bg-secondary text-secondary-foreground rounded-lg hover:opacity-90 flex items-center gap-2">
+            <Button variant="secondary" size="lg" onClick={() => handleAction('Return')}>
               <ArrowLeft className="size-5" /> Return for Correction
-            </button>
+            </Button>
             <button onClick={() => handleAction('Hold')} className="px-6 py-3 bg-muted text-foreground border border-border rounded-lg hover:bg-muted/80 flex items-center gap-2">
               <Clock className="size-5" /> Hold
             </button>
-            <button onClick={() => handleAction('Reject')} className="px-6 py-3 bg-destructive text-destructive-foreground rounded-lg hover:opacity-90 flex items-center gap-2">
+            <Button variant="destructive" size="lg" onClick={() => handleAction('Reject')}>
               <XCircle className="size-5" /> Reject
-            </button>
+            </Button>
           </div>
         </div>
       )}

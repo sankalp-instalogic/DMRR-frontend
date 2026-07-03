@@ -68,7 +68,7 @@ export function LocationStep({ data, setData }: LocationStepProps) {
       {/* Disaster Type Dropdown */}
       <div>
         <label className="block text-sm font-medium mb-2">
-          Disaster Type <span className="text-red-600">*</span>
+          Disaster Type <span className="text-destructive">*</span>
         </label>
         <Select
           className="w-full"
@@ -93,7 +93,7 @@ export function LocationStep({ data, setData }: LocationStepProps) {
       {/* District Dropdown */}
       <div>
         <label className="block text-sm font-medium mb-2">
-          District <span className="text-red-600">*</span>
+          District <span className="text-destructive">*</span>
         </label>
         <Select
           className="w-full"
@@ -123,7 +123,7 @@ export function LocationStep({ data, setData }: LocationStepProps) {
       {/* Taluka Dropdown */}
       <div>
         <label className="block text-sm font-medium mb-2">
-          Taluka <span className="text-red-600">*</span>
+          Taluka <span className="text-destructive">*</span>
         </label>
         <Select
           className="w-full"

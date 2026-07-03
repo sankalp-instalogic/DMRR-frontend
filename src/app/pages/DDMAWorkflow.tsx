@@ -11,6 +11,7 @@ import type { ColDef } from "ag-grid-community";
 
 // Import your Custom Table Component (adjust path as needed)
 import { Table } from "../components/Table";
+import { Button } from "../components/ui/button";
 
 export function DDMAWorkflow() {
   const resolutionFileInputRef = useRef<HTMLInputElement>(null);
@@ -188,8 +189,8 @@ export function DDMAWorkflow() {
             <span
               className={`px-3 py-1 rounded-full text-xs font-medium ${
                 isPending
-                  ? "bg-blue-100 text-blue-700"
-                  : "bg-orange-100 text-orange-700"
+                  ? "bg-info-muted text-info-muted-foreground"
+                  : "bg-warning-muted text-warning-muted-foreground"
               }`}
             >
               {params.value}
@@ -203,15 +204,16 @@ export function DDMAWorkflow() {
         sortable: false,
         filter: false,
         cellRenderer: (params: any) => (
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={(e) => {
               e.stopPropagation(); // prevents row click if enabled
               handleProposalSelect(params.data);
             }}
-            className="p-2 rounded hover:bg-muted transition-colors cursor-pointer"
           >
             <Pencil className="size-4" />
-          </button>
+          </Button>
         ),
       },
     ],
@@ -243,7 +245,7 @@ export function DDMAWorkflow() {
               setCurrentPage(1);
             }}
             className={`px-5 py-2 rounded-lg font-medium ${
-              activeTab === "new" ? "bg-primary text-white" : "bg-muted"
+              activeTab === "new" ? "bg-primary text-primary-foreground" : "bg-muted"
             }`}
           >
             New Proposals
@@ -256,7 +258,7 @@ export function DDMAWorkflow() {
               setCurrentPage(1);
             }}
             className={`px-5 py-2 rounded-lg font-medium ${
-              activeTab === "revised" ? "bg-primary text-white" : "bg-muted"
+              activeTab === "revised" ? "bg-primary text-primary-foreground" : "bg-muted"
             }`}
           >
             Revised Proposals
@@ -407,16 +409,15 @@ export function DDMAWorkflow() {
                       }}
                     />
 
-                    <button
+                    <Button
                       type="button"
                       disabled={processWorkflowMutation.isPending}
                       onClick={() => resolutionFileInputRef.current?.click()}
-                      className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 disabled:opacity-50"
                     >
                       {resolutionFile
                         ? resolutionFile.name
                         : "Upload DDMA Resolution"}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -443,28 +444,27 @@ export function DDMAWorkflow() {
                       }}
                     />
 
-                    <button
+                    <Button
                       type="button"
                       disabled={processWorkflowMutation.isPending}
                       onClick={() =>
                         technicalSanctionFileInputRef.current?.click()
                       }
-                      className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 disabled:opacity-50"
                     >
                       {sanctionFile
                         ? sanctionFile.name
                         : "Upload Technical Sanction"}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
 
               {/* SAVE BUTTON */}
               <div className="flex gap-4 pt-4">
-                <button
+                <Button
+                  size="lg"
                   onClick={() => processWorkflowMutation.mutate()}
                   disabled={processWorkflowMutation.isPending || !departmentId}
-                  className="px-6 py-3 cursor-pointer bg-primary text-primary-foreground rounded-lg hover:opacity-90 flex items-center gap-2 disabled:opacity-50"
                 >
                   {processWorkflowMutation.isPending ? (
                     <Loader2 className="size-5 animate-spin" />
@@ -473,7 +473,7 @@ export function DDMAWorkflow() {
                   )}
 
                   {processWorkflowMutation.isPending ? "Processing..." : "Save"}
-                </button>
+                </Button>
               </div>
             </div>
           </div>

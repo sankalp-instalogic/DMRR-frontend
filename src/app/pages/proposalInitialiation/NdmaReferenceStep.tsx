@@ -40,7 +40,7 @@ export function NdmaReferenceStep({ data, setData }: NdmaReferenceStepProps) {
 
       <div>
         <label className="block text-sm font-medium mb-2">
-          NDMA Guideline Reference <span className="text-red-600">*</span>
+          NDMA Guideline Reference <span className="text-destructive">*</span>
         </label>
         
         <Select
@@ -59,14 +59,14 @@ export function NdmaReferenceStep({ data, setData }: NdmaReferenceStepProps) {
         />
         
         {isError && (
-          <p className="text-sm text-red-500 mt-1">
+          <p className="text-sm text-destructive mt-1">
             Failed to fetch NDMA guidelines. Please try again.
           </p>
         )}
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
-        <p className="text-sm text-blue-900">
+      <div className="bg-info-muted border border-info-border rounded-lg p-4 mt-4">
+        <p className="text-sm text-info-muted-foreground">
           <strong>Note:</strong> The selected NDMA guideline will be used to
           validate the proposal in Step 4. Ensure it matches your disaster type
           and mitigation requirements.

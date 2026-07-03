@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Search, BrainCircuit, FileText, CheckCircle, ExternalLink, HelpCircle } from "lucide-react";
 import { useAiAsk } from "../../hooks/useAi";
+import { Button } from "../components/ui/button";
 
 const predefinedQuestions = [
   "What is the total cumulative budget allocated to Mumbai district?",
@@ -75,12 +76,12 @@ export function AIDocumentIntelligence() {
               className="w-full pl-12 pr-4 py-4 bg-input-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-lg"
             />
           </div>
-          <button 
+          <Button
             onClick={() => handleSearch()}
-            className="px-8 py-4 bg-primary text-primary-foreground rounded-xl flex items-center gap-2 hover:opacity-90 font-medium text-lg"
+            className="px-8 py-4 rounded-xl text-lg h-auto [&_svg]:size-6"
           >
             <BrainCircuit className="size-6" /> Extract Insight
-          </button>
+          </Button>
         </div>
 
         <div className="mt-6 flex flex-wrap gap-2">

@@ -6,8 +6,7 @@ import { DatePicker, Input } from "antd";
 import dayjs from "dayjs";
 import type { ColDef } from "ag-grid-community";
 import { Table } from "../components/Table";
-import { cn } from "../components/ui/utils";
-import { buttonVariants } from "../components/ui/button";
+import { Button } from "../components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -75,11 +74,11 @@ const YesNoField = ({
   onDateChange: (val: string) => void;
   onFileChange: (file: File | null) => void;
 }) => (
-  <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-100">
+  <div className="mb-6 p-4 bg-muted rounded-lg border border-border">
     <label className="block font-medium mb-3 text-sm text-primary">
       {label}
       {isApiRequired && (
-        <span className="text-red-500 ml-1" title="Required Document">
+        <span className="text-destructive ml-1" title="Required Document">
           *
         </span>
       )}
@@ -90,8 +89,8 @@ const YesNoField = ({
         onClick={() => onChange("Yes")}
         className={`px-6 py-2 rounded-lg transition-colors cursor-pointer text-sm font-medium ${
           value === "Yes"
-            ? "bg-green-600 text-white shadow-sm border border-green-600"
-            : "border border-border bg-white text-gray-600 hover:bg-gray-50"
+            ? "bg-success text-primary-foreground shadow-sm border border-success"
+            : "border border-border bg-card text-muted-foreground hover:bg-muted"
         }`}
       >
         Yes
@@ -101,8 +100,8 @@ const YesNoField = ({
         onClick={() => onChange("No")}
         className={`px-6 py-2 rounded-lg transition-colors cursor-pointer text-sm font-medium ${
           value === "No"
-            ? "bg-red-600 text-white shadow-sm border border-red-600"
-            : "border border-border bg-white text-gray-600 hover:bg-gray-50"
+            ? "bg-destructive text-primary-foreground shadow-sm border border-destructive"
+            : "border border-border bg-card text-muted-foreground hover:bg-muted"
         }`}
       >
         No
@@ -110,9 +109,9 @@ const YesNoField = ({
     </div>
 
     {value === "Yes" && (
-      <div className="mt-4 grid md:grid-cols-2 gap-4 bg-white p-4 rounded-lg border border-gray-100">
+      <div className="mt-4 grid md:grid-cols-2 gap-4 bg-card p-4 rounded-lg border border-border">
         <div>
-          <label className="block mb-2 font-medium text-sm text-gray-600">
+          <label className="block mb-2 font-medium text-sm text-muted-foreground">
             Select Date
           </label>
           <DatePicker
@@ -130,7 +129,7 @@ const YesNoField = ({
         </div>
 
         <div>
-          <label className="block mb-2 font-medium text-sm text-gray-600">
+          <label className="block mb-2 font-medium text-sm text-muted-foreground">
             Upload Document
           </label>
           <Input
@@ -450,52 +449,46 @@ export function ProjectClosure() {
             <div className="flex gap-2 items-center">
               {project.closureStatus === "Ready for Closure" &&
                 checklistDone && (
-                  <button
+                  <Button
+                    variant="destructive"
+                    className="mt-2 text-xs"
                     onClick={(e) => {
                       e.stopPropagation();
                       // Open the confirmation dialog instead of mutating directly
                       setProjectToClose(project.projectId);
                     }}
                     disabled={closeProjectMutation.isPending}
-                    className={`px-4 py-2 mt-2 cursor-pointer text-white rounded-lg text-xs font-medium transition-colors ${
-                      closeProjectMutation.isPending
-                        ? "bg-red-400 opacity-70"
-                        : "bg-red-600 hover:bg-red-700"
-                    }`}
                   >
                     {closeProjectMutation.isPending ? "Closing..." : "Close"}
-                  </button>
+                  </Button>
                 )}
 
               {project.closureStatus === "Pending" && checklistDone && (
-                <button
+                <Button
+                  className="mt-2"
                   onClick={(e) => {
                     e.stopPropagation();
                     setSelectedProject(project);
                     setActiveAction("completion");
                   }}
-                  className={cn(
-                    buttonVariants({ variant: "default" }),
-                    "cursor-pointer mt-2",
-                  )}
                 >
                   Add completion details
-                </button>
+                </Button>
               )}
 
               {(project.closureStatus === "Pending" ||
                 project.closureStatus === "Ready for Closure") &&
                 !checklistDone && (
-                  <button
+                  <Button
+                    className="mt-2 text-xs hover:bg-info"
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedProject(project);
                       setActiveAction("checklist");
                     }}
-                    className="px-4 py-2 bg-primary mt-2 cursor-pointer text-white rounded-lg text-xs font-medium hover:bg-blue-700 transition-colors"
                   >
                     Checklist
-                  </button>
+                  </Button>
                 )}
             </div>
           );
@@ -556,7 +549,7 @@ export function ProjectClosure() {
           Loading projects...
         </div>
       ) : isError ? (
-        <div className="bg-card border border-border rounded-xl p-8 text-center text-red-500 shadow-sm">
+        <div className="bg-card border border-border rounded-xl p-8 text-center text-destructive shadow-sm">
           Failed to load projects.
         </div>
       ) : projects.length === 0 ? (
@@ -586,18 +579,18 @@ export function ProjectClosure() {
               </h3>
               <button
                 onClick={resetForms}
-                className="text-gray-500 hover:text-gray-800 text-sm font-medium cursor-pointer"
+                className="text-muted-foreground hover:text-foreground text-sm font-medium cursor-pointer"
               >
                 ✕ Cancel
               </button>
             </div>
 
             {isChecklistLoading ? (
-              <div className="py-8 text-center text-gray-500">
+              <div className="py-8 text-center text-muted-foreground">
                 Loading checklist items...
               </div>
             ) : checklistItems.length === 0 ? (
-              <div className="py-8 text-center text-gray-500">
+              <div className="py-8 text-center text-muted-foreground">
                 No checklist items found for this project.
               </div>
             ) : (
@@ -657,12 +650,12 @@ export function ProjectClosure() {
                   isChecklistLoading ||
                   !isChecklistValid
                 }
-                className={`px-6 py-3 cursor-pointer text-white rounded-lg transition-colors font-medium ${
+                className={`px-6 py-3 cursor-pointer text-primary-foreground rounded-lg transition-colors font-medium ${
                   saveChecklistMutation.isPending ||
                   isChecklistLoading ||
                   !isChecklistValid
-                    ? "bg-blue-400 opacity-70 cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-700"
+                    ? "bg-info opacity-70 cursor-not-allowed"
+                    : "bg-info hover:bg-info"
                 }`}
               >
                 {saveChecklistMutation.isPending
@@ -682,7 +675,7 @@ export function ProjectClosure() {
               </h3>
               <button
                 onClick={resetForms}
-                className="text-gray-500 hover:text-gray-800 text-sm font-medium"
+                className="text-muted-foreground hover:text-foreground text-sm font-medium"
               >
                 ✕ Cancel
               </button>
@@ -696,7 +689,7 @@ export function ProjectClosure() {
                 <button
                   onClick={() => setIsCompleted("Yes")}
                   className={`px-4 py-2 cursor-pointer rounded-lg transition-colors ${
-                    isCompleted === "Yes" ? "bg-green-600 text-white" : "border"
+                    isCompleted === "Yes" ? "bg-success text-primary-foreground" : "border"
                   }`}
                 >
                   Yes
@@ -704,7 +697,7 @@ export function ProjectClosure() {
                 <button
                   onClick={() => setIsCompleted("No")}
                   className={`px-4 py-2 cursor-pointer rounded-lg transition-colors ${
-                    isCompleted === "No" ? "bg-red-600 text-white" : "border"
+                    isCompleted === "No" ? "bg-destructive text-primary-foreground" : "border"
                   }`}
                 >
                   No
@@ -713,7 +706,7 @@ export function ProjectClosure() {
             </div>
 
             {isCompleted === "Yes" && (
-              <div className="space-y-6 bg-gray-50 p-5 rounded-lg border border-gray-100">
+              <div className="space-y-6 bg-muted p-5 rounded-lg border border-border">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
                     <label className="block mb-2 font-medium text-sm">
@@ -775,7 +768,7 @@ export function ProjectClosure() {
                   <Input
                     type="file"
                     size="large"
-                    className="w-full border rounded-lg p-2 cursor-pointer bg-white"
+                    className="w-full border rounded-lg p-2 cursor-pointer bg-card"
                     onChange={(e) =>
                       setCompletionData({
                         ...completionData,
@@ -793,7 +786,7 @@ export function ProjectClosure() {
                     type="file"
                     size="large"
                     multiple
-                    className="w-full border rounded-lg p-2 cursor-pointer bg-white"
+                    className="w-full border rounded-lg p-2 cursor-pointer bg-card"
                     onChange={(e) =>
                       setCompletionData({
                         ...completionData,
@@ -809,10 +802,10 @@ export function ProjectClosure() {
               <button
                 onClick={handleSaveCompletion}
                 disabled={saveCompletionMutation.isPending}
-                className={`px-6 py-3 cursor-pointer bg-green-600 text-white rounded-lg transition-colors font-medium ${
+                className={`px-6 py-3 cursor-pointer bg-success text-primary-foreground rounded-lg transition-colors font-medium ${
                   saveCompletionMutation.isPending
                     ? "opacity-70 cursor-not-allowed"
-                    : "hover:bg-green-700"
+                    : "hover:bg-success"
                 }`}
               >
                 {saveCompletionMutation.isPending
@@ -839,7 +832,7 @@ export function ProjectClosure() {
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              className="cursor-pointer bg-red-600 text-white hover:bg-red-700"
+              className="cursor-pointer bg-destructive text-primary-foreground hover:bg-destructive"
               onClick={() => {
                 if (projectToClose) {
                   closeProjectMutation.mutate(projectToClose);

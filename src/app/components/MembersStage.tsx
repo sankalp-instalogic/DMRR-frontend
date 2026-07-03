@@ -72,7 +72,7 @@ export function MeetingStage({ data, setData, momLabel }: MeetingStageProps) {
       {/* Decision */}
       <fieldset>
         <legend className="block text-sm font-medium mb-2">
-          Decision <span className="text-red-600">*</span>
+          Decision <span className="text-destructive">*</span>
         </legend>
         <div className="flex gap-4">
           <button
@@ -80,7 +80,7 @@ export function MeetingStage({ data, setData, momLabel }: MeetingStageProps) {
             onClick={() => setDecision("approve")}
             className={`flex-1 px-4 py-3 rounded-lg border font-medium transition-all ${
               data.decision === "approve"
-                ? "bg-green-100 border-green-600 text-green-700"
+                ? "bg-success-muted border-success text-success-muted-foreground"
                 : "border-border hover:bg-muted"
             }`}
           >
@@ -93,7 +93,7 @@ export function MeetingStage({ data, setData, momLabel }: MeetingStageProps) {
             onClick={() => setDecision("reject")}
             className={`flex-1 px-4 py-3 rounded-lg border font-medium transition-all ${
               data.decision === "reject"
-                ? "bg-red-100 border-red-600 text-red-700"
+                ? "bg-destructive-muted border-destructive text-destructive-muted-foreground"
                 : "border-border hover:bg-muted"
             }`}
           >
@@ -106,7 +106,7 @@ export function MeetingStage({ data, setData, momLabel }: MeetingStageProps) {
             onClick={() => setDecision("revision")}
             className={`flex-1 px-4 py-3 rounded-lg border font-medium transition-all ${
               data.decision === "revision"
-                ? "bg-orange-100 border-orange-600 text-orange-700"
+                ? "bg-warning-muted border-warning text-warning-muted-foreground"
                 : "border-border hover:bg-muted"
             }`}
           >
@@ -132,7 +132,7 @@ export function MeetingStage({ data, setData, momLabel }: MeetingStageProps) {
             className="w-full px-4 py-3 border border-border rounded-lg"
           />
           {data.momFile && (
-            <p className="text-sm text-green-600 mt-2">✓ {data.momFile.name}</p>
+            <p className="text-sm text-success mt-2">✓ {data.momFile.name}</p>
           )}
         </div>
       )}

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
 import { Save, RotateCcw, Upload, Download, FileText, ArrowLeft } from "lucide-react";
+import { Button } from "../../components/ui/button";
 
 export function EditProcurement() {
   const { id } = useParams();
@@ -50,12 +51,14 @@ export function EditProcurement() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <button 
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => navigate(-1)}
-          className="p-2 hover:bg-muted rounded-full transition-colors"
+          className="rounded-full"
         >
           <ArrowLeft className="size-5 text-muted-foreground" />
-        </button>
+        </Button>
         <div>
           <h1 className="text-2xl font-bold text-primary">Edit Procurement</h1>
           <p className="text-sm text-muted-foreground">Modify procurement information for {id || "PROC-2025-001"}</p>
@@ -123,13 +126,13 @@ export function EditProcurement() {
                   <div>
                     <label className="block text-sm font-medium mb-1">Approval Document</label>
                     <div className="flex flex-col gap-2">
-                      <div className="flex items-center justify-between p-2 bg-blue-50 border border-blue-100 rounded-lg">
-                        <div className="flex items-center gap-2 text-sm text-blue-700">
+                      <div className="flex items-center justify-between p-2 bg-info-muted border border-info-border rounded-lg">
+                        <div className="flex items-center gap-2 text-sm text-info-muted-foreground">
                           <FileText className="size-4" /> Current Document
                         </div>
-                        <button className="p-1 text-blue-700 hover:bg-blue-100 rounded" title="Download">
+                        <Button variant="ghost" size="icon" className="text-info-muted-foreground hover:bg-info-muted" title="Download">
                           <Download className="size-4" />
-                        </button>
+                        </Button>
                       </div>
                       <div className="flex items-center gap-2">
                         <input type="file" id="sec-file" className="hidden" />
@@ -166,13 +169,13 @@ export function EditProcurement() {
                   <div>
                     <label className="block text-sm font-medium mb-1">Approval Document</label>
                     <div className="flex flex-col gap-2">
-                      <div className="flex items-center justify-between p-2 bg-blue-50 border border-blue-100 rounded-lg">
-                        <div className="flex items-center gap-2 text-sm text-blue-700">
+                      <div className="flex items-center justify-between p-2 bg-info-muted border border-info-border rounded-lg">
+                        <div className="flex items-center gap-2 text-sm text-info-muted-foreground">
                           <FileText className="size-4" /> Current Document
                         </div>
-                        <button className="p-1 text-blue-700 hover:bg-blue-100 rounded" title="Download">
+                        <Button variant="ghost" size="icon" className="text-info-muted-foreground hover:bg-info-muted" title="Download">
                           <Download className="size-4" />
-                        </button>
+                        </Button>
                       </div>
                       <div className="flex items-center gap-2">
                         <input type="file" id="aa-file" className="hidden" />
@@ -268,12 +271,12 @@ export function EditProcurement() {
 
         {/* Buttons */}
         <div className="p-6 bg-muted/20 flex justify-end gap-4">
-          <button onClick={handleReset} className="px-6 py-2 bg-white border border-border text-gray-700 font-medium rounded-lg hover:bg-gray-50 flex items-center gap-2 transition-colors">
+          <Button variant="outline" onClick={handleReset}>
             <RotateCcw className="size-4" /> Reset Changes
-          </button>
-          <button onClick={handleSave} className="px-6 py-2 bg-primary text-white font-medium rounded-lg hover:bg-opacity-90 flex items-center gap-2 transition-colors">
+          </Button>
+          <Button onClick={handleSave}>
             <Save className="size-4" /> Update Procurement
-          </button>
+          </Button>
         </div>
       </div>
     </div>

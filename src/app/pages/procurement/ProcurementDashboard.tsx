@@ -5,8 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Select } from "antd";
 import type { ColDef } from "ag-grid-community";
 import { Table } from "../../components/Table"; // Adjust the path to where your Table component is saved
-import { cn } from "../../components/ui/utils";
-import { buttonVariants } from "../../components/ui/button";
+import { Button } from "../../components/ui/button";
 
 // --- TypeScript Interfaces ---
 export interface ProcurementItem {
@@ -106,7 +105,7 @@ export function ProcurementDashboard() {
     switch (status) {
       case "Completed":
         return (
-          <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium whitespace-nowrap">
+          <span className="px-2 py-1 bg-success-muted text-success-muted-foreground rounded-full text-xs font-medium whitespace-nowrap">
             Completed
           </span>
         );
@@ -114,25 +113,25 @@ export function ProcurementDashboard() {
       case "ProposalScrutiny":
       case "Pending PSC":
         return (
-          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium whitespace-nowrap">
+          <span className="px-2 py-1 bg-info-muted text-info-muted-foreground rounded-full text-xs font-medium whitespace-nowrap">
             {status}
           </span>
         );
       case "Draft":
         return (
-          <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium whitespace-nowrap">
+          <span className="px-2 py-1 bg-muted text-foreground rounded-full text-xs font-medium whitespace-nowrap">
             Draft
           </span>
         );
       case "Delayed":
         return (
-          <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium whitespace-nowrap">
+          <span className="px-2 py-1 bg-destructive-muted text-destructive-muted-foreground rounded-full text-xs font-medium whitespace-nowrap">
             Delayed
           </span>
         );
       default:
         return (
-          <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium whitespace-nowrap">
+          <span className="px-2 py-1 bg-muted text-foreground rounded-full text-xs font-medium whitespace-nowrap">
             {status || "Unknown"}
           </span>
         );
@@ -170,7 +169,7 @@ export function ProcurementDashboard() {
         minWidth: 150,
         cellRenderer: (params: any) => (
           <div className="flex items-center gap-2 h-full">
-            <div className="w-full bg-gray-200 rounded-full h-1.5 max-w-15">
+            <div className="w-full bg-muted rounded-full h-1.5 max-w-15">
               <div
                 className="bg-primary h-1.5 rounded-full"
                 style={{ width: `${params.value}%` }}
@@ -258,29 +257,21 @@ export function ProcurementDashboard() {
           </div>
         </div>
         <div className="flex justify-end gap-3">
-          <button
+          <Button
+            variant="outline"
+            size="lg"
             onClick={() => {
               setFinancialYear("");
               setDistrict("");
               setDepartment("");
               setPage(1);
             }}
-            className={cn(
-              buttonVariants({ variant: "outline", size: "lg" }),
-              "cursor-pointer",
-            )}
           >
             Reset Filter
-          </button>
-          <button
-            onClick={() => setPage(1)}
-            className={cn(
-              buttonVariants({ variant: "default", size: "lg" }),
-              "cursor-pointer",
-            )}
-          >
+          </Button>
+          <Button size="lg" onClick={() => setPage(1)}>
             Apply Filter
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -289,7 +280,7 @@ export function ProcurementDashboard() {
         {/* KPI Cards Remain Unchanged */}
         <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
           <div className="flex items-start justify-between mb-3">
-            <div className="bg-blue-100 text-blue-600 p-2 rounded-lg">
+            <div className="bg-info-muted text-info p-2 rounded-lg">
               <ShoppingCart className="size-5" />
             </div>
           </div>
@@ -305,7 +296,7 @@ export function ProcurementDashboard() {
 
         <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
           <div className="flex items-start justify-between mb-3">
-            <div className="bg-green-100 text-green-600 p-2 rounded-lg">
+            <div className="bg-success-muted text-success p-2 rounded-lg">
               <IndianRupee className="size-5" />
             </div>
           </div>
@@ -319,7 +310,7 @@ export function ProcurementDashboard() {
 
         <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
           <div className="flex items-start justify-between mb-3">
-            <div className="bg-amber-100 text-amber-600 p-2 rounded-lg">
+            <div className="bg-warning-muted text-warning p-2 rounded-lg">
               <IndianRupee className="size-5" />
             </div>
           </div>
@@ -333,7 +324,7 @@ export function ProcurementDashboard() {
 
         <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
           <div className="flex items-start justify-between mb-3">
-            <div className="bg-purple-100 text-purple-600 p-2 rounded-lg">
+            <div className="bg-category-6/10 text-category-6 p-2 rounded-lg">
               <Building2 className="size-5" />
             </div>
           </div>
@@ -357,7 +348,7 @@ export function ProcurementDashboard() {
 
       {/* Render the Custom AG Grid Table Component */}
       {isError ? (
-        <div className="p-8 text-center text-red-500 bg-white border border-border rounded-xl">
+        <div className="p-8 text-center text-destructive bg-card border border-border rounded-xl">
           Failed to load records. Please try again.
         </div>
       ) : (

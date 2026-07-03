@@ -1,5 +1,7 @@
 import { Upload, Eye, Download, FileText, Trash2 } from "lucide-react";
 
+import { Button } from "./ui/button";
+
 export function Stage10({ data, setData }: { data: any, setData: (data: any) => void }) {
   return (
     <div className="space-y-8">
@@ -49,14 +51,14 @@ export function Stage10({ data, setData }: { data: any, setData: (data: any) => 
                       <span>Uploaded: Today</span>
                       <span>By: Current User</span>
                       <span>v1.0</span>
-                      <span className="text-green-600 font-medium">OCR: Pending</span>
+                      <span className="text-success font-medium">OCR: Pending</span>
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <button className="p-1.5 text-primary hover:bg-muted rounded" title="View" aria-label="View document"><Eye className="size-4" aria-hidden="true"/></button>
-                    <button className="p-1.5 text-green-600 hover:bg-muted rounded" title="Download" aria-label="Download document"><Download className="size-4" aria-hidden="true"/></button>
-                    <button className="p-1.5 text-blue-600 hover:bg-muted rounded" title="Replace Version" aria-label="Replace document version"><Upload className="size-4" aria-hidden="true"/></button>
-                    <button onClick={() => { const docs = [...data.lineDeptDocs]; docs.splice(idx, 1); setData({...data, lineDeptDocs: docs}) }} className="p-1.5 text-red-500 hover:bg-red-50 rounded" title="Delete Draft" aria-label="Delete document"><Trash2 className="size-4" aria-hidden="true"/></button>
+                    <Button variant="ghost" size="icon" className="text-primary" title="View" aria-label="View document"><Eye className="size-4" aria-hidden="true"/></Button>
+                    <Button variant="ghost" size="icon" className="text-success" title="Download" aria-label="Download document"><Download className="size-4" aria-hidden="true"/></Button>
+                    <Button variant="ghost" size="icon" className="text-info" title="Replace Version" aria-label="Replace document version"><Upload className="size-4" aria-hidden="true"/></Button>
+                    <Button variant="ghost" size="icon" onClick={() => { const docs = [...data.lineDeptDocs]; docs.splice(idx, 1); setData({...data, lineDeptDocs: docs}) }} className="text-destructive hover:bg-destructive-muted" title="Delete Draft" aria-label="Delete document"><Trash2 className="size-4" aria-hidden="true"/></Button>
                   </div>
                 </div>
               ))}
@@ -105,14 +107,14 @@ export function Stage10({ data, setData }: { data: any, setData: (data: any) => 
                       <span>Uploaded: Today</span>
                       <span>By: Current User</span>
                       <span>v1.0</span>
-                      <span className="text-green-600 font-medium">OCR: Pending</span>
+                      <span className="text-success font-medium">OCR: Pending</span>
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <button className="p-1.5 text-primary hover:bg-muted rounded" title="View" aria-label="View document"><Eye className="size-4" aria-hidden="true"/></button>
-                    <button className="p-1.5 text-green-600 hover:bg-muted rounded" title="Download" aria-label="Download document"><Download className="size-4" aria-hidden="true"/></button>
-                    <button className="p-1.5 text-blue-600 hover:bg-muted rounded" title="Replace Version" aria-label="Replace document version"><Upload className="size-4" aria-hidden="true"/></button>
-                    <button onClick={() => { const docs = [...data.doDocs]; docs.splice(idx, 1); setData({...data, doDocs: docs}) }} className="p-1.5 text-red-500 hover:bg-red-50 rounded" title="Delete Draft" aria-label="Delete document"><Trash2 className="size-4" aria-hidden="true"/></button>
+                    <Button variant="ghost" size="icon" className="text-primary" title="View" aria-label="View document"><Eye className="size-4" aria-hidden="true"/></Button>
+                    <Button variant="ghost" size="icon" className="text-success" title="Download" aria-label="Download document"><Download className="size-4" aria-hidden="true"/></Button>
+                    <Button variant="ghost" size="icon" className="text-info" title="Replace Version" aria-label="Replace document version"><Upload className="size-4" aria-hidden="true"/></Button>
+                    <Button variant="ghost" size="icon" onClick={() => { const docs = [...data.doDocs]; docs.splice(idx, 1); setData({...data, doDocs: docs}) }} className="text-destructive hover:bg-destructive-muted" title="Delete Draft" aria-label="Delete document"><Trash2 className="size-4" aria-hidden="true"/></Button>
                   </div>
                 </div>
               ))}
@@ -159,14 +161,14 @@ export function Stage10({ data, setData }: { data: any, setData: (data: any) => 
                       <span>Uploaded: Today</span>
                       <span>By: Current User</span>
                       <span>v1.0</span>
-                      <span className="text-green-600 font-medium">OCR: Pending</span>
+                      <span className="text-success font-medium">OCR: Pending</span>
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <button className="p-1.5 text-primary hover:bg-muted rounded" title="View" aria-label="View document"><Eye className="size-4" aria-hidden="true"/></button>
-                    <button className="p-1.5 text-green-600 hover:bg-muted rounded" title="Download" aria-label="Download document"><Download className="size-4" aria-hidden="true"/></button>
-                    <button className="p-1.5 text-blue-600 hover:bg-muted rounded" title="Replace Version" aria-label="Replace document version"><Upload className="size-4" aria-hidden="true"/></button>
-                    <button onClick={() => setData({...data, psDoc: null})} className="p-1.5 text-red-500 hover:bg-red-50 rounded" title="Delete Draft" aria-label="Delete document"><Trash2 className="size-4" aria-hidden="true"/></button>
+                    <Button variant="ghost" size="icon" className="text-primary" title="View" aria-label="View document"><Eye className="size-4" aria-hidden="true"/></Button>
+                    <Button variant="ghost" size="icon" className="text-success" title="Download" aria-label="Download document"><Download className="size-4" aria-hidden="true"/></Button>
+                    <Button variant="ghost" size="icon" className="text-info" title="Replace Version" aria-label="Replace document version"><Upload className="size-4" aria-hidden="true"/></Button>
+                    <Button variant="ghost" size="icon" onClick={() => setData({...data, psDoc: null})} className="text-destructive hover:bg-destructive-muted" title="Delete Draft" aria-label="Delete document"><Trash2 className="size-4" aria-hidden="true"/></Button>
                   </div>
                 </div>
               )}
@@ -214,25 +216,25 @@ export function Stage10({ data, setData }: { data: any, setData: (data: any) => 
               </div>
             </div>
 
-            <div className="bg-green-50 border border-green-200 p-4 rounded-xl">
-              <p className="font-semibold text-green-800 mb-2">Fund Release Tracker</p>
-              <div className="flex items-center justify-between text-xs font-medium text-green-700 mb-2">
-                <span className={data.installmentPhase === "25%" ? "bg-green-600 text-white px-2 py-1 rounded" : ""}>25%</span>
+            <div className="bg-success-muted border border-success-border p-4 rounded-xl">
+              <p className="font-semibold text-success-muted-foreground mb-2">Fund Release Tracker</p>
+              <div className="flex items-center justify-between text-xs font-medium text-success-muted-foreground mb-2">
+                <span className={data.installmentPhase === "25%" ? "bg-success text-primary-foreground px-2 py-1 rounded" : ""}>25%</span>
                 <span>→</span>
-                <span className={data.installmentPhase === "50%" ? "bg-green-600 text-white px-2 py-1 rounded" : ""}>50%</span>
+                <span className={data.installmentPhase === "50%" ? "bg-success text-primary-foreground px-2 py-1 rounded" : ""}>50%</span>
                 <span>→</span>
-                <span className={data.installmentPhase === "75%" ? "bg-green-600 text-white px-2 py-1 rounded" : ""}>75%</span>
+                <span className={data.installmentPhase === "75%" ? "bg-success text-primary-foreground px-2 py-1 rounded" : ""}>75%</span>
                 <span>→</span>
-                <span className={data.installmentPhase === "100%" ? "bg-green-600 text-white px-2 py-1 rounded" : ""}>100%</span>
+                <span className={data.installmentPhase === "100%" ? "bg-success text-primary-foreground px-2 py-1 rounded" : ""}>100%</span>
               </div>
               <div className="flex justify-between mt-4">
                 <div>
-                  <p className="text-xs text-green-600">Released Amount</p>
-                  <p className="text-sm font-bold text-green-900">₹{data.amountReleased || "0"}</p>
+                  <p className="text-xs text-success">Released Amount</p>
+                  <p className="text-sm font-bold text-success-muted-foreground">₹{data.amountReleased || "0"}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-green-600">Release Date</p>
-                  <p className="text-sm font-bold text-green-900">{data.paymentOrderDate || "-"}</p>
+                  <p className="text-xs text-success">Release Date</p>
+                  <p className="text-sm font-bold text-success-muted-foreground">{data.paymentOrderDate || "-"}</p>
                 </div>
               </div>
             </div>
@@ -256,14 +258,14 @@ export function Stage10({ data, setData }: { data: any, setData: (data: any) => 
                     <span>Uploaded: Today</span>
                     <span>By: Current User</span>
                     <span>v1.0</span>
-                    <span className="text-green-600 font-medium">OCR: Pending</span>
+                    <span className="text-success font-medium">OCR: Pending</span>
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <button className="p-1.5 text-primary hover:bg-muted rounded" title="View" aria-label="View document"><Eye className="size-4" aria-hidden="true"/></button>
-                  <button className="p-1.5 text-green-600 hover:bg-muted rounded" title="Download" aria-label="Download document"><Download className="size-4" aria-hidden="true"/></button>
-                  <button className="p-1.5 text-blue-600 hover:bg-muted rounded" title="Replace Version" aria-label="Replace document version"><Upload className="size-4" aria-hidden="true"/></button>
-                  <button onClick={() => setData({...data, paymentDoc: null})} className="p-1.5 text-red-500 hover:bg-red-50 rounded" title="Delete Draft" aria-label="Delete document"><Trash2 className="size-4" aria-hidden="true"/></button>
+                  <Button variant="ghost" size="icon" className="text-primary" title="View" aria-label="View document"><Eye className="size-4" aria-hidden="true"/></Button>
+                  <Button variant="ghost" size="icon" className="text-success" title="Download" aria-label="Download document"><Download className="size-4" aria-hidden="true"/></Button>
+                  <Button variant="ghost" size="icon" className="text-info" title="Replace Version" aria-label="Replace document version"><Upload className="size-4" aria-hidden="true"/></Button>
+                  <Button variant="ghost" size="icon" onClick={() => setData({...data, paymentDoc: null})} className="text-destructive hover:bg-destructive-muted" title="Delete Draft" aria-label="Delete document"><Trash2 className="size-4" aria-hidden="true"/></Button>
                 </div>
               </div>
             )}

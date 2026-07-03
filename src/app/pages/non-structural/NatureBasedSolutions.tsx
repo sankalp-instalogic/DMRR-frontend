@@ -16,8 +16,7 @@ import dayjs from "dayjs";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 import { Table } from "../../components/Table";
 import type { ColDef } from "ag-grid-community";
-import { cn } from "../../components/ui/utils";
-import { buttonVariants } from "../../components/ui/button";
+import { Button } from "../../components/ui/button";
 import formattedDate from "../../../utils/dateFormatter";
 
 interface NBS {
@@ -294,13 +293,14 @@ export function NatureBasedSolutions() {
         filter: false,
         width: 120,
         cellRenderer: (params: any) => (
-          <button
+          <Button
+            variant="outline"
             onClick={() => setSelectedNBS(params.data)}
-            className="inline-flex cursor-pointer items-center gap-1.5 px-4 h-8 bg-white border border-primary text-primary rounded-[10px] hover:bg-blue-50 transition-colors text-[14px] font-medium mt-1.5"
+            className="px-4 h-8 border-primary text-primary rounded-[10px] hover:bg-info-muted mt-1.5"
           >
             <Eye className="size-4" />
             View
-          </button>
+          </Button>
         ),
       },
     ],
@@ -317,23 +317,24 @@ export function NatureBasedSolutions() {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <button
+          <Button
+            variant="outline"
             onClick={() => setSelectedNBS(null)}
-            className="flex items-center gap-2 cursor-pointer bg-white border border-primary text-primary px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-gray-50 transition-colors"
+            className="border-primary text-primary px-4 h-10 rounded-[10px]"
           >
             <ArrowLeft className="size-4" />
             Back
-          </button>
+          </Button>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-          <h2 className="text-[20px] font-semibold text-primary mb-6 pb-4 border-b border-gray-200">
+        <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+          <h2 className="text-[20px] font-semibold text-primary mb-6 pb-4 border-b border-border">
             Nature Based Solution Details
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-6">
             <div>
-              <label className="text-[14px] font-medium text-gray-500 mb-1 block">
+              <label className="text-[14px] font-medium text-muted-foreground mb-1 block">
                 NBS Code
               </label>
               <p className="font-semibold text-[16px] text-primary">
@@ -341,7 +342,7 @@ export function NatureBasedSolutions() {
               </p>
             </div>
             <div>
-              <label className="text-[14px] font-medium text-gray-500 mb-1 block">
+              <label className="text-[14px] font-medium text-muted-foreground mb-1 block">
                 District
               </label>
               <p className="font-semibold text-[16px] text-primary">
@@ -350,7 +351,7 @@ export function NatureBasedSolutions() {
               </p>
             </div>
             <div>
-              <label className="text-[14px] font-medium text-gray-500 mb-1 block">
+              <label className="text-[14px] font-medium text-muted-foreground mb-1 block">
                 Title
               </label>
               <p className="font-semibold text-[16px] text-primary">
@@ -358,7 +359,7 @@ export function NatureBasedSolutions() {
               </p>
             </div>
             <div>
-              <label className="text-[14px] font-medium text-gray-500 mb-1 block">
+              <label className="text-[14px] font-medium text-muted-foreground mb-1 block">
                 Date of GR Issued
               </label>
               <p className="font-semibold text-[16px] text-primary">
@@ -366,7 +367,7 @@ export function NatureBasedSolutions() {
               </p>
             </div>
             <div>
-              <label className="text-[14px] font-medium text-gray-500 mb-1 block">
+              <label className="text-[14px] font-medium text-muted-foreground mb-1 block">
                 Allocated Budget
               </label>
               <p className="font-semibold text-[16px] text-primary">
@@ -374,7 +375,7 @@ export function NatureBasedSolutions() {
               </p>
             </div>
             <div>
-              <label className="text-[14px] font-medium text-gray-500 mb-1 block">
+              <label className="text-[14px] font-medium text-muted-foreground mb-1 block">
                 Utilized Budget
               </label>
               <p className="font-semibold text-[16px] text-primary">
@@ -382,7 +383,7 @@ export function NatureBasedSolutions() {
               </p>
             </div>
             <div>
-              <label className="text-[14px] font-medium text-gray-500 mb-1 block">
+              <label className="text-[14px] font-medium text-muted-foreground mb-1 block">
                 Date of Completion
               </label>
               <p className="font-semibold text-[16px] text-primary">
@@ -390,37 +391,32 @@ export function NatureBasedSolutions() {
               </p>
             </div>
 
-            <div className="md:col-span-2 border-t border-gray-200 pt-4 mt-2"></div>
+            <div className="md:col-span-2 border-t border-border pt-4 mt-2"></div>
 
             <div>
               <label className="text-[16px] font-semibold text-primary block mb-4">
                 GR Issued{" "}
                 {isDocumentsLoading && (
-                  <span className="text-sm text-gray-400 font-normal ml-2">
+                  <span className="text-sm text-muted-foreground font-normal ml-2">
                     (Loading...)
                   </span>
                 )}
               </label>
               <div className="flex gap-3">
-                <button
+                <Button
+                  size="lg"
                   onClick={() => handleDownload(grDocumentObj)}
                   disabled={!grDocumentObj || isDocumentsLoading}
-                  className={cn(
-                    buttonVariants({ variant: "default", size: "lg" }),
-                    "cursor-pointer",
-                  )}
                 >
                   <Download className="size-4" /> Download
-                </button>
-                <button
-                  className={cn(
-                    buttonVariants({ variant: "outline", size: "lg" }),
-                    "cursor-pointer",
-                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
                   onClick={() => handleViewDocument(grDocumentObj)}
                 >
                   <Eye className="size-4" /> View
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -428,31 +424,26 @@ export function NatureBasedSolutions() {
               <label className="text-[16px] font-semibold text-primary block mb-4">
                 Completion Certificate{" "}
                 {isDocumentsLoading && (
-                  <span className="text-sm text-gray-400 font-normal ml-2">
+                  <span className="text-sm text-muted-foreground font-normal ml-2">
                     (Loading...)
                   </span>
                 )}
               </label>
               <div className="flex gap-3">
-                <button
+                <Button
+                  size="lg"
                   onClick={() => handleDownload(completionDocObj)}
                   disabled={!completionDocObj || isDocumentsLoading}
-                  className={cn(
-                    buttonVariants({ variant: "default", size: "lg" }),
-                    "cursor-pointer",
-                  )}
                 >
                   <Download className="size-4" /> Download
-                </button>
-                <button
-                  className={cn(
-                    buttonVariants({ variant: "outline", size: "lg" }),
-                    "cursor-pointer",
-                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
                   onClick={() => handleViewDocument(completionDocObj)}
                 >
                   <Eye className="size-4" /> View
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -475,7 +466,7 @@ export function NatureBasedSolutions() {
         <h1 className="text-[30px] font-bold text-primary">
           Nature Based Solutions
         </h1>
-        <p className="text-[14px] font-medium text-gray-500 mt-1">
+        <p className="text-[14px] font-medium text-muted-foreground mt-1">
           Manage and monitor Nature Based Solutions projects and budgets.
         </p>
       </div>
@@ -486,8 +477,8 @@ export function NatureBasedSolutions() {
             onClick={() => setActiveTab("list")}
             className={`px-4 py-2 cursor-pointer font-medium text-[14px] transition-colors rounded-[10px] ${
               activeTab === "list"
-                ? "bg-primary text-white"
-                : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+                ? "bg-primary text-primary-foreground"
+                : "bg-card text-foreground hover:bg-muted border border-border"
             }`}
           >
             NBS List
@@ -496,8 +487,8 @@ export function NatureBasedSolutions() {
             onClick={() => setActiveTab("new")}
             className={`flex cursor-pointer items-center gap-2 px-4 py-2 font-medium text-[14px] transition-colors rounded-[10px] ${
               activeTab === "new"
-                ? "bg-primary text-white"
-                : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+                ? "bg-primary text-primary-foreground"
+                : "bg-card text-foreground hover:bg-muted border border-border"
             }`}
           >
             <Plus className="size-4" /> New Solution
@@ -508,22 +499,22 @@ export function NatureBasedSolutions() {
       {activeTab === "list" && (
         <div className="relative mb-6">
           {isFetching && !isLoading && (
-            <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-xl">
-              <span className="text-primary font-medium bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">
+            <div className="absolute inset-0 bg-card/50 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-xl">
+              <span className="text-primary font-medium bg-card px-4 py-2 rounded-lg shadow-sm border border-border">
                 Updating...
               </span>
             </div>
           )}
 
           {isLoading ? (
-            <div className="bg-white border border-gray-200 rounded-xl p-12 flex justify-center shadow-sm">
-              <span className="text-gray-500 font-medium">
+            <div className="bg-card border border-border rounded-xl p-12 flex justify-center shadow-sm">
+              <span className="text-muted-foreground font-medium">
                 Loading solutions...
               </span>
             </div>
           ) : isError ? (
-            <div className="bg-white border border-gray-200 rounded-xl p-12 flex justify-center shadow-sm">
-              <span className="text-red-500 font-medium">
+            <div className="bg-card border border-border rounded-xl p-12 flex justify-center shadow-sm">
+              <span className="text-destructive font-medium">
                 Failed to load solutions. Please try again.
               </span>
             </div>
@@ -543,14 +534,14 @@ export function NatureBasedSolutions() {
       {activeTab === "new" && (
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm"
+          className="bg-card border border-border rounded-xl p-6 shadow-sm"
         >
           <h2 className="text-[20px] font-semibold mb-6 text-primary">
             Add New Nature Based Solution
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-[14px] font-medium text-gray-700 mb-1">
+              <label className="block text-[14px] font-medium text-foreground mb-1">
                 NBS Code
               </label>
               <Controller
@@ -566,7 +557,7 @@ export function NatureBasedSolutions() {
               />
             </div>
             <div>
-              <label className="block text-[14px] font-medium text-gray-700 mb-1">
+              <label className="block text-[14px] font-medium text-foreground mb-1">
                 Title
               </label>
               <Controller
@@ -582,7 +573,7 @@ export function NatureBasedSolutions() {
               />
             </div>
             <div>
-              <label className="block text-[14px] font-medium text-gray-700 mb-1">
+              <label className="block text-[14px] font-medium text-foreground mb-1">
                 District
               </label>
               <Controller
@@ -607,7 +598,7 @@ export function NatureBasedSolutions() {
               />
             </div>
             <div>
-              <label className="block text-[14px] font-medium text-gray-700 mb-1">
+              <label className="block text-[14px] font-medium text-foreground mb-1">
                 Date of GR Issued
               </label>
               <Controller
@@ -628,7 +619,7 @@ export function NatureBasedSolutions() {
               />
             </div>
             <div>
-              <label className="block text-[14px] font-medium text-gray-700 mb-1">
+              <label className="block text-[14px] font-medium text-foreground mb-1">
                 Allocated Budget
               </label>
               <Controller
@@ -645,7 +636,7 @@ export function NatureBasedSolutions() {
               />
             </div>
             <div>
-              <label className="block text-[14px] font-medium text-gray-700 mb-1">
+              <label className="block text-[14px] font-medium text-foreground mb-1">
                 Utilized Budget
               </label>
               <Controller
@@ -662,7 +653,7 @@ export function NatureBasedSolutions() {
               />
             </div>
             <div className="col-span-2">
-              <label className="block text-[14px] font-medium text-gray-700 mb-1">
+              <label className="block text-[14px] font-medium text-foreground mb-1">
                 Date of Completion
               </label>
               <Controller
@@ -683,7 +674,7 @@ export function NatureBasedSolutions() {
               />
             </div>
             <div>
-              <label className="block text-[14px] font-medium text-gray-700 mb-1">
+              <label className="block text-[14px] font-medium text-foreground mb-1">
                 GR Issued Upload
               </label>
               <Controller
@@ -705,7 +696,7 @@ export function NatureBasedSolutions() {
               />
             </div>
             <div>
-              <label className="block text-[14px] font-medium text-gray-700 mb-1">
+              <label className="block text-[14px] font-medium text-foreground mb-1">
                 Completion Certificate Upload
               </label>
               <Controller
@@ -727,30 +718,31 @@ export function NatureBasedSolutions() {
               />
             </div>
           </div>
-          <div className="flex gap-3 justify-end mt-6 pt-4 border-t border-gray-200">
-            <button
+          <div className="flex gap-3 justify-end mt-6 pt-4 border-t border-border">
+            <Button
               type="button"
+              variant="outline"
               onClick={() => {
                 reset();
                 setActiveTab("list");
               }}
-              className="px-4 h-10 cursor-pointer bg-white border border-primary text-primary rounded-[10px] font-medium hover:bg-gray-50 transition-colors text-[14px]"
+              className="px-4 h-10 border-primary text-primary rounded-[10px]"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={
                 addMutation.isPending ||
                 uploadMutation.isPending ||
                 isSubmitting
               }
-              className="px-4 h-10 cursor-pointer bg-primary text-white rounded-[10px] font-medium hover:bg-primary/90 transition-colors text-[14px] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 h-10 rounded-[10px]"
             >
               {addMutation.isPending || uploadMutation.isPending || isSubmitting
                 ? "Saving..."
                 : "Save"}
-            </button>
+            </Button>
           </div>
         </form>
       )}

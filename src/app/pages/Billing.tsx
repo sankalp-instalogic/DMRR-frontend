@@ -741,7 +741,7 @@ export function Billing() {
                               [field.stateKey as string]: value,
                             }))
                           }
-                          className="w-full bg-white"
+                          className="w-full bg-card"
                         >
                           {field.options?.map((opt) => (
                             <Select.Option key={opt.value} value={opt.value}>
@@ -773,7 +773,7 @@ export function Billing() {
                               [field.stateKey as string]: dateString, // dateString defaults to YYYY-MM-DD
                             }))
                           }
-                          className="w-full bg-white"
+                          className="w-full bg-card"
                         />
                       );
                     }
@@ -796,7 +796,7 @@ export function Billing() {
                             [field.stateKey as string]: e.target.value,
                           }))
                         }
-                        className="w-full bg-white"
+                        className="w-full bg-card"
                       />
                     );
                   })}
@@ -804,22 +804,19 @@ export function Billing() {
                   <div
                     className={`${section.btnContainerClass} flex justify-end mt-2 col-span-full`}
                   >
-                    <button
-                      onClick={section.onSave}
-                      className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-colors text-sm font-medium"
-                    >
+                    <Button onClick={section.onSave}>
                       {section.buttonText}
-                    </button>
+                    </Button>
                   </div>
 
                   {/* INJECT HISTORY TABLE FOR PAYMENT ORDER SECTION ONLY */}
                   {section.yesNoKey === "paymentOrderMade" &&
                     paymentOrderHistory.length > 0 && (
-                      <div className="col-span-full mt-6 pt-6 border-t border-gray-200">
+                      <div className="col-span-full mt-6 pt-6 border-t border-border">
                         <h4 className="font-semibold text-primary mb-4">
                           Previous Payment Orders
                         </h4>
-                        <div className="bg-white rounded-lg overflow-hidden border border-gray-200">
+                        <div className="bg-card rounded-lg overflow-hidden border border-border">
                           {/* Passing dummy pagination props assuming Table requires them */}
                           <Table
                             rowData={paymentOrderHistory}
@@ -898,13 +895,13 @@ export function Billing() {
           <div className="flex gap-4 pt-4 border-t border-border">
             <button
               onClick={handleSave}
-              className="px-6 py-2 bg-[#FF5B1A] hover:bg-opacity-90 text-white rounded-lg transition-colors font-medium"
+              className="px-6 py-2 bg-accent hover:bg-opacity-90 text-primary-foreground rounded-lg transition-colors font-medium"
             >
               Save All
             </button>
             <button
               onClick={() => setSelectedBill(null)}
-              className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors font-medium"
+              className="px-6 py-2 bg-muted hover:bg-muted text-foreground rounded-lg transition-colors font-medium"
             >
               Cancel
             </button>

@@ -40,14 +40,22 @@ const financialYearOptions = [
   { value: "2025-26", label: "2025-26" },
 ];
 
-const CHART_COLORS = [
-  "#0B1F4D",
-  "#1E5AA8",
-  "#059669",
-  "#FBAC1B",
-  "#D97706",
-  "#7C3AED",
-  "#DC2626",
+// Resolve a CSS custom property (defined in theme.css) to its concrete color.
+// Lets recharts — which needs real color strings, not `var(...)` — follow the theme.
+const themeColor = (token: string) =>
+  typeof document !== "undefined"
+    ? getComputedStyle(document.documentElement).getPropertyValue(token).trim()
+    : "";
+
+// Chart series palette, sourced from theme tokens (status colors + categorical hues).
+const CHART_COLOR_TOKENS = [
+  "--primary",
+  "--secondary",
+  "--success",
+  "--category-3",
+  "--warning",
+  "--category-6",
+  "--destructive",
 ];
 
 const notifications = [
@@ -149,7 +157,7 @@ export function Dashboard() {
 
   if (summaryError || !summaryData || chartsError) {
     return (
-      <div className="flex items-center justify-center h-125 text-red-500 font-medium">
+      <div className="flex items-center justify-center h-125 text-destructive font-medium">
         Failed to load dashboard data. Please try again later.
       </div>
     );
@@ -193,11 +201,14 @@ export function Dashboard() {
     const segment = apiBudget.find((b: any) => b.segment === segmentName);
     return segment ? segment.utilized : 0;
   };
+  const chartColors = CHART_COLOR_TOKENS.map(themeColor);
+  const primaryColor = themeColor("--primary");
+  const categoryGold = themeColor("--category-3");
   const budgetByDepartmentChartData = (chartsData.budgetByDepartment || []).map(
     (item: any, index: number) => ({
       name: item.label,
       value: item.value,
-      color: CHART_COLORS[index % CHART_COLORS.length],
+      color: chartColors[index % chartColors.length],
     }),
   );
   return (
@@ -207,7 +218,7 @@ export function Dashboard() {
           <h1 className="text-[30px] font-bold text-primary">
             Operator Dashboard
           </h1>
-          <p className="text-[14px] font-medium text-gray-500 mt-1">
+          <p className="text-[14px] font-medium text-muted-foreground mt-1">
             Proposal Monitoring, Procurement & Budget Overview
           </p>
         </div>
@@ -234,7 +245,7 @@ export function Dashboard() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm mb-6">
+      <div className="bg-card border border-border rounded-xl p-4 shadow-sm mb-6">
         <div className="flex items-center gap-2 mb-3">
           <Filter className="size-5 text-primary" />
           <h3 className="font-semibold text-[16px] text-primary">
@@ -243,7 +254,7 @@ export function Dashboard() {
         </div>
         <div className="flex flex-row gap-4">
           <div className="flex-1">
-            <label className="text-[14px] font-medium text-gray-500 mb-1 block">
+            <label className="text-[14px] font-medium text-muted-foreground mb-1 block">
               Financial Year
             </label>
             <Select
@@ -254,7 +265,7 @@ export function Dashboard() {
             />
           </div>
           <div className="flex-1">
-            <label className="text-[14px] font-medium text-gray-500 mb-1 block">
+            <label className="text-[14px] font-medium text-muted-foreground mb-1 block">
               District
             </label>
             <Select
@@ -286,7 +297,7 @@ export function Dashboard() {
         <div className="mb-6">
           <div
             onClick={() => handleKPIDrillDown("all")}
-            className="bg-linear-to-br from-primary to-[#1E5AA8] text-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-all cursor-pointer mb-6"
+            className="bg-linear-to-br from-primary to-secondary text-primary-foreground rounded-2xl p-5 shadow-sm hover:shadow-md transition-all cursor-pointer mb-6"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -297,38 +308,38 @@ export function Dashboard() {
                   {apiProposals.total.toLocaleString()}
                 </div>
               </div>
-              <FileText className="size-8 opacity-80 text-white" />
+              <FileText className="size-8 opacity-80 text-primary-foreground" />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div
               onClick={() => handleKPIDrillDown("approved")}
-              className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all cursor-pointer group hover:border-green-500"
+              className="bg-card border border-border rounded-2xl p-5 shadow-sm hover:shadow-md transition-all cursor-pointer group hover:border-success"
             >
               <div className="flex items-center justify-between mb-2">
-                <CheckCircle2 className="size-5 text-green-600" />
-                <ArrowRight className="size-4 text-gray-400 group-hover:text-green-600 transition-colors" />
+                <CheckCircle2 className="size-5 text-success" />
+                <ArrowRight className="size-4 text-muted-foreground group-hover:text-success transition-colors" />
               </div>
-              <div className="text-[24px] font-bold text-green-600">
+              <div className="text-[24px] font-bold text-success">
                 {apiProposals.approved.toLocaleString()}
               </div>
-              <div className="text-[14px] font-medium text-gray-500 mt-1">
+              <div className="text-[14px] font-medium text-muted-foreground mt-1">
                 Approved Proposals
               </div>
             </div>
             <div
               onClick={() => handleKPIDrillDown("rejected")}
-              className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all cursor-pointer group hover:border-red-500"
+              className="bg-card border border-border rounded-2xl p-5 shadow-sm hover:shadow-md transition-all cursor-pointer group hover:border-destructive"
             >
               <div className="flex items-center justify-between mb-2">
-                <XCircle className="size-5 text-red-600" />
-                <ArrowRight className="size-4 text-gray-400 group-hover:text-red-600 transition-colors" />
+                <XCircle className="size-5 text-destructive" />
+                <ArrowRight className="size-4 text-muted-foreground group-hover:text-destructive transition-colors" />
               </div>
-              <div className="text-[24px] font-bold text-red-600">
+              <div className="text-[24px] font-bold text-destructive">
                 {apiProposals.rejected.toLocaleString()}
               </div>
-              <div className="text-[14px] font-medium text-gray-500 mt-1">
+              <div className="text-[14px] font-medium text-muted-foreground mt-1">
                 Rejected Proposals
               </div>
             </div>
@@ -339,7 +350,7 @@ export function Dashboard() {
         <div className="mb-6">
           <div
             onClick={() => handleKPIDrillDown("pending")}
-            className=" bg-linear-to-br from-[#EA580C] to-[#F59E0B] text-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-all cursor-pointer mb-6"
+            className=" bg-linear-to-br from-accent to-warning text-primary-foreground rounded-2xl p-5 shadow-sm hover:shadow-md transition-all cursor-pointer mb-6"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -352,7 +363,7 @@ export function Dashboard() {
                 </div>
               </div>
 
-              <Clock className="size-8 opacity-80 text-white" />
+              <Clock className="size-8 opacity-80 text-primary-foreground" />
             </div>
           </div>
 
@@ -361,18 +372,18 @@ export function Dashboard() {
               <div
                 key={idx}
                 onClick={() => navigate(item.link)}
-                className="bg-white border border-gray-200 rounded-2xl p-5 hover:border-primary hover:shadow-md transition-all cursor-pointer"
+                className="bg-card border border-border rounded-2xl p-5 hover:border-primary hover:shadow-md transition-all cursor-pointer"
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-semibold text-[16px] text-primary">
                     {item.stage}
                   </span>
-                  <ArrowRight className="size-4 text-gray-400" />
+                  <ArrowRight className="size-4 text-muted-foreground" />
                 </div>
-                <div className="text-[24px] font-bold mb-1 text-gray-900">
+                <div className="text-[24px] font-bold mb-1 text-foreground">
                   {item.count as number}
                 </div>
-                <div className="text-[14px] font-medium text-gray-500 mt-1">
+                <div className="text-[14px] font-medium text-muted-foreground mt-1">
                   Pending {item.pendingDays} days avg
                 </div>
               </div>
@@ -386,8 +397,8 @@ export function Dashboard() {
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-            <div className="text-[16px] font-semibold text-gray-500 mb-2">
+          <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+            <div className="text-[16px] font-semibold text-muted-foreground mb-2">
               Budget Allocated
             </div>
             <div className="text-[32px] font-bold text-primary">
@@ -395,61 +406,61 @@ export function Dashboard() {
             </div>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-            <div className="text-[16px] font-semibold text-gray-500 mb-2">
+          <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+            <div className="text-[16px] font-semibold text-muted-foreground mb-2">
               Budget Received
             </div>
-            <div className="text-[32px] font-bold text-[#1E5AA8]">
+            <div className="text-[32px] font-bold text-secondary">
               ₹{totalReceived.toLocaleString()}
             </div>
           </div>
         </div>
 
-        <div className="mt-6 bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+        <div className="mt-6 bg-card border border-border rounded-2xl p-5 shadow-sm">
           <div className="text-center mb-6">
-            <div className="text-[16px] font-semibold text-gray-500">
+            <div className="text-[16px] font-semibold text-muted-foreground">
               Budget Utilized
             </div>
-            <div className="text-[32px] font-bold mt-2 text-gray-900">
+            <div className="text-[32px] font-bold mt-2 text-foreground">
               ₹{totalUtilized.toLocaleString()}
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
-              <div className="bg-emerald-700 rounded-2xl p-5 shadow-sm mb-6">
-                <div className="text-[16px] font-semibold text-white/90">
+              <div className="bg-category-1 rounded-2xl p-5 shadow-sm mb-6">
+                <div className="text-[16px] font-semibold text-primary-foreground/90">
                   Mitigation
                 </div>
-                <div className="text-[24px] font-bold text-white mt-1">
+                <div className="text-[24px] font-bold text-primary-foreground mt-1">
                   ₹{totalUtilized.toLocaleString()}
                 </div>
               </div>
 
-              <div className="space-y-4 ml-8 border-l-4 border-emerald-900 pl-8">
-                <div className="bg-emerald-50 rounded-2xl p-5 shadow-sm border border-emerald-100">
-                  <div className="text-[14px] font-medium text-emerald-800">
+              <div className="space-y-4 ml-8 border-l-4 border-category-1 pl-8">
+                <div className="bg-category-1/10 rounded-2xl p-5 shadow-sm border border-category-1/20">
+                  <div className="text-[14px] font-medium text-category-1">
                     Structural Mitigation
                   </div>
-                  <div className="text-[20px] font-bold text-emerald-900 mt-1">
+                  <div className="text-[20px] font-bold text-category-1 mt-1">
                     ₹{getSegmentUtilized("Structural").toLocaleString()}
                   </div>
                 </div>
 
-                <div className="bg-lime-50 rounded-2xl p-5 shadow-sm border border-lime-100">
-                  <div className="text-[14px] font-medium text-lime-800">
+                <div className="bg-category-2/10 rounded-2xl p-5 shadow-sm border border-category-2/20">
+                  <div className="text-[14px] font-medium text-category-2">
                     Non-Structural Mitigation
                   </div>
-                  <div className="text-[20px] font-bold text-lime-900 mt-1">
+                  <div className="text-[20px] font-bold text-category-2 mt-1">
                     ₹{getSegmentUtilized("Non-Structural").toLocaleString()}
                   </div>
                 </div>
 
-                <div className="bg-yellow-50 rounded-2xl p-5 shadow-sm border border-yellow-100">
-                  <div className="text-[14px] font-medium text-yellow-800">
+                <div className="bg-category-3/10 rounded-2xl p-5 shadow-sm border border-category-3/20">
+                  <div className="text-[14px] font-medium text-category-3">
                     Research & Grants
                   </div>
-                  <div className="text-[20px] font-bold text-yellow-900 mt-1">
+                  <div className="text-[20px] font-bold text-category-3 mt-1">
                     ₹{getSegmentUtilized("Research").toLocaleString()}
                   </div>
                 </div>
@@ -457,8 +468,8 @@ export function Dashboard() {
             </div>
 
             <div>
-              <div className="bg-primary rounded-2xl text-white p-5 shadow-sm mb-6">
-                <div className="text-[16px] font-semibold text-white/90">
+              <div className="bg-primary rounded-2xl text-primary-foreground p-5 shadow-sm mb-6">
+                <div className="text-[16px] font-semibold text-primary-foreground/90">
                   Preparedness & Capacity Building
                 </div>
                 <div className="text-[24px] font-bold mt-1">
@@ -467,20 +478,20 @@ export function Dashboard() {
               </div>
 
               <div className="space-y-4 ml-8 border-l-4 border-primary pl-8">
-                <div className="bg-sky-50 rounded-2xl p-5 shadow-sm border border-sky-100">
-                  <div className="text-[14px] font-medium text-sky-800">
+                <div className="bg-category-4/10 rounded-2xl p-5 shadow-sm border border-category-4/20">
+                  <div className="text-[14px] font-medium text-category-4">
                     Procurements
                   </div>
-                  <div className="text-[20px] font-bold text-sky-900 mt-1">
+                  <div className="text-[20px] font-bold text-category-4 mt-1">
                     ₹{getSegmentUtilized("Procurement").toLocaleString()}
                   </div>
                 </div>
 
-                <div className="bg-indigo-50 rounded-2xl p-5 shadow-sm border border-indigo-100">
-                  <div className="text-[14px] font-medium text-indigo-800">
+                <div className="bg-category-5/10 rounded-2xl p-5 shadow-sm border border-category-5/20">
+                  <div className="text-[14px] font-medium text-category-5">
                     Funds to Districts
                   </div>
-                  <div className="text-[20px] font-bold text-indigo-900 mt-1">
+                  <div className="text-[20px] font-bold text-category-5 mt-1">
                     ₹{getSegmentUtilized("Districts").toLocaleString()}
                   </div>
                 </div>
@@ -498,26 +509,26 @@ export function Dashboard() {
 
         {/* Procurement KPIs - Integrated Live Data */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+          <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
             <div className="flex items-center gap-3 mb-2">
               <Package className="size-6 text-primary" />
-              <div className="text-[14px] font-medium text-gray-500">
+              <div className="text-[14px] font-medium text-muted-foreground">
                 Total Procured Items
               </div>
             </div>
-            <div className="text-[32px] font-bold text-gray-900">
+            <div className="text-[32px] font-bold text-foreground">
               {summaryData.procuredItems?.toLocaleString() || 0}
             </div>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+          <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
             <div className="flex items-center gap-3 mb-2">
-              <IndianRupee className="size-6 text-[#059669]" />
-              <div className="text-[14px] font-medium text-gray-500">
+              <IndianRupee className="size-6 text-success" />
+              <div className="text-[14px] font-medium text-muted-foreground">
                 Total Procurement Value
               </div>
             </div>
-            <div className="text-[32px] font-bold text-gray-900">
+            <div className="text-[32px] font-bold text-foreground">
               ₹{formatCurrencyLakhs(summaryData.procurementValue) || 0}
             </div>
           </div>
@@ -526,7 +537,7 @@ export function Dashboard() {
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Trend Chart */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+          <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
             <h3 className="mb-6 text-primary font-semibold text-[16px]">
               Year-wise Procurement Trend
             </h3>
@@ -547,16 +558,16 @@ export function Dashboard() {
                 <Line
                   type="monotone"
                   dataKey="value"
-                  stroke="#0B1F4D"
+                  stroke={primaryColor}
                   strokeWidth={3}
-                  dot={{ r: 5, fill: "#0B1F4D" }}
+                  dot={{ r: 5, fill: primaryColor }}
                 />
               </LineChart>
             </ResponsiveContainer>
           </div>
 
           {/* Pie Chart */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+          <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
             <h3 className="mb-6 text-primary font-semibold text-[16px]">
               Budget Spent by Beneficiary Department
             </h3>
@@ -587,7 +598,7 @@ export function Dashboard() {
           </div>
 
           {/* Bar Chart 1 - Line Departments */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+          <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
             <h3 className="mb-6 text-primary font-semibold text-[16px]">
               Line Department Proposals
             </h3>
@@ -609,7 +620,7 @@ export function Dashboard() {
                 <Bar
                   dataKey="value"
                   name="Proposals"
-                  fill="#FBAC1B"
+                  fill={categoryGold}
                   radius={[4, 4, 0, 0]}
                   barSize={30}
                 />
@@ -618,7 +629,7 @@ export function Dashboard() {
           </div>
 
           {/* Bar Chart 2 - District Utilization */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+          <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
             <h3 className="mb-6 text-primary font-semibold text-[16px]">
               District-wise Budget Utilization
             </h3>
@@ -640,13 +651,13 @@ export function Dashboard() {
                 <Bar
                   dataKey="value"
                   name="Allocated"
-                  fill="#0B1F4D"
+                  fill={primaryColor}
                   radius={[4, 4, 0, 0]}
                 />
                 <Bar
                   dataKey="value2"
                   name="Utilized"
-                  fill="#FBAC1B"
+                  fill={categoryGold}
                   radius={[4, 4, 0, 0]}
                 />
               </BarChart>
@@ -655,7 +666,7 @@ export function Dashboard() {
         </div>
 
         {/* Notifications Panel */}
-        {/* <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm mb-6">
+        {/* <div className="bg-card border border-border rounded-2xl p-5 shadow-sm mb-6">
           <h3 className="mb-6 text-[20px] font-semibold text-primary">
             Recent Alerts & Notifications
           </h3>
@@ -665,22 +676,22 @@ export function Dashboard() {
               <Link
                 key={index}
                 to={notif.link}
-                className="flex items-start gap-3 p-3 rounded-[10px] hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200"
+                className="flex items-start gap-3 p-3 rounded-[10px] hover:bg-muted transition-colors border border-transparent hover:border-border"
               >
                 <AlertCircle
                   className={`size-5 mt-0.5 ${
                     notif.type === "alert"
-                      ? "text-red-600"
+                      ? "text-destructive"
                       : notif.type === "warning"
-                        ? "text-[#F59E0B]"
-                        : "text-[#FBAC1B]"
+                        ? "text-warning"
+                        : "text-category-3"
                   }`}
                 />
                 <div className="flex-1">
-                  <p className="text-[14px] font-medium text-gray-900">
+                  <p className="text-[14px] font-medium text-foreground">
                     {notif.message}
                   </p>
-                  <p className="text-[12px] text-gray-500 mt-1">
+                  <p className="text-[12px] text-muted-foreground mt-1">
                     View details →
                   </p>
                 </div>

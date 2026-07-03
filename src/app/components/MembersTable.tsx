@@ -1,5 +1,6 @@
 import { Plus, Trash2 } from "lucide-react";
 
+import { Button } from "./ui/button";
 import type { Member } from "../../../constants/stageTypes";
 
 interface MembersTableProps {
@@ -45,14 +46,10 @@ export function MembersTable({ members, setMembers }: MembersTableProps) {
       <div className="flex justify-between items-center">
         <h4 className="font-semibold">Members Present</h4>
 
-        <button
-          type="button"
-          onClick={addRow}
-          className="px-3 py-2 bg-primary text-white rounded-lg flex items-center gap-2"
-        >
+        <Button type="button" onClick={addRow}>
           <Plus className="size-4" aria-hidden="true" />
           Add Member
-        </button>
+        </Button>
       </div>
 
       <table className="w-full border border-border rounded-lg overflow-hidden">
@@ -95,13 +92,15 @@ export function MembersTable({ members, setMembers }: MembersTableProps) {
 
               <td className="border p-2 text-center">
                 {members.length > 1 && (
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={() => removeRow(index)}
-                    className="text-red-600"
+                    className="text-destructive"
                     aria-label={`Delete member ${member.srNo}`}
                   >
                     <Trash2 className="size-5" aria-hidden="true" />
-                  </button>
+                  </Button>
                 )}
               </td>
             </tr>

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import {
   FileText, Download, Shield, ArrowLeft, Eye, Copy, CheckCircle2
 } from "lucide-react";
+import { Button } from "../components/ui/button";
 
 // Mock document data
 const documentData = {
@@ -98,17 +99,17 @@ export function DocumentViewerScreen() {
           </p>
         </div>
         <div className="flex gap-3">
-          <button
+          <Button
+            variant="outline"
             onClick={() => navigate("/proposal-detail")}
-            className="px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors text-sm font-medium flex items-center gap-2"
           >
             <ArrowLeft className="size-4" aria-hidden="true" />
             Back to Proposal
-          </button>
-          <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity text-sm font-medium flex items-center gap-2">
+          </Button>
+          <Button>
             <Download className="size-4" aria-hidden="true" />
             Download Original
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -131,7 +132,7 @@ export function DocumentViewerScreen() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+            <span className="inline-flex items-center gap-1 px-3 py-1 bg-success-muted text-success-muted-foreground rounded-full text-xs font-medium">
               <CheckCircle2 className="size-3" aria-hidden="true" />
               OCR {documentData.ocrStatus}
             </span>
@@ -149,7 +150,7 @@ export function DocumentViewerScreen() {
               Original Document
             </h4>
           </div>
-          <div className="p-6 flex items-center justify-center bg-gray-100 min-h-125">
+          <div className="p-6 flex items-center justify-center bg-muted min-h-125">
             <div className="text-center">
               <FileText className="size-16 mx-auto text-muted-foreground mb-4" aria-hidden="true" />
               <p className="text-sm text-muted-foreground mb-4">
@@ -161,10 +162,10 @@ export function DocumentViewerScreen() {
               <p className="text-xs text-muted-foreground mt-1">
                 24 pages
               </p>
-              <button className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity text-sm font-medium flex items-center gap-2 mx-auto">
+              <Button className="mt-4 mx-auto">
                 <Download className="size-4" aria-hidden="true" />
                 Download PDF
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -186,9 +187,9 @@ export function DocumentViewerScreen() {
             <span className="text-xs text-muted-foreground">
               OCR Completed: {documentData.ocrCompletedAt}
             </span>
-            <button className="text-xs text-primary hover:underline font-medium">
+            <Button variant="link" className="h-auto p-0 text-xs">
               Copy Text
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -202,14 +203,15 @@ export function DocumentViewerScreen() {
           </div>
           <div className="p-6 space-y-4">
             {/* SHA-256 Hash */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <div className="bg-info-muted border border-info-border rounded-lg p-3">
               <div className="flex items-start justify-between mb-2">
-                <span className="text-xs font-semibold text-blue-900">SHA-256 Hash</span>
-                <button
+                <span className="text-xs font-semibold text-info-muted-foreground">SHA-256 Hash</span>
+                <Button
+                  variant="link"
                   onClick={handleCopyHash}
                   aria-label="Copy SHA-256 hash"
                   aria-live="polite"
-                  className="text-xs text-blue-700 hover:underline font-medium flex items-center gap-1"
+                  className="h-auto p-0 gap-1 text-xs text-info-muted-foreground"
                 >
                   {hashCopied ? (
                     <>
@@ -222,25 +224,26 @@ export function DocumentViewerScreen() {
                       Copy
                     </>
                   )}
-                </button>
+                </Button>
               </div>
-              <p className="text-xs font-mono text-blue-700 break-all leading-relaxed">
+              <p className="text-xs font-mono text-info-muted-foreground break-all leading-relaxed">
                 {documentData.sha256Hash}
               </p>
-              <button
+              <Button
+                variant="link"
                 onClick={handleVerifyHash}
-                className="mt-2 text-xs text-blue-700 hover:underline font-medium"
+                className="mt-2 h-auto p-0 text-xs text-info-muted-foreground"
               >
                 Verify Hash
-              </button>
+              </Button>
             </div>
 
             {/* OCR Status */}
             <div>
               <span className="text-xs font-semibold text-muted-foreground">OCR Status</span>
               <div className="mt-1 flex items-center gap-2">
-                <span className="text-sm font-medium text-green-600">{documentData.ocrStatus}</span>
-                <CheckCircle2 className="size-4 text-green-600" aria-hidden="true" />
+                <span className="text-sm font-medium text-success">{documentData.ocrStatus}</span>
+                <CheckCircle2 className="size-4 text-success" aria-hidden="true" />
               </div>
             </div>
 
@@ -276,24 +279,25 @@ export function DocumentViewerScreen() {
               <span className="text-xs font-semibold text-muted-foreground mb-3 block">
                 Administrator Only
               </span>
-              <button
+              <Button
+                variant="secondary"
                 onClick={handleReOCR}
-                className="w-full px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:opacity-90 transition-opacity text-sm font-medium"
+                className="w-full"
               >
                 Re-run OCR
-              </button>
+              </Button>
             </div>
           </div>
         </div>
       </div>
 
       {/* Info Box */}
-      <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+      <div className="bg-success-muted border border-success-border rounded-xl p-4">
         <div className="flex items-start gap-3">
-          <CheckCircle2 className="size-5 text-green-600 shrink-0 mt-0.5" aria-hidden="true" />
+          <CheckCircle2 className="size-5 text-success shrink-0 mt-0.5" aria-hidden="true" />
           <div>
-            <p className="font-semibold text-green-900 mb-1">Document Verified</p>
-            <p className="text-sm text-green-700">
+            <p className="font-semibold text-success-muted-foreground mb-1">Document Verified</p>
+            <p className="text-sm text-success-muted-foreground">
               This document has been successfully processed and verified. The SHA-256 hash ensures document integrity.
               OCR extraction is complete with 98.5% confidence.
             </p>

@@ -20,7 +20,7 @@ import { Input, Spin, DatePicker, TimePicker } from "antd";
 import type { ColDef } from "ag-grid-community";
 import { Table } from "../components/Table"; // Adjust path as needed
 import { cn } from "../components/ui/utils";
-import { buttonVariants } from "../components/ui/button";
+import { Button, buttonVariants } from "../components/ui/button";
 
 const { TextArea } = Input;
 
@@ -273,8 +273,8 @@ export function GenericEvaluation() {
             <span
               className={`px-3 py-1 rounded-full text-xs font-medium ${
                 isPending
-                  ? "bg-blue-100 text-blue-700"
-                  : "bg-orange-100 text-orange-700"
+                  ? "bg-info-muted text-info-muted-foreground"
+                  : "bg-warning-muted text-warning-muted-foreground"
               }`}
             >
               {params.value}
@@ -508,7 +508,7 @@ const handleRejectOrRevision = (type: number) => {
           }}
           className={`px-5 py-2 rounded-lg font-medium transition-colors ${
             activeTab === "new"
-              ? "bg-primary text-white"
+              ? "bg-primary text-primary-foreground"
               : "bg-muted hover:bg-muted/80"
           }`}
         >
@@ -522,7 +522,7 @@ const handleRejectOrRevision = (type: number) => {
           }}
           className={`px-5 py-2 rounded-lg font-medium transition-colors ${
             activeTab === "revised"
-              ? "bg-primary text-white"
+              ? "bg-primary text-primary-foreground"
               : "bg-muted hover:bg-muted/80"
           }`}
         >
@@ -611,7 +611,7 @@ const handleRejectOrRevision = (type: number) => {
                     {activeTab === "revised"
                       ? "Approval Date (MoM Date)"
                       : "Meeting Date"}
-                      <span className="text-red-500">*</span>
+                      <span className="text-destructive">*</span>
                   </label>
                   <DatePicker
                     size="large"
@@ -641,14 +641,14 @@ const handleRejectOrRevision = (type: number) => {
                     {activeTab === "revised"
                       ? "Committee Decision"
                       : "Meeting Time"}
-                      <span className="text-red-500">*</span>
+                      <span className="text-destructive">*</span>
                   </label>
                   {activeTab === "revised" ? (
                     <Input
                       size="large"
                       value="Approved"
                       readOnly
-                      className="w-full cursor-no-drop border-border rounded-lg bg-muted text-green-700 font-semibold"
+                      className="w-full cursor-no-drop border-border rounded-lg bg-muted text-success-muted-foreground font-semibold"
                     />
                   ) : (
                     <TimePicker
@@ -669,14 +669,14 @@ const handleRejectOrRevision = (type: number) => {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <h4 className="font-semibold text-sm">Members Present <span className="text-muted-foreground font-normal">(Optional)</span></h4>
-                    <button
+                    <Button
                       type="button"
+                      size="sm"
                       onClick={addRow}
                       disabled={evaluateMutation.isPending}
-                      className="px-3 py-2 bg-primary text-white text-sm rounded-lg flex items-center gap-2 disabled:opacity-50"
                     >
                       <Plus className="size-4" /> Add Member
-                    </button>
+                    </Button>
                   </div>
                   <table className="w-full border border-border rounded-lg overflow-hidden">
                     <thead className="bg-muted">
@@ -732,7 +732,7 @@ const handleRejectOrRevision = (type: number) => {
                               <button
                                 onClick={() => removeRow(index)}
                                 disabled={evaluateMutation.isPending}
-                                className="text-red-600 hover:text-red-700 transition-colors disabled:opacity-50"
+                                className="text-destructive hover:text-destructive-muted-foreground transition-colors disabled:opacity-50"
                               >
                                 <Trash2 className="size-5 mx-auto" />
                               </button>
@@ -748,7 +748,7 @@ const handleRejectOrRevision = (type: number) => {
               {activeTab === "new" && (
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    Upload Attendance Sheet <span className="text-red-500">*</span>
+                    Upload Attendance Sheet <span className="text-destructive">*</span>
                   </label>
                   <input
                     type="file"
@@ -760,7 +760,7 @@ const handleRejectOrRevision = (type: number) => {
                     className="w-full px-4 py-3 border border-border rounded-lg bg-background file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
                   />
                   {attendanceSheet && (
-                    <p className="text-sm text-green-600 mt-2">
+                    <p className="text-sm text-success mt-2">
                       ✓ File selected: {attendanceSheet.name}
                     </p>
                   )}
@@ -771,7 +771,7 @@ const handleRejectOrRevision = (type: number) => {
                 <div>
                   <label className="block text-sm font-medium mb-2">
                     Committee Decision
-                    <span className="text-red-500">*</span>
+                    <span className="text-destructive">*</span>
                   </label>
                   <div className="flex gap-4">
                     <button
@@ -779,7 +779,7 @@ const handleRejectOrRevision = (type: number) => {
                       disabled={evaluateMutation.isPending}
                       className={`flex-1 px-4 py-3 rounded-lg border font-medium transition-all ${
                         decision === "approve"
-                          ? "bg-green-100 border-green-600 text-green-700 shadow-sm"
+                          ? "bg-success-muted border-success text-success-muted-foreground shadow-sm"
                           : "border-border hover:bg-muted disabled:opacity-50"
                       }`}
                     >
@@ -790,7 +790,7 @@ const handleRejectOrRevision = (type: number) => {
                       disabled={evaluateMutation.isPending}
                       className={`flex-1 px-4 py-3 rounded-lg border font-medium transition-all ${
                         decision === "reject"
-                          ? "bg-red-100 border-red-600 text-red-700 shadow-sm"
+                          ? "bg-destructive-muted border-destructive text-destructive-muted-foreground shadow-sm"
                           : "border-border hover:bg-muted disabled:opacity-50"
                       }`}
                     >
@@ -801,7 +801,7 @@ const handleRejectOrRevision = (type: number) => {
                       disabled={evaluateMutation.isPending}
                       className={`flex-1 px-4 py-3 rounded-lg border font-medium transition-all ${
                         decision === "revision"
-                          ? "bg-orange-100 border-orange-500 text-orange-700 shadow-sm"
+                          ? "bg-warning-muted border-warning text-warning-muted-foreground shadow-sm"
                           : "border-border hover:bg-muted disabled:opacity-50"
                       }`}
                     >
@@ -813,7 +813,7 @@ const handleRejectOrRevision = (type: number) => {
                 <div>
                   <label className="block text-sm font-medium mb-2">
                     Upload Document (MoM)
-                    <span className="text-red-500">*</span>
+                    <span className="text-destructive">*</span>
                   </label>
                   <input
                     type="file"
@@ -825,7 +825,7 @@ const handleRejectOrRevision = (type: number) => {
                     className="w-full px-4 py-3 border border-border rounded-lg bg-background file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
                   />
                   {revisedMomFile && (
-                    <p className="text-sm text-green-600 mt-2 font-medium">
+                    <p className="text-sm text-success mt-2 font-medium">
                       ✓ File selected: {revisedMomFile.name}
                     </p>
                   )}
@@ -834,9 +834,9 @@ const handleRejectOrRevision = (type: number) => {
 
               {/* DYNAMIC DECISION UI (Only for New Tab) */}
               {activeTab === "new" && decision === "approve" && (
-                <div className="animate-in fade-in slide-in-from-top-4 duration-300 space-y-4 p-4 bg-green-50/50 rounded-xl border border-green-100">
+                <div className="animate-in fade-in slide-in-from-top-4 duration-300 space-y-4 p-4 bg-success-muted/50 rounded-xl border border-success-border">
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-green-800">
+                    <label className="block text-sm font-medium mb-2 text-success-muted-foreground">
                       Date of Minutes of Meeting
                     </label>
                     <DatePicker
@@ -846,23 +846,23 @@ const handleRejectOrRevision = (type: number) => {
                         setMomDate(dateString as string)
                       }
                       disabled={evaluateMutation.isPending}
-                      className="w-full border-green-200 rounded-lg"
+                      className="w-full border-success-border rounded-lg"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-green-800">
+                    <label className="block text-sm font-medium mb-2 text-success-muted-foreground">
                       Upload MoM file
-                      <span className="text-red-500">*</span>
+                      <span className="text-destructive">*</span>
                     </label>
                     <input
                       type="file"
                       accept=".pdf,.doc,.docx"
                       disabled={evaluateMutation.isPending}
                       onChange={(e) => setMomFile(e.target.files?.[0] || null)}
-                      className="w-full px-4 py-3 border border-green-200 rounded-lg bg-background file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-100 file:text-green-700 hover:file:bg-green-200"
+                      className="w-full px-4 py-3 border border-success-border rounded-lg bg-background file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-success-muted file:text-success-muted-foreground hover:file:bg-success-muted"
                     />
                     {momFile && (
-                      <p className="text-sm text-green-600 mt-2 font-medium">
+                      <p className="text-sm text-success mt-2 font-medium">
                         ✓ File selected: {momFile.name}
                       </p>
                     )}
@@ -873,10 +873,10 @@ const handleRejectOrRevision = (type: number) => {
               {activeTab === "new" &&
                 (decision === "reject" || decision === "revision") && (
                   <div
-                    className={`animate-in fade-in slide-in-from-top-4 duration-300 p-4 rounded-xl border ${decision === "reject" ? "bg-red-50/50 border-red-100" : "bg-orange-50/50 border-orange-100"}`}
+                    className={`animate-in fade-in slide-in-from-top-4 duration-300 p-4 rounded-xl border ${decision === "reject" ? "bg-destructive-muted/50 border-destructive-border" : "bg-warning-muted/50 border-warning-border"}`}
                   >
                     <label
-                      className={`block text-sm font-medium mb-2 ${decision === "reject" ? "text-red-800" : "text-orange-800"}`}
+                      className={`block text-sm font-medium mb-2 ${decision === "reject" ? "text-destructive-muted-foreground" : "text-warning-muted-foreground"}`}
                     >
                       {decision === "reject"
                         ? "Reason for Rejection"
@@ -888,7 +888,7 @@ const handleRejectOrRevision = (type: number) => {
                       value={comments}
                       disabled={evaluateMutation.isPending}
                       onChange={(e) => setComments(e.target.value)}
-                      className={`w-full ${decision === "reject" ? "border-red-200" : "border-orange-200"}`}
+                      className={`w-full ${decision === "reject" ? "border-destructive-border" : "border-warning-border"}`}
                     />
                   </div>
                 )}
@@ -896,23 +896,24 @@ const handleRejectOrRevision = (type: number) => {
 
             {/* ACTION BUTTONS */}
             <div className="flex justify-between items-center mt-8 pt-6 border-t">
-              <button
+              <Button
+                variant="outline"
                 onClick={resetForm}
                 disabled={
                   evaluateMutation.isPending ||
                   revisedEvaluateMutation.isPending
                 }
-                className="px-6 py-3 border border-border rounded-lg hover:bg-muted transition-colors font-medium text-sm text-foreground disabled:opacity-50"
+                className="text-foreground"
               >
                 Cancel
-              </button>
+              </Button>
 
               {/* Action buttons for 'Revised' Tab */}
               {activeTab === "revised" && (
                 <button
                   onClick={handleRevisedForward}
                   disabled={revisedEvaluateMutation.isPending}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors font-medium text-sm shadow-sm disabled:opacity-50"
+                  className="px-6 py-3 bg-info text-primary-foreground rounded-lg flex items-center gap-2 hover:bg-info transition-colors font-medium text-sm shadow-sm disabled:opacity-50"
                 >
                   {revisedEvaluateMutation.isPending ? (
                     <Loader2 className="size-5 animate-spin" />
@@ -930,7 +931,7 @@ const handleRejectOrRevision = (type: number) => {
                 <button
                   onClick={handleForwardToNextStage}
                   disabled={evaluateMutation.isPending}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors font-medium text-sm animate-in fade-in zoom-in duration-300 disabled:opacity-50 shadow-sm"
+                  className="px-6 py-3 bg-info text-primary-foreground rounded-lg flex items-center gap-2 hover:bg-info transition-colors font-medium text-sm animate-in fade-in zoom-in duration-300 disabled:opacity-50 shadow-sm"
                 >
                   {evaluateMutation.isPending ? (
                     <Loader2 className="size-5 animate-spin" />
@@ -949,7 +950,7 @@ const handleRejectOrRevision = (type: number) => {
                   <button
                     onClick={() => handleRejectOrRevision(DecisionEnum.Reject)}
                     disabled={evaluateMutation.isPending}
-                    className="px-6 py-3 bg-red-600 text-white rounded-lg flex items-center gap-2 hover:bg-red-700 transition-colors font-medium text-sm animate-in fade-in zoom-in duration-300 disabled:opacity-50 shadow-sm"
+                    className="px-6 py-3 bg-destructive text-primary-foreground rounded-lg flex items-center gap-2 hover:bg-destructive transition-colors font-medium text-sm animate-in fade-in zoom-in duration-300 disabled:opacity-50 shadow-sm"
                   >
                     {evaluateMutation.isPending ? (
                       <Loader2 className="size-5 animate-spin" />
@@ -968,7 +969,7 @@ const handleRejectOrRevision = (type: number) => {
                       handleRejectOrRevision(DecisionEnum.Revision)
                     }
                     disabled={evaluateMutation.isPending}
-                    className="px-6 py-3 bg-orange-500 text-white rounded-lg flex items-center gap-2 hover:bg-orange-600 transition-colors font-medium text-sm animate-in fade-in zoom-in duration-300 disabled:opacity-50 shadow-sm"
+                    className="px-6 py-3 bg-warning text-primary-foreground rounded-lg flex items-center gap-2 hover:bg-warning transition-colors font-medium text-sm animate-in fade-in zoom-in duration-300 disabled:opacity-50 shadow-sm"
                   >
                     {evaluateMutation.isPending ? (
                       <Loader2 className="size-5 animate-spin" />

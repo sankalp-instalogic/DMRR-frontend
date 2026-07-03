@@ -11,6 +11,7 @@ import { api } from "../../utils/axios";
 import { useAuth } from "../../context/AuthContext";
 import type { AuthPayload } from "../../context/AuthContext";
 import toast from "react-hot-toast";
+import { Button } from "../components/ui/button";
 
 type LoginFormInputs = {
   username: "";
@@ -73,7 +74,7 @@ export function Login() {
   };
 
   return (
-    <div className="flex min-h-screen w-full bg-[#F8F9FB] font-sans">
+    <div className="flex min-h-screen w-full bg-background font-sans">
       {/* Left Section */}
       <div className="hidden lg:flex flex-col w-1/2 bg-[#F7F5F0] relative overflow-hidden p-12 justify-center items-center">
         <div className="z-10 flex flex-col items-center text-center max-w-xl">
@@ -83,7 +84,7 @@ export function Login() {
               alt="Maharashtra Emblem"
               className="h-32 object-contain"
             />
-            <div className="w-px h-24 bg-gray-300"></div>
+            <div className="w-px h-24 bg-muted"></div>
             <ImageWithFallback
               src={logoImg}
               alt="SDMA Logo"
@@ -103,7 +104,7 @@ export function Login() {
             Department
           </h1>
 
-          <p className="text-[#64748B] text-lg font-medium max-w-md">
+          <p className="text-muted-foreground text-lg font-medium max-w-md">
             Project Pipeline Monitoring & Procurement System
           </p>
         </div>
@@ -111,19 +112,19 @@ export function Login() {
 
       {/* Right Section */}
       <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 lg:p-12">
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 lg:p-10 border border-gray-100 transition-all duration-300">
+        <div className="w-full max-w-md bg-card rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 lg:p-10 border border-border transition-all duration-300">
           <div className="mb-10 text-center">
             <h2 className="text-3xl font-bold text-primary mb-2">
               Portal Sign In
             </h2>
-            <p className="text-[#64748B]">
+            <p className="text-muted-foreground">
               Enter your official credentials to continue
             </p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-2">
-              <label htmlFor="login-username" className="text-sm font-semibold text-[#0F172A] ml-1">
+              <label htmlFor="login-username" className="text-sm font-semibold text-foreground ml-1">
                 Username
               </label>
               <Controller
@@ -135,21 +136,21 @@ export function Login() {
                     {...field}
                     size="large"
                     id="login-username"
-                    prefix={<User className="h-5 w-5 text-gray-400 mr-1.5 transition-colors" aria-hidden="true" />}
-                    className="bg-[#F8F9FB] border-gray-200 rounded-xl text-[#0F172A] placeholder-gray-400 hover:border-[#1E5AA8] focus:border-[#1E5AA8] focus-within:border-[#1E5AA8] focus-within:ring-2 focus-within:ring-[#1E5AA8]/20 transition-all duration-200 py-3 [&>input]:bg-[#F8F9FB]"
+                    prefix={<User className="h-5 w-5 text-muted-foreground mr-1.5 transition-colors" aria-hidden="true" />}
+                    className="bg-background border-border rounded-xl text-foreground placeholder-muted-foreground hover:border-secondary focus:border-secondary focus-within:border-secondary focus-within:ring-2 focus-within:ring-secondary/20 transition-all duration-200 py-3 [&>input]:bg-background"
                     placeholder="Enter your username"
                   />
                 )}
               />
               {errors.username && (
-                <p className="text-red-500 text-xs mt-1 ml-1">
+                <p className="text-destructive text-xs mt-1 ml-1">
                   {errors.username.message}
                 </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="login-password" className="text-sm font-semibold text-[#0F172A] ml-1">
+              <label htmlFor="login-password" className="text-sm font-semibold text-foreground ml-1">
                 Password
               </label>
               <Controller
@@ -161,33 +162,33 @@ export function Login() {
                     {...field}
                     size="large"
                     id="login-password"
-                    prefix={<Lock className="h-5 w-5 text-gray-400 mr-1.5 transition-colors" aria-hidden="true" />}
+                    prefix={<Lock className="h-5 w-5 text-muted-foreground mr-1.5 transition-colors" aria-hidden="true" />}
                     iconRender={(visible) =>
                       visible ? (
-                        <EyeOff className="h-5 w-5 text-gray-400 hover:text-primary transition-colors cursor-pointer" aria-label="Hide password" />
+                        <EyeOff className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors cursor-pointer" aria-label="Hide password" />
                       ) : (
-                        <Eye className="h-5 w-5 text-gray-400 hover:text-primary transition-colors cursor-pointer" aria-label="Show password" />
+                        <Eye className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors cursor-pointer" aria-label="Show password" />
                       )
                     }
-                    className="bg-[#F8F9FB] border-gray-200 rounded-xl text-[#0F172A] placeholder-gray-400 hover:border-[#1E5AA8] focus:border-[#1E5AA8] focus-within:border-[#1E5AA8] focus-within:ring-2 focus-within:ring-[#1E5AA8]/20 transition-all duration-200 py-3 [&>input]:bg-[#F8F9FB]"
+                    className="bg-background border-border rounded-xl text-foreground placeholder-muted-foreground hover:border-secondary focus:border-secondary focus-within:border-secondary focus-within:ring-2 focus-within:ring-secondary/20 transition-all duration-200 py-3 [&>input]:bg-background"
                     placeholder="••••••••"
                   />
                 )}
               />
               {errors.password && (
-                <p className="text-red-500 text-xs mt-1 ml-1">
+                <p className="text-destructive text-xs mt-1 ml-1">
                   {errors.password.message}
                 </p>
               )}
             </div>
 
-            <button
+            <Button
               type="submit"
               disabled={loading}
-              className={`w-full font-semibold py-4 px-4 rounded-xl shadow-lg transition-all duration-300 flex items-center justify-center gap-2 ${
+              className={`w-full h-auto py-4 rounded-xl shadow-lg ${
                 loading
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-primary hover:bg-[#1E5AA8] text-white shadow-primary/20 hover:shadow-xl hover:-translate-y-0.5 cursor-pointer"
+                  ? "bg-muted-foreground"
+                  : "hover:bg-secondary shadow-primary/20 hover:shadow-xl hover:-translate-y-0.5 cursor-pointer"
               }`}
             >
               {loading ? (
@@ -218,11 +219,11 @@ export function Login() {
               ) : (
                 "Secure Sign In"
               )}
-            </button>
+            </Button>
           </form>
         </div>
 
-        <div className="mt-12 text-center text-[#64748B] text-sm">
+        <div className="mt-12 text-center text-muted-foreground text-sm">
           <p>Disaster Management Portal © 2026</p>
           <p className="mt-1">Designed for Government of Maharashtra</p>
         </div>

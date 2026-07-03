@@ -79,7 +79,7 @@ export function SECApprovalProcurement() {
 
   if (isError) {
     return (
-      <div className="p-8 text-center text-red-500 font-medium">
+      <div className="p-8 text-center text-destructive font-medium">
         Failed to fetch pending SEC proposals. Please try again.
       </div>
     );

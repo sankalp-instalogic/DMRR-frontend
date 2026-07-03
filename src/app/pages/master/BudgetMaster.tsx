@@ -353,18 +353,20 @@ export function BudgetMaster() {
         cellRenderer: (params: any) => {
           return (
             <div className="flex gap-2 mt-4">
-              <button
-                className="p-2 hover:bg-muted rounded cursor-pointer"
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => handleOpenEdit(params.data)}
               >
                 <Edit2 className="size-4" />
-              </button>
-              <button
-                className="p-2 hover:bg-destructive/20 rounded cursor-pointer"
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => setBudgetToDelete(params.data.id)}
               >
                 <Trash2 className="size-4 text-destructive" />
-              </button>
+              </Button>
             </div>
           );
         },

@@ -178,36 +178,36 @@ export function ProposalList() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Approved":
-        return "bg-green-100 text-green-700 border-green-200";
+        return "bg-success-muted text-success-muted-foreground border-success-border";
       case "Pending":
-        return "bg-orange-100 text-orange-700 border-orange-200";
+        return "bg-warning-muted text-warning-muted-foreground border-warning-border";
       case "Rejected":
-        return "bg-red-100 text-red-700 border-red-200";
+        return "bg-destructive-muted text-destructive-muted-foreground border-destructive-border";
       case "Draft":
-        return "bg-gray-100 text-gray-700 border-gray-200";
+        return "bg-muted text-foreground border-border";
       default:
-        return "bg-blue-100 text-blue-700 border-blue-200";
+        return "bg-info-muted text-info-muted-foreground border-info-border";
     }
   };
 
   const getStageColor = (stage: string) => {
     switch (stage) {
       case "Initiation":
-        return "bg-yellow-100 text-yellow-700";
+        return "bg-warning-muted text-warning-muted-foreground";
       case "DDMA":
-        return "bg-purple-100 text-purple-700";
+        return "bg-category-6/10 text-category-6";
       case "PMU":
-        return "bg-indigo-100 text-indigo-700";
+        return "bg-category-5/10 text-category-5";
       case "PAC":
-        return "bg-blue-100 text-blue-700";
+        return "bg-info-muted text-info-muted-foreground";
       case "TAC":
-        return "bg-cyan-100 text-cyan-700";
+        return "bg-category-4/10 text-category-4";
       case "SEC":
-        return "bg-teal-100 text-teal-700";
+        return "bg-category-1/10 text-category-1";
       case "SDMA":
-        return "bg-green-100 text-green-700";
+        return "bg-success-muted text-success-muted-foreground";
       default:
-        return "bg-gray-100 text-gray-700";
+        return "bg-muted text-foreground";
     }
   };
 
@@ -475,7 +475,7 @@ export function ProposalList() {
           Loading proposals...
         </div>
       ) : isError ? (
-        <div className="p-12 text-center text-red-500 border border-border rounded-xl bg-card">
+        <div className="p-12 text-center text-destructive border border-border rounded-xl bg-card">
           Failed to load proposals. Please try again later.
         </div>
       ) : (

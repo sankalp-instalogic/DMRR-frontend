@@ -155,7 +155,7 @@ export function AuditTrail() {
           Loading audit logs...
         </div>
       ) : isError ? (
-        <div className="p-12 text-center text-red-500 border border-border rounded-xl bg-card">
+        <div className="p-12 text-center text-destructive border border-border rounded-xl bg-card">
           {(error as Error)?.message || "Failed to load audit logs."}
         </div>
       ) : filteredLogs.length === 0 ? (

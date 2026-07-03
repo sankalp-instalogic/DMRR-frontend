@@ -8,8 +8,6 @@ import { Table } from "../../components/Table";
 import { Button } from "../../components/ui/button";
 import { Input, Select, DatePicker } from "antd";
 import { DocumentPreviewModal } from "../../components/DocumentPreviewModal";
-import { cn } from "../../components/ui/utils";
-import { buttonVariants } from "../../components/ui/button";
 import dayjs from "dayjs";
 import formattedDate from "../../../utils/dateFormatter";
 
@@ -156,13 +154,14 @@ export function FundsDistributedDistricts() {
       {
         headerName: "Action",
         cellRenderer: (params: any) => (
-          <button
+          <Button
+            variant="outline"
             onClick={() => handleView(params.data)}
-            className="inline-flex items-center gap-1.5 px-4 h-8 mt-2 bg-white border border-primary text-primary rounded-[10px] hover:bg-blue-50 transition-colors text-[14px] font-medium cursor-pointer"
+            className="px-4 h-8 mt-2 border-primary text-primary rounded-[10px] hover:bg-info-muted cursor-pointer"
           >
             <Eye className="size-4" />
             View
-          </button>
+          </Button>
         ),
         width: 130,
         sortable: false,
@@ -287,7 +286,7 @@ export function FundsDistributedDistricts() {
         <h1 className="text-[30px] font-bold text-primary">
           Funds Distributed to Districts
         </h1>
-        <p className="text-[14px] font-medium text-gray-500 mt-1">
+        <p className="text-[14px] font-medium text-muted-foreground mt-1">
           Manage and track funds allocated to districts
         </p>
       </div>
@@ -298,8 +297,8 @@ export function FundsDistributedDistricts() {
             onClick={() => setActiveTab("overview")}
             className={`px-4 py-2 font-medium text-[14px] cursor-pointer transition-colors rounded-[10px] ${
               activeTab === "overview"
-                ? "bg-primary text-white"
-                : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+                ? "bg-primary text-primary-foreground"
+                : "bg-card text-foreground hover:bg-muted border border-border"
             }`}
           >
             Overview
@@ -311,8 +310,8 @@ export function FundsDistributedDistricts() {
             }}
             className={`px-4 py-2 cursor-pointer font-medium text-[14px] transition-colors rounded-[10px] ${
               activeTab === "new"
-                ? "bg-primary text-white"
-                : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+                ? "bg-primary text-primary-foreground"
+                : "bg-card text-foreground hover:bg-muted border border-border"
             }`}
           >
             New Allocation
@@ -323,8 +322,8 @@ export function FundsDistributedDistricts() {
       {activeTab === "overview" && (
         <div className="relative mb-6">
           {isFetching && !isLoading && (
-            <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-xl">
-              <span className="text-primary font-medium bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">
+            <div className="absolute inset-0 bg-card/50 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-xl">
+              <span className="text-primary font-medium bg-card px-4 py-2 rounded-lg shadow-sm border border-border">
                 Updating...
               </span>
             </div>
@@ -333,15 +332,15 @@ export function FundsDistributedDistricts() {
           <div className="flex justify-end mb-4"></div>
 
           {isLoading ? (
-            <div className="p-8 text-center text-gray-500 font-medium bg-white rounded-xl border border-gray-200">
+            <div className="p-8 text-center text-muted-foreground font-medium bg-card rounded-xl border border-border">
               Loading records...
             </div>
           ) : isError ? (
-            <div className="p-8 text-center text-red-500 font-medium bg-white rounded-xl border border-gray-200">
+            <div className="p-8 text-center text-destructive font-medium bg-card rounded-xl border border-border">
               Failed to load records.
             </div>
           ) : records.length === 0 ? (
-            <div className="p-8 text-center text-gray-500 font-medium bg-white rounded-xl border border-gray-200">
+            <div className="p-8 text-center text-muted-foreground font-medium bg-card rounded-xl border border-border">
               No records found. Click "New Allocation" to add one.
             </div>
           ) : (
@@ -358,7 +357,7 @@ export function FundsDistributedDistricts() {
       )}
 
       {activeTab === "new" && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-card rounded-xl shadow-sm border border-border p-6">
           <h2 className="text-[20px] font-semibold text-primary mb-6">
             New District Allocation
           </h2>
@@ -375,7 +374,7 @@ export function FundsDistributedDistricts() {
                 }}
                 render={({ field, fieldState: { error } }) => (
                   <div className="flex flex-col gap-1">
-                    <label className="text-[14px] font-medium text-gray-700">
+                    <label className="text-[14px] font-medium text-foreground">
                       Funds Allocated (Lakhs)
                     </label>
                     <Input
@@ -388,7 +387,7 @@ export function FundsDistributedDistricts() {
                       {...field}
                     />
                     {error && (
-                      <span className="text-[12px] text-red-500 mt-1">
+                      <span className="text-[12px] text-destructive mt-1">
                         {error.message}
                       </span>
                     )}
@@ -403,7 +402,7 @@ export function FundsDistributedDistricts() {
                 rules={{ required: "Please select a district" }}
                 render={({ field, fieldState: { error } }) => (
                   <div className="flex flex-col gap-1">
-                    <label className="text-[14px] font-medium text-gray-700">
+                    <label className="text-[14px] font-medium text-foreground">
                       To District
                     </label>
                     <Select
@@ -421,7 +420,7 @@ export function FundsDistributedDistricts() {
                       status={error ? "error" : undefined}
                     />
                     {error && (
-                      <span className="text-[12px] text-red-500 mt-1">
+                      <span className="text-[12px] text-destructive mt-1">
                         {error.message}
                       </span>
                     )}
@@ -436,7 +435,7 @@ export function FundsDistributedDistricts() {
                 rules={{ required: "Issuing date is required" }}
                 render={({ field, fieldState: { error } }) => (
                   <div className="flex flex-col gap-1">
-                    <label className="text-[14px] font-medium text-gray-700">
+                    <label className="text-[14px] font-medium text-foreground">
                       Issuing Date
                     </label>
                     <DatePicker
@@ -449,7 +448,7 @@ export function FundsDistributedDistricts() {
                       status={error ? "error" : undefined}
                     />
                     {error && (
-                      <span className="text-[12px] text-red-500 mt-1">
+                      <span className="text-[12px] text-destructive mt-1">
                         {error.message}
                       </span>
                     )}
@@ -467,7 +466,7 @@ export function FundsDistributedDistricts() {
                 }}
                 render={({ field, fieldState: { error } }) => (
                   <div className="flex flex-col gap-1">
-                    <label className="text-[14px] font-medium text-gray-700">
+                    <label className="text-[14px] font-medium text-foreground">
                       Funds Utilized (Lakhs)
                     </label>
                     <Input
@@ -478,7 +477,7 @@ export function FundsDistributedDistricts() {
                       {...field}
                     />
                     {error && (
-                      <span className="text-[12px] text-red-500 mt-1">
+                      <span className="text-[12px] text-destructive mt-1">
                         {error.message}
                       </span>
                     )}
@@ -488,10 +487,10 @@ export function FundsDistributedDistricts() {
 
               {/* Custom File Upload UI */}
               <div className="space-y-2 md:col-span-2 mt-2">
-                <label className="text-[14px] font-medium text-gray-700">
+                <label className="text-[14px] font-medium text-foreground">
                   Utilization Certificate Upload
                 </label>
-                <div className="border-2 border-dashed border-gray-300 rounded-[10px] p-6 text-center hover:bg-gray-50 transition-colors">
+                <div className="border-2 border-dashed border-border rounded-[10px] p-6 text-center hover:bg-muted transition-colors">
                   <input
                     type="file"
                     className="hidden"
@@ -511,7 +510,7 @@ export function FundsDistributedDistricts() {
                         ? utilizationCertificate.name
                         : "Click to upload Utilization Certificate Document"}
                     </span>
-                    <span className="text-[12px] text-gray-500 mt-1">
+                    <span className="text-[12px] text-muted-foreground mt-1">
                       Accepts PDF, DOC, DOCX
                     </span>
                   </label>
@@ -519,16 +518,17 @@ export function FundsDistributedDistricts() {
               </div>
             </div>
 
-            <div className="mt-6 flex gap-3 justify-end pt-4 border-t border-gray-200">
+            <div className="mt-6 flex gap-3 justify-end pt-4 border-t border-border">
               <Button
+                variant="outline"
                 onClick={() => setActiveTab("overview")}
-                className="px-4 h-10 cursor-pointer bg-white border border-primary text-primary rounded-[10px] font-medium hover:bg-gray-50 transition-colors text-[14px]"
+                className="px-4 h-10 cursor-pointer border-primary text-primary rounded-[10px]"
               >
                 Cancel
               </Button>
               <Button
                 disabled={addMutation.isPending || uploadMutation.isPending}
-                className="px-4 h-10 bg-primary text-white rounded-[10px] cursor-pointer font-medium hover:bg-primary/90"
+                className="px-4 h-10 rounded-[10px] cursor-pointer"
               >
                 {addMutation.isPending || uploadMutation.isPending
                   ? "Saving..."
@@ -542,26 +542,27 @@ export function FundsDistributedDistricts() {
       {activeTab === "view" && viewRecord && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <button
+            <Button
+              variant="link"
               onClick={() => setActiveTab("overview")}
-              className="inline-flex items-center gap-2 text-[14px] font-medium text-gray-600 hover:text-primary transition-colors cursor-pointer"
+              className="px-0 text-muted-foreground hover:text-primary no-underline hover:no-underline cursor-pointer"
             >
               <ArrowLeft className="size-4" />
               Back
-            </button>
+            </Button>
           </div>
 
           <div
             ref={printRef}
-            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+            className="bg-card rounded-xl shadow-sm border border-border p-6"
           >
-            <h2 className="text-[20px] font-semibold text-primary mb-6 pb-4 border-b border-gray-200">
+            <h2 className="text-[20px] font-semibold text-primary mb-6 pb-4 border-b border-border">
               Allocation Details
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-y-6 gap-x-6">
               <div>
-                <p className="text-[14px] font-medium text-gray-500 mb-1">
+                <p className="text-[14px] font-medium text-muted-foreground mb-1">
                   Budget Utilized
                 </p>
                 <p className="font-semibold text-[16px] text-primary">
@@ -569,7 +570,7 @@ export function FundsDistributedDistricts() {
                 </p>
               </div>
               <div>
-                <p className="text-[14px] font-medium text-gray-500 mb-1">
+                <p className="text-[14px] font-medium text-muted-foreground mb-1">
                   Date of Issuing
                 </p>
                 <p className="font-semibold text-[16px] text-primary">
@@ -577,7 +578,7 @@ export function FundsDistributedDistricts() {
                 </p>
               </div>
               <div>
-                <p className="text-[14px] font-medium text-gray-500 mb-1">
+                <p className="text-[14px] font-medium text-muted-foreground mb-1">
                   District
                 </p>
                 <p className="font-semibold text-[16px] text-primary">
@@ -586,50 +587,47 @@ export function FundsDistributedDistricts() {
               </div>
             </div>
 
-            <div className="mt-6 pt-6 border-t border-gray-200">
+            <div className="mt-6 pt-6 border-t border-border">
               <p className="text-[16px] font-semibold text-primary mb-4">
                 Utilization Certificate
                 {isDocumentsLoading && (
-                  <span className="text-sm text-gray-400 font-normal ml-2">
+                  <span className="text-sm text-muted-foreground font-normal ml-2">
                     (Loading...)
                   </span>
                 )}
               </p>
 
               {utilDoc ? (
-                <div className="flex items-center gap-4 p-4 border border-gray-200 rounded-[10px] bg-gray-50/50">
-                  <FileText className="size-8 text-red-500" />
+                <div className="flex items-center gap-4 p-4 border border-border rounded-[10px] bg-muted/50">
+                  <FileText className="size-8 text-destructive" />
                   <div className="flex-1">
                     <p className="text-[14px] font-medium text-primary">
                       {utilDoc.fileName || "Utilization Certificate.pdf"}
                     </p>
                   </div>
                   <div className="flex gap-3">
-                    <button
+                    <Button
+                      size="lg"
                       onClick={() => handleDownload(utilDoc)}
-                      className={cn(
-                        buttonVariants({ variant: "default", size: "lg" }),
-                        "cursor-pointer",
-                      )}
+                      className="cursor-pointer"
                     >
                       <Download className="size-4" />
                       Download
-                    </button>
+                    </Button>
                     {/* --- NEW: Wired the View button to set isPreviewOpen to true --- */}
-                    <button
+                    <Button
+                      variant="outline"
+                      size="lg"
                       onClick={() => setIsPreviewOpen(true)}
-                      className={cn(
-                        buttonVariants({ variant: "outline", size: "lg" }),
-                        "cursor-pointer",
-                      )}
+                      className="cursor-pointer"
                     >
                       <Eye className="size-4" />
                       View
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ) : (
-                <p className="text-[14px] text-gray-500 italic">
+                <p className="text-[14px] text-muted-foreground italic">
                   No document available for this allocation.
                 </p>
               )}

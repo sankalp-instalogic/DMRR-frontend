@@ -48,6 +48,13 @@
   --chart-3: #FF5B1A;
   --chart-4: #059669;
   --chart-5: #D97706;
+  /* Categorical palette — for non-status groupings (dashboard tiles, chart series, category badges) */
+  --category-1: #059669;
+  --category-2: #65A30D;
+  --category-3: #FBAC1B;
+  --category-4: #0284C7;
+  --category-5: #4F46E5;
+  --category-6: #7C3AED;
   --radius: 1rem;
   --sidebar: #0B1F4D;
   --sidebar-foreground: #F8F9FB;
@@ -104,6 +111,12 @@
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
+  --category-1: oklch(0.696 0.17 162.48);
+  --category-2: oklch(0.768 0.18 130);
+  --category-3: oklch(0.82 0.16 80);
+  --category-4: oklch(0.7 0.15 240);
+  --category-5: oklch(0.62 0.2 275);
+  --category-6: oklch(0.627 0.24 300);
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
@@ -159,6 +172,12 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-category-1: var(--category-1);
+  --color-category-2: var(--category-2);
+  --color-category-3: var(--category-3);
+  --color-category-4: var(--category-4);
+  --color-category-5: var(--category-5);
+  --color-category-6: var(--category-6);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);

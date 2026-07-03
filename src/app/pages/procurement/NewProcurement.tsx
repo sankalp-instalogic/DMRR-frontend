@@ -5,6 +5,7 @@ import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { Input, Select, DatePicker, InputNumber } from "antd";
 import dayjs from "dayjs";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
+import { Button } from "../../components/ui/button";
 
 interface DetailRow {
   quantity: string | number;
@@ -216,8 +217,8 @@ export function NewProcurement() {
                     }}
                     className={`px-5 py-2.5 rounded-lg border text-sm font-medium transition-colors ${
                       demandType === type
-                        ? "bg-primary text-white border-primary"
-                        : "bg-white text-gray-700 border-border hover:bg-muted"
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-card text-foreground border-border hover:bg-muted"
                     }`}
                   >
                     {type}
@@ -374,15 +375,17 @@ export function NewProcurement() {
                       />
                     </td>
                     <td className="px-4 py-2 text-center">
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="icon"
                         onClick={() => remove(idx)}
                         disabled={fields.length === 1}
-                        className="p-1.5 text-red-500 hover:bg-red-50 rounded disabled:opacity-30 transition-colors"
+                        className="text-destructive hover:bg-destructive-muted disabled:opacity-30"
                         title="Remove row"
                       >
                         <Trash2 className="size-4" />
-                      </button>
+                      </Button>
                     </td>
                   </tr>
                 ))}
@@ -390,14 +393,15 @@ export function NewProcurement() {
             </table>
           </div>
 
-          <button
+          <Button
             type="button"
+            variant="outline"
             onClick={() => append({ quantity: "", location: "" })}
-            className="px-4 py-2 border border-dashed border-primary text-primary rounded-lg text-sm hover:bg-blue-50 flex items-center gap-2 transition-colors mb-6"
+            className="border-dashed border-primary text-primary hover:bg-info-muted mb-6"
           >
             <Plus className="size-4" />
             Add Row
-          </button>
+          </Button>
 
           {/* Financial Fields */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -472,23 +476,22 @@ export function NewProcurement() {
 
         {/* Buttons */}
         <div className="p-6 bg-muted/20 flex justify-end gap-4">
-          <button
+          <Button
             type="button"
+            variant="outline"
             onClick={() => navigate("/procurement-list")}
-            className="px-6 py-2 bg-white border border-border text-gray-700 font-medium rounded-lg hover:bg-gray-50 flex items-center gap-2 transition-colors"
           >
             <X className="size-4" />
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={handleSubmit(onSubmit)}
             disabled={createProcurementMutation.isPending}
-            className="px-6 py-2 bg-primary text-white font-medium rounded-lg hover:bg-opacity-90 flex items-center gap-2 transition-colors disabled:opacity-50"
           >
             <Save className="size-4" />
             {createProcurementMutation.isPending ? "Saving..." : "Save"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

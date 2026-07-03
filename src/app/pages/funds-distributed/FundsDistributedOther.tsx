@@ -9,8 +9,7 @@ import type { ColDef, ICellRendererParams } from "ag-grid-community";
 import { Input, Select, DatePicker } from "antd";
 import dayjs from "dayjs";
 import { DocumentPreviewModal } from "../../components/DocumentPreviewModal";
-import { cn } from "../../components/ui/utils";
-import { buttonVariants } from "../../components/ui/button";
+import { Button } from "../../components/ui/button";
 import formattedDate from "../../../utils/dateFormatter";
 
 type RecordType = {
@@ -253,13 +252,14 @@ export function FundsDistributedOther() {
         headerName: "Action",
         cellRenderer: (params: ICellRendererParams) => (
           <div className="flex h-full items-center">
-            <button
+            <Button
+              variant="outline"
               onClick={() => handleView(params.data)}
-              className="inline-flex items-center gap-1.5 px-4 h-9 bg-white border border-primary text-primary rounded-[10px] hover:bg-blue-50 transition-colors text-[14px] font-medium cursor-pointer"
+              className="px-4 h-9 border-primary text-primary rounded-[10px] hover:bg-info-muted cursor-pointer"
             >
               <Eye className="size-4" />
               View
-            </button>
+            </Button>
           </div>
         ),
         sortable: false,
@@ -273,7 +273,7 @@ export function FundsDistributedOther() {
   if (isUtilsLoading) {
     return (
       <div className="flex items-center justify-center h-full min-h-100">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-primary"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-border border-t-primary"></div>
       </div>
     );
   }
@@ -281,9 +281,9 @@ export function FundsDistributedOther() {
   if (isError) {
     return (
       <div className="flex items-center justify-center p-6">
-        <div className="max-w-md rounded-xl border border-red-200 bg-red-50 p-4 shadow-sm">
-          <h3 className="font-semibold text-red-800">Something went wrong</h3>
-          <p className="mt-1 text-sm text-red-600">
+        <div className="max-w-md rounded-xl border border-destructive-border bg-destructive-muted p-4 shadow-sm">
+          <h3 className="font-semibold text-destructive-muted-foreground">Something went wrong</h3>
+          <p className="mt-1 text-sm text-destructive">
             {(error as Error).message}
           </p>
         </div>
@@ -297,7 +297,7 @@ export function FundsDistributedOther() {
         <h1 className="text-[30px] font-bold text-primary">
           Funds Distributed to Other Utilizations
         </h1>
-        <p className="text-[14px] font-medium text-gray-500 mt-1">
+        <p className="text-[14px] font-medium text-muted-foreground mt-1">
           Manage and track funds allocated for various specific heads
         </p>
       </div>
@@ -308,8 +308,8 @@ export function FundsDistributedOther() {
             onClick={() => setActiveTab("overview")}
             className={`px-4 py-2 font-medium text-[14px] transition-colors rounded-[10px] cursor-pointer ${
               activeTab === "overview"
-                ? "bg-primary text-white"
-                : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+                ? "bg-primary text-primary-foreground"
+                : "bg-card text-foreground hover:bg-muted border border-border"
             }`}
           >
             Overview
@@ -321,8 +321,8 @@ export function FundsDistributedOther() {
             }}
             className={`px-4 py-2 font-medium text-[14px] transition-colors rounded-[10px] cursor-pointer ${
               activeTab === "new"
-                ? "bg-primary text-white"
-                : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+                ? "bg-primary text-primary-foreground"
+                : "bg-card text-foreground hover:bg-muted border border-border"
             }`}
           >
             New Utilization
@@ -344,7 +344,7 @@ export function FundsDistributedOther() {
       )}
 
       {activeTab === "new" && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-card rounded-xl shadow-sm border border-border p-6">
           <h2 className="text-[20px] font-semibold text-primary mb-6">
             New Utilization
           </h2>
@@ -358,7 +358,7 @@ export function FundsDistributedOther() {
                 rules={{ required: "Please select a department" }}
                 render={({ field, fieldState: { error } }) => (
                   <div className="flex flex-col gap-1">
-                    <label className="text-[14px] font-medium text-gray-700">
+                    <label className="text-[14px] font-medium text-foreground">
                       Utilization Department
                     </label>
                     <Select
@@ -378,7 +378,7 @@ export function FundsDistributedOther() {
                       status={error ? "error" : undefined}
                     />
                     {error && (
-                      <span className="text-[12px] text-red-500 mt-1">
+                      <span className="text-[12px] text-destructive mt-1">
                         {error.message}
                       </span>
                     )}
@@ -393,7 +393,7 @@ export function FundsDistributedOther() {
                 rules={{ required: "Utilization Head is required" }}
                 render={({ field, fieldState: { error } }) => (
                   <div className="flex flex-col gap-1">
-                    <label className="text-[14px] font-medium text-gray-700">
+                    <label className="text-[14px] font-medium text-foreground">
                       Utilization Head
                     </label>
                     <Input
@@ -404,7 +404,7 @@ export function FundsDistributedOther() {
                       {...field}
                     />
                     {error && (
-                      <span className="text-[12px] text-red-500 mt-1">
+                      <span className="text-[12px] text-destructive mt-1">
                         {error.message}
                       </span>
                     )}
@@ -419,7 +419,7 @@ export function FundsDistributedOther() {
                 rules={{ required: "Issuing date is required" }}
                 render={({ field, fieldState: { error } }) => (
                   <div className="flex flex-col gap-1">
-                    <label className="text-[14px] font-medium text-gray-700">
+                    <label className="text-[14px] font-medium text-foreground">
                       Issuing Date
                     </label>
                     <DatePicker
@@ -432,7 +432,7 @@ export function FundsDistributedOther() {
                       status={error ? "error" : undefined}
                     />
                     {error && (
-                      <span className="text-[12px] text-red-500 mt-1">
+                      <span className="text-[12px] text-destructive mt-1">
                         {error.message}
                       </span>
                     )}
@@ -450,7 +450,7 @@ export function FundsDistributedOther() {
                 }}
                 render={({ field, fieldState: { error } }) => (
                   <div className="flex flex-col gap-1">
-                    <label className="text-[14px] font-medium text-gray-700">
+                    <label className="text-[14px] font-medium text-foreground">
                       Budget Allocated (Cr)
                     </label>
                     <Input
@@ -462,7 +462,7 @@ export function FundsDistributedOther() {
                       {...field}
                     />
                     {error && (
-                      <span className="text-[12px] text-red-500 mt-1">
+                      <span className="text-[12px] text-destructive mt-1">
                         {error.message}
                       </span>
                     )}
@@ -480,7 +480,7 @@ export function FundsDistributedOther() {
                 }}
                 render={({ field, fieldState: { error } }) => (
                   <div className="flex flex-col gap-1">
-                    <label className="text-[14px] font-medium text-gray-700">
+                    <label className="text-[14px] font-medium text-foreground">
                       Budget Utilized (Cr)
                     </label>
                     <Input
@@ -492,7 +492,7 @@ export function FundsDistributedOther() {
                       {...field}
                     />
                     {error && (
-                      <span className="text-[12px] text-red-500 mt-1">
+                      <span className="text-[12px] text-destructive mt-1">
                         {error.message}
                       </span>
                     )}
@@ -502,10 +502,10 @@ export function FundsDistributedOther() {
 
               {/* File Upload UI */}
               <div className="space-y-2 md:col-span-2 mt-2">
-                <label className="text-[14px] font-medium text-gray-700">
+                <label className="text-[14px] font-medium text-foreground">
                   Utilization Certificate Upload
                 </label>
-                <div className="border-2 border-dashed border-gray-300 rounded-[10px] p-6 text-center hover:bg-gray-50 transition-colors">
+                <div className="border-2 border-dashed border-border rounded-[10px] p-6 text-center hover:bg-muted transition-colors">
                   <input
                     type="file"
                     className="hidden"
@@ -528,7 +528,7 @@ export function FundsDistributedOther() {
                         <span className="text-[14px] font-medium text-primary">
                           {selectedFile.name}
                         </span>
-                        <span className="text-[12px] text-gray-500 mt-1">
+                        <span className="text-[12px] text-muted-foreground mt-1">
                           Click to change file (
                           {(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
                         </span>
@@ -539,7 +539,7 @@ export function FundsDistributedOther() {
                         <span className="text-[14px] font-medium text-primary">
                           Click to upload Utilization Certificate
                         </span>
-                        <span className="text-[12px] text-gray-500 mt-1">
+                        <span className="text-[12px] text-muted-foreground mt-1">
                           Accepts PDF, DOC, DOCX
                         </span>
                       </>
@@ -549,23 +549,24 @@ export function FundsDistributedOther() {
               </div>
             </div>
 
-            <div className="mt-6 flex gap-3 justify-end pt-4 border-t border-gray-200">
-              <button
+            <div className="mt-6 flex gap-3 justify-end pt-4 border-t border-border">
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => setActiveTab("overview")}
-                className="px-4 h-10 bg-white border border-primary text-primary rounded-[10px] font-medium hover:bg-gray-50 transition-colors text-[14px] cursor-pointer"
+                className="px-4 h-10 border-primary text-primary rounded-[10px] cursor-pointer"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
                 disabled={addMutation.isPending || uploadMutation.isPending}
-                className="px-4 h-10 bg-primary text-white rounded-[10px] font-medium hover:bg-primary/90 transition-colors text-[14px] disabled:opacity-50 cursor-pointer"
+                className="px-4 h-10 rounded-[10px] cursor-pointer"
               >
                 {addMutation.isPending || uploadMutation.isPending
                   ? "Saving..."
                   : "Save"}
-              </button>
+              </Button>
             </div>
           </form>
         </div>
@@ -574,23 +575,24 @@ export function FundsDistributedOther() {
       {activeTab === "view" && viewRecord && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <button
+            <Button
+              variant="link"
               onClick={() => setActiveTab("overview")}
-              className="inline-flex items-center gap-2 text-[14px] font-medium text-gray-600 hover:text-primary transition-colors cursor-pointer"
+              className="px-0 text-muted-foreground hover:text-primary no-underline hover:no-underline cursor-pointer"
             >
               <ArrowLeft className="size-4" />
               Back
-            </button>
+            </Button>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h2 className="text-[20px] font-semibold text-primary mb-6 pb-4 border-b border-gray-200">
+          <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+            <h2 className="text-[20px] font-semibold text-primary mb-6 pb-4 border-b border-border">
               Utilization Details
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-y-6 gap-x-6">
               <div>
-                <p className="text-[14px] font-medium text-gray-500 mb-1">
+                <p className="text-[14px] font-medium text-muted-foreground mb-1">
                   Utilization Department
                 </p>
                 <p className="font-semibold text-[16px] text-primary">
@@ -599,7 +601,7 @@ export function FundsDistributedOther() {
                 </p>
               </div>
               <div>
-                <p className="text-[14px] font-medium text-gray-500 mb-1">
+                <p className="text-[14px] font-medium text-muted-foreground mb-1">
                   Utilization Head
                 </p>
                 <p className="font-semibold text-[16px] text-primary">
@@ -607,7 +609,7 @@ export function FundsDistributedOther() {
                 </p>
               </div>
               <div>
-                <p className="text-[14px] font-medium text-gray-500 mb-1">
+                <p className="text-[14px] font-medium text-muted-foreground mb-1">
                   Allocated Amount
                 </p>
                 <p className="font-semibold text-[16px] text-primary">
@@ -615,7 +617,7 @@ export function FundsDistributedOther() {
                 </p>
               </div>
               <div>
-                <p className="text-[14px] font-medium text-gray-500 mb-1">
+                <p className="text-[14px] font-medium text-muted-foreground mb-1">
                   Utilized Amount
                 </p>
                 <p className="font-semibold text-[16px] text-primary">
@@ -623,7 +625,7 @@ export function FundsDistributedOther() {
                 </p>
               </div>
               <div>
-                <p className="text-[14px] font-medium text-gray-500 mb-1">
+                <p className="text-[14px] font-medium text-muted-foreground mb-1">
                   Date of Issuing
                 </p>
                 <p className="font-semibold text-[16px] text-primary">
@@ -632,49 +634,46 @@ export function FundsDistributedOther() {
               </div>
             </div>
 
-            <div className="mt-6 pt-6 border-t border-gray-200">
+            <div className="mt-6 pt-6 border-t border-border">
               <p className="text-[16px] font-semibold text-primary mb-4">
                 Utilization Certificate
                 {isDocumentsLoading && (
-                  <span className="text-sm text-gray-400 font-normal ml-2">
+                  <span className="text-sm text-muted-foreground font-normal ml-2">
                     (Loading...)
                   </span>
                 )}
               </p>
 
               {utilDoc ? (
-                <div className="flex items-center gap-4 p-4 border border-gray-200 rounded-[10px] bg-gray-50/50">
-                  <FileText className="size-8 text-red-500" />
+                <div className="flex items-center gap-4 p-4 border border-border rounded-[10px] bg-muted/50">
+                  <FileText className="size-8 text-destructive" />
                   <div className="flex-1">
                     <p className="text-[14px] font-medium text-primary">
                       {utilDoc.fileName || "Utilization_Certificate.pdf"}
                     </p>
                   </div>
                   <div className="flex gap-3">
-                    <button
+                    <Button
+                      size="lg"
                       onClick={() => handleDownload(utilDoc)}
-                      className={cn(
-                        buttonVariants({ variant: "default", size: "lg" }),
-                        "cursor-pointer",
-                      )}
+                      className="cursor-pointer"
                     >
                       <Download className="size-4" />
                       Download
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="lg"
                       onClick={() => setIsPreviewOpen(true)}
-                      className={cn(
-                        buttonVariants({ variant: "outline", size: "lg" }),
-                        "cursor-pointer",
-                      )}
+                      className="cursor-pointer"
                     >
                       <Eye className="size-4" />
                       View
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ) : (
-                <p className="text-[14px] text-gray-500 italic">
+                <p className="text-[14px] text-muted-foreground italic">
                   No document available for this utilization.
                 </p>
               )}

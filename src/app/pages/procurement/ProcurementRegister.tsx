@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Search, RotateCcw, Plus, Eye, Edit } from "lucide-react";
+import { Button } from "../../components/ui/button";
 
 export function ProcurementRegister() {
   const navigate = useNavigate();
@@ -20,11 +21,11 @@ export function ProcurementRegister() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "Completed": return <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Completed</span>;
-      case "In Progress": return <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">In Progress</span>;
-      case "Draft": return <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">Draft</span>;
-      case "Delayed": return <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">Delayed</span>;
-      default: return <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">{status}</span>;
+      case "Completed": return <span className="px-2 py-1 bg-success-muted text-success-muted-foreground rounded-full text-xs font-medium">Completed</span>;
+      case "In Progress": return <span className="px-2 py-1 bg-info-muted text-info-muted-foreground rounded-full text-xs font-medium">In Progress</span>;
+      case "Draft": return <span className="px-2 py-1 bg-muted text-foreground rounded-full text-xs font-medium">Draft</span>;
+      case "Delayed": return <span className="px-2 py-1 bg-destructive-muted text-destructive-muted-foreground rounded-full text-xs font-medium">Delayed</span>;
+      default: return <span className="px-2 py-1 bg-muted text-foreground rounded-full text-xs font-medium">{status}</span>;
     }
   };
 
@@ -105,29 +106,26 @@ export function ProcurementRegister() {
 
         {/* Action Buttons */}
         <div className="flex flex-wrap justify-end gap-3 pt-2">
-          <button 
-            onClick={handleReset}
-            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg flex items-center gap-2 transition-colors font-medium text-sm"
-          >
+          <Button variant="secondary" onClick={handleReset}>
             <RotateCcw className="size-4" />
             Reset
-          </button>
-          <button className="px-4 py-2 bg-primary hover:bg-opacity-90 text-white rounded-lg flex items-center gap-2 transition-colors font-medium text-sm">
+          </Button>
+          <Button>
             <Search className="size-4" />
             Search
-          </button>
-          <button 
+          </Button>
+          <Button
             onClick={() => navigate("/procurement/create")}
-            className="px-4 py-2 bg-[#FF5B1A] hover:bg-opacity-90 text-white rounded-lg flex items-center gap-2 transition-colors font-medium text-sm"
+            className="bg-accent hover:bg-accent/90 text-primary-foreground"
           >
             <Plus className="size-4" />
             New Procurement
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Register Table */}
-      <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="bg-muted text-muted-foreground border-b border-border">
@@ -154,7 +152,7 @@ export function ProcurementRegister() {
                   <td className="px-4 py-3 font-medium">{row.cost}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-full bg-gray-200 rounded-full h-1.5 max-w-15">
+                      <div className="w-full bg-muted rounded-full h-1.5 max-w-15">
                         <div className="bg-primary h-1.5 rounded-full" style={{ width: row.delivery }}></div>
                       </div>
                       <span className="text-xs text-muted-foreground">{row.delivery}</span>
@@ -163,20 +161,24 @@ export function ProcurementRegister() {
                   <td className="px-4 py-3">{getStatusBadge(row.status)}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-center gap-2">
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => navigate(`/procurement/view/${row.id}`)}
-                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                        className="text-info hover:bg-info-muted"
                         title="View"
                       >
                         <Eye className="size-4" />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => navigate(`/procurement/edit/${row.id}`)}
-                        className="p-1.5 text-amber-600 hover:bg-amber-50 rounded transition-colors"
+                        className="text-warning hover:bg-warning-muted"
                         title="Edit"
                       >
                         <Edit className="size-4" />
-                      </button>
+                      </Button>
                     </div>
                   </td>
                 </tr>
@@ -187,9 +189,9 @@ export function ProcurementRegister() {
         <div className="px-4 py-3 border-t border-border flex items-center justify-between bg-muted/20">
           <span className="text-sm text-muted-foreground">Showing 1 to 5 of 5 entries</span>
           <div className="flex gap-1">
-            <button className="px-3 py-1 bg-white border border-border rounded text-sm disabled:opacity-50" disabled>Previous</button>
-            <button className="px-3 py-1 bg-primary text-white border border-primary rounded text-sm">1</button>
-            <button className="px-3 py-1 bg-white border border-border rounded text-sm disabled:opacity-50" disabled>Next</button>
+            <button className="px-3 py-1 bg-card border border-border rounded text-sm disabled:opacity-50" disabled>Previous</button>
+            <button className="px-3 py-1 bg-primary text-primary-foreground border border-primary rounded text-sm">1</button>
+            <button className="px-3 py-1 bg-card border border-border rounded text-sm disabled:opacity-50" disabled>Next</button>
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { CheckCircle2, ArrowRight, ArrowLeft, Send } from "lucide-react";
 import toast from "react-hot-toast";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
+import { Button } from "../components/ui/button";
 import {
   useAiPreflight,
   useIngestDocument,
@@ -342,8 +343,8 @@ export function ProposalInitiationWizard() {
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center max-w-md">
             <div className="flex items-center justify-center mb-6">
-              <div className="bg-green-100 p-4 rounded-full">
-                <CheckCircle2 className="size-16 text-green-600" />
+              <div className="bg-success-muted p-4 rounded-full">
+                <CheckCircle2 className="size-16 text-success" />
               </div>
             </div>
             <h2 className="text-2xl font-bold text-primary mb-3">
@@ -352,20 +353,17 @@ export function ProposalInitiationWizard() {
             <p className="text-muted-foreground mb-4">
               Your proposal has been submitted and is now in read-only mode.
             </p>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-              <p className="text-sm font-medium text-blue-900">
+            <div className="bg-info-muted border border-info-border rounded-lg p-4 mb-6">
+              <p className="text-sm font-medium text-info-muted-foreground">
                 Status: S02 - Under Review
               </p>
-              <p className="text-xs text-blue-700 mt-1">
+              <p className="text-xs text-info-muted-foreground mt-1">
                 The proposal will be processed by the next committee.
               </p>
             </div>
-            <button
-              onClick={() => navigate("/proposal-list")}
-              className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity font-medium"
-            >
+            <Button size="lg" onClick={() => navigate("/proposal-list")}>
               View All Proposals
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -415,30 +413,23 @@ export function ProposalInitiationWizard() {
       <div className="flex items-center justify-between">
         <div className="flex gap-3">
           {currentStep > 1 && (
-            <button
-              onClick={handleBack}
-              className="px-6 py-3 border border-border rounded-lg hover:bg-muted transition-colors font-medium flex items-center gap-2"
-            >
+            <Button variant="outline" size="lg" onClick={handleBack}>
               <ArrowLeft className="size-4" />
               Back
-            </button>
+            </Button>
           )}
         </div>
 
         <div className="flex gap-3">
           {currentStep < totalSteps && (
-            <button
+            <Button
+              size="lg"
               onClick={handleNext}
               disabled={!isStepValid(currentStep)}
-              className={`px-6 py-3 rounded-lg font-medium transition-opacity flex items-center gap-2 ${
-                !isStepValid(currentStep)
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-primary text-primary-foreground hover:opacity-90 cursor-pointer"
-              }`}
             >
               Next
               <ArrowRight className="size-4" />
-            </button>
+            </Button>
           )}
 
           {currentStep === totalSteps && (
@@ -449,8 +440,8 @@ export function ProposalInitiationWizard() {
                 !isStepValid(currentStep) ||
                 ndmaValidationStatus !== "success" ||
                 isSubmitting
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-green-600 text-white hover:opacity-90 cursor-pointer"
+                  ? "bg-muted text-muted-foreground cursor-not-allowed"
+                  : "bg-success text-primary-foreground hover:opacity-90 cursor-pointer"
               }`}
             >
               <Send className="size-4" />

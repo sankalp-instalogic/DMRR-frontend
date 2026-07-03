@@ -5,8 +5,7 @@ import useAxiosPrivate from "../../hooks/useAxiosPrivate"; // Adjust path as nee
 import toast from "react-hot-toast";
 import { Table } from "../components/Table";
 import type { ColDef } from "ag-grid-community"; // Added for typing
-import { cn } from "../components/ui/utils";
-import { buttonVariants } from "../components/ui/button";
+import { Button } from "../components/ui/button";
 
 export function ProcurementClosure() {
   const axiosPrivate = useAxiosPrivate();
@@ -344,15 +343,12 @@ export function ProcurementClosure() {
         filter: false,
         pinned: "right", // Optional: pins the action column so it's always visible when scrolling
         cellRenderer: (params: any) => (
-          <button
+          <Button
+            size="sm"
             onClick={() => handleSelectForClosure(params.data, "tender")}
-            className={cn(
-              buttonVariants({ variant: "default", size: "sm" }),
-              "cursor-pointer",
-            )}
           >
             Project Closure
-          </button>
+          </Button>
         ),
       },
     ],
@@ -408,15 +404,12 @@ export function ProcurementClosure() {
         filter: false,
         pinned: "right",
         cellRenderer: (params: any) => (
-          <button
+          <Button
+            size="sm"
             onClick={() => handleSelectForClosure(params.data, "procurement")}
-            className={cn(
-              buttonVariants({ variant: "default", size: "sm" }),
-              "cursor-pointer",
-            )}
           >
             Project Closure
-          </button>
+          </Button>
         ),
       },
     ],
@@ -567,7 +560,7 @@ export function ProcurementClosure() {
 
           {/* FORM FIELDS (Visible only if YES) */}
           {isCompleted === "Yes" && (
-            <div className="space-y-6 bg-gray-50/50 p-6 rounded-lg border border-border">
+            <div className="space-y-6 bg-muted/50 p-6 rounded-lg border border-border">
               <div className="grid md:grid-cols-2 gap-6">
                 {/* COMPLETION CERTIFICATE */}
                 <div>
@@ -576,7 +569,7 @@ export function ProcurementClosure() {
                   </label>
                   <input
                     type="file"
-                    className="w-full border border-border rounded-lg p-2 bg-white file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-[#1E5AA8]/10 file:text-[#1E5AA8] hover:file:bg-[#1E5AA8]/20"
+                    className="w-full border border-border rounded-lg p-2 bg-card file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-secondary/10 file:text-secondary hover:file:bg-secondary/20"
                     onChange={(e) =>
                       setCompletionData({
                         ...completionData,
@@ -594,7 +587,7 @@ export function ProcurementClosure() {
                   <input
                     type="file"
                     multiple
-                    className="w-full border border-border rounded-lg p-2 bg-white file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-[#1E5AA8]/10 file:text-[#1E5AA8] hover:file:bg-[#1E5AA8]/20"
+                    className="w-full border border-border rounded-lg p-2 bg-card file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-secondary/10 file:text-secondary hover:file:bg-secondary/20"
                     onChange={(e) =>
                       setCompletionData({
                         ...completionData,
@@ -609,24 +602,10 @@ export function ProcurementClosure() {
 
           {/* SAVE BUTTON */}
           <div className="mt-8 flex justify-end gap-3">
-            <button
-              onClick={() => setSelectedItem(null)}
-              className={cn(
-                buttonVariants({ variant: "outline" }),
-                "cursor-pointer",
-              )}
-            >
+            <Button variant="outline" onClick={() => setSelectedItem(null)}>
               Cancel
-            </button>
-            <button
-              onClick={handleSaveClosure}
-              className={cn(
-                buttonVariants({ variant: "default" }),
-                "cursor-pointer",
-              )}
-            >
-              Save Closure Data
-            </button>
+            </Button>
+            <Button onClick={handleSaveClosure}>Save Closure Data</Button>
           </div>
         </div>
       )}

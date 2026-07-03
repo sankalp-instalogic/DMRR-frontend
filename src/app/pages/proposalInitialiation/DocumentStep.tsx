@@ -1,5 +1,6 @@
 import React from "react";
 import { Input } from "antd";
+import { Button } from "../../components/ui/button";
 import {
   AlertCircle,
   CheckCircle2,
@@ -57,7 +58,7 @@ export function DocumentsStep(props: DocumentsStepProps) {
       <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
         <Upload className="size-12 mx-auto text-muted-foreground mb-4" />
         <h4 className="font-semibold mb-2">
-          Proposal Demand File <span className="text-red-600">*</span>
+          Proposal Demand File <span className="text-destructive">*</span>
         </h4>
         <p className="text-sm text-muted-foreground mb-4">
           Allowed formats: PDF, DOC, DOCX | Maximum size: 25 MB
@@ -78,15 +79,15 @@ export function DocumentsStep(props: DocumentsStepProps) {
         </label>
 
         {props.data.proposalDemandFile && (
-          <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="mt-6 bg-success-muted border border-success-border rounded-lg p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <FileCheck className="size-5 text-green-600" />
+                <FileCheck className="size-5 text-success" />
                 <div className="text-left">
-                  <p className="font-medium text-sm text-green-900">
+                  <p className="font-medium text-sm text-success-muted-foreground">
                     {props.data.proposalDemandFile.name}
                   </p>
-                  <p className="text-xs text-green-700">
+                  <p className="text-xs text-success-muted-foreground">
                     {(props.data.proposalDemandFile.size / 1024 / 1024).toFixed(
                       2
                     )}{" "}
@@ -94,14 +95,16 @@ export function DocumentsStep(props: DocumentsStepProps) {
                   </p>
                 </div>
               </div>
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() =>
                   props.setData({ ...props.data, proposalDemandFile: null })
                 }
-                className="p-2 text-red-600 hover:bg-red-100 rounded"
+                className="text-destructive hover:bg-destructive-muted"
               >
                 <XCircle className="size-5" />
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -125,13 +128,13 @@ export function DocumentsStep(props: DocumentsStepProps) {
           }
           className={`px-6 py-3 cursor-pointer rounded-lg font-medium transition-opacity flex items-center gap-2 ${
             props.ndmaValidationStatus === "running"
-              ? "bg-gray-400 text-white cursor-not-allowed"
+              ? "bg-muted-foreground text-primary-foreground cursor-not-allowed"
               : "bg-secondary text-secondary-foreground hover:opacity-90"
           }`}
         >
           {props.ndmaValidationStatus === "running" ? (
             <>
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-card border-t-transparent" />
               Running Validation...
             </>
           ) : (
@@ -143,14 +146,14 @@ export function DocumentsStep(props: DocumentsStepProps) {
         </button>
 
         {props.ndmaValidationStatus === "success" && (
-          <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="mt-4 bg-success-muted border border-success-border rounded-lg p-4">
             <div className="flex items-start gap-3">
-              <CheckCircle2 className="size-5 text-green-600 shrink-0 mt-0.5" />
+              <CheckCircle2 className="size-5 text-success shrink-0 mt-0.5" />
               <div>
-                <p className="font-semibold text-green-900 mb-1">
+                <p className="font-semibold text-success-muted-foreground mb-1">
                   Validation Passed
                 </p>
-                <p className="text-sm text-green-700 whitespace-pre-line">
+                <p className="text-sm text-success-muted-foreground whitespace-pre-line">
                   {props.ndmaValidationMessage}
                 </p>
               </div>
@@ -159,14 +162,14 @@ export function DocumentsStep(props: DocumentsStepProps) {
         )}
 
         {props.ndmaValidationStatus === "failed" && (
-          <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="mt-4 bg-destructive-muted border border-destructive-border rounded-lg p-4">
             <div className="flex items-start gap-3">
-              <AlertCircle className="size-5 text-red-600 shrink-0 mt-0.5" />
+              <AlertCircle className="size-5 text-destructive shrink-0 mt-0.5" />
               <div>
-                <p className="font-semibold text-red-900 mb-1">
+                <p className="font-semibold text-destructive-muted-foreground mb-1">
                   Validation Failed
                 </p>
-                <p className="text-sm text-red-700">
+                <p className="text-sm text-destructive-muted-foreground">
                   {props.ndmaValidationMessage}
                 </p>
               </div>

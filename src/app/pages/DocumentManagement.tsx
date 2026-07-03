@@ -1,5 +1,6 @@
 import { FileText, Download, Eye, Clock, Upload, Search, FileDiff, PlusCircle, Hash, User } from "lucide-react";
 import { useState } from "react";
+import { Button } from "../components/ui/button";
 
 const initialDocs = [
   { id: 1, name: "Proposal_MUM_001_DPR.pdf", type: "DPR", size: "2.4 MB", uploaded: "15-Jun-2025", uploadedBy: "Ramesh Kumar", ocr: "OCR Complete", status: "Uploaded", version: "v1.2", hash: "a3f5b7c9e0d1..." },
@@ -36,10 +37,10 @@ export function DocumentManagement() {
             className="w-full pl-10 pr-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
-        <button onClick={handleUpload} className="px-4 py-2 bg-primary text-primary-foreground rounded-lg flex items-center gap-2 hover:opacity-90">
+        <Button onClick={handleUpload}>
           <Upload className="size-5" />
           Upload Document
-        </button>
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -81,10 +82,10 @@ export function DocumentManagement() {
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-                        <button onClick={() => handleAction('View', doc.name)} className="p-1.5 hover:bg-muted rounded" title="View"><Eye className="size-4" /></button>
-                        <button onClick={() => handleAction('Download', doc.name)} className="p-1.5 hover:bg-muted rounded" title="Download"><Download className="size-4" /></button>
-                        <button onClick={() => handleAction('New Version', doc.name)} className="p-1.5 hover:bg-muted rounded" title="New Version"><PlusCircle className="size-4" /></button>
-                        <button onClick={() => handleAction('Compare', doc.name)} className="p-1.5 hover:bg-muted rounded" title="Compare Versions"><FileDiff className="size-4" /></button>
+                        <Button variant="ghost" size="icon" onClick={() => handleAction('View', doc.name)} title="View"><Eye className="size-4" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleAction('Download', doc.name)} title="Download"><Download className="size-4" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleAction('New Version', doc.name)} title="New Version"><PlusCircle className="size-4" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleAction('Compare', doc.name)} title="Compare Versions"><FileDiff className="size-4" /></Button>
                       </div>
                     </td>
                   </tr>

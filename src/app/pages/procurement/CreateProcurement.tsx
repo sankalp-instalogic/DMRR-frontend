@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Save, RotateCcw, Upload, FileText } from "lucide-react";
+import { Button } from "../../components/ui/button";
 
 export function CreateProcurement() {
   const navigate = useNavigate();
@@ -204,12 +205,12 @@ export function CreateProcurement() {
 
         {/* Buttons */}
         <div className="p-6 bg-muted/20 flex justify-end gap-4">
-          <button className="px-6 py-2 bg-white border border-border text-gray-700 font-medium rounded-lg hover:bg-gray-50 flex items-center gap-2 transition-colors">
+          <Button variant="outline">
             <RotateCcw className="size-4" /> Reset to Default
-          </button>
-          <button onClick={handleSave} className="px-6 py-2 bg-primary text-white font-medium rounded-lg hover:bg-opacity-90 flex items-center gap-2 transition-colors">
+          </Button>
+          <Button onClick={handleSave}>
             <Save className="size-4" /> Save
-          </button>
+          </Button>
         </div>
       </div>
     </div>

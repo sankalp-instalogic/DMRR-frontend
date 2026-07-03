@@ -1,4 +1,5 @@
 import { Download, FileText, Printer } from "lucide-react";
+import { Button } from "../components/ui/button";
 
 const reports = [
   {
@@ -125,23 +126,23 @@ export function Reports() {
 
                 <td className="px-4 py-4">
                   <div className="flex justify-center">
-                    <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-70 text-sm">
+                    <Button className="hover:opacity-70">
                       View
-                    </button>
+                    </Button>
                   </div>
                 </td>
 
                 <td className="px-4 py-4">
                   <div className="flex justify-center gap-2">
-                    <button className="px-3 py-2 bg-red-500 text-white rounded-lg hover:opacity-60 flex items-center gap-1 text-sm">
+                    <Button variant="destructive" className="hover:opacity-60">
                       <Download className="size-4" />
                       PDF
-                    </button>
+                    </Button>
 
-                    <button className="px-3 py-2 bg-green-600 text-white rounded-lg hover:opacity-60 flex items-center gap-1 text-sm">
+                    <Button className="bg-success text-primary-foreground hover:opacity-60">
                       <Download className="size-4" />
                       Excel
-                    </button>
+                    </Button>
                   </div>
                 </td>
               </tr>

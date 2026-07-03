@@ -33,7 +33,7 @@ export function AdminConfiguration() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {adminModules.map((module, index) => (
           <Link key={index} to={module.link} className="bg-card border border-border rounded-xl p-5 shadow-sm hover:border-primary transition-all group">
-            <div className={`${module.color} text-white p-3 rounded-lg inline-block mb-3`}>
+            <div className={`${module.color} text-primary-foreground p-3 rounded-lg inline-block mb-3`}>
               <module.icon className="size-6" />
             </div>
             <h3 className="font-bold group-hover:text-primary transition-colors">{module.title}</h3>
@@ -47,7 +47,7 @@ export function AdminConfiguration() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {masterModules.map((module, index) => (
           <Link key={index} to={module.link} className="bg-card border border-border rounded-xl p-5 shadow-sm hover:border-primary transition-all group">
-            <div className={`${module.color} text-white p-3 rounded-lg inline-block mb-3 opacity-90`}>
+            <div className={`${module.color} text-primary-foreground p-3 rounded-lg inline-block mb-3 opacity-90`}>
               <module.icon className="size-6" />
             </div>
             <h3 className="font-bold group-hover:text-primary transition-colors">{module.title}</h3>

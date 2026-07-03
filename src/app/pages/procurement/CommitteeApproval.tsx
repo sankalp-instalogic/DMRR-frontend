@@ -14,6 +14,7 @@ import type { ColDef } from "ag-grid-community";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 import { Table } from "../../components/Table"; // Adjust the import path to where your custom Table is located
+import { Button } from "../../components/ui/button";
 
 interface CommitteeItem {
   id: string;
@@ -187,34 +188,29 @@ export function DetailScreen({
   if (submitted && decision === "Approve") {
     return (
       <div className="space-y-6">
-        <button
+        <Button
+          variant="link"
           onClick={onBack}
-          className="flex items-center gap-2 text-sm text-primary hover:underline"
+          className="px-0"
         >
           <ArrowLeft className="size-4" /> Back to List
-        </button>
-        <div className="bg-green-50 border border-green-200 rounded-xl p-8 text-center space-y-4">
-          <CheckCircle className="size-12 text-green-600 mx-auto" />
-          <h3 className="text-xl font-semibold text-green-800">
+        </Button>
+        <div className="bg-success-muted border border-success-border rounded-xl p-8 text-center space-y-4">
+          <CheckCircle className="size-12 text-success mx-auto" />
+          <h3 className="text-xl font-semibold text-success-muted-foreground">
             Approved Successfully
           </h3>
-          <p className="text-green-700 text-sm">
+          <p className="text-success-muted-foreground text-sm">
             Procurement <strong>{item.refNo}</strong> has been approved and is
             ready to be forwarded.
           </p>
           <div className="flex justify-center gap-3 mt-4">
-            <button
-              onClick={onBack}
-              className="px-4 py-2 bg-white border border-border text-gray-700 rounded-lg text-sm hover:bg-gray-50 transition-colors"
-            >
+            <Button variant="outline" onClick={onBack}>
               Cancel
-            </button>
-            <button
-              onClick={() => navigate(forwardPath)}
-              className="px-5 py-2 bg-primary text-white rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-opacity-90 transition-colors"
-            >
+            </Button>
+            <Button onClick={() => navigate(forwardPath)}>
               <ArrowRight className="size-4" /> {forwardLabel}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -224,25 +220,23 @@ export function DetailScreen({
   if (submitted && decision === "Reject") {
     return (
       <div className="space-y-6">
-        <button
+        <Button
+          variant="link"
           onClick={onBack}
-          className="flex items-center gap-2 text-sm text-primary hover:underline"
+          className="px-0"
         >
           <ArrowLeft className="size-4" /> Back to List
-        </button>
-        <div className="bg-red-50 border border-red-200 rounded-xl p-8 text-center space-y-4">
-          <XCircle className="size-12 text-red-500 mx-auto" />
-          <h3 className="text-xl font-semibold text-red-800">Rejected</h3>
-          <p className="text-red-700 text-sm">
+        </Button>
+        <div className="bg-destructive-muted border border-destructive-border rounded-xl p-8 text-center space-y-4">
+          <XCircle className="size-12 text-destructive mx-auto" />
+          <h3 className="text-xl font-semibold text-destructive-muted-foreground">Rejected</h3>
+          <p className="text-destructive-muted-foreground text-sm">
             Procurement <strong>{item.refNo}</strong> has been rejected. The
             initiating department will be notified.
           </p>
-          <button
-            onClick={onBack}
-            className="px-4 py-2 bg-white border border-border text-gray-700 rounded-lg text-sm hover:bg-gray-50 transition-colors"
-          >
+          <Button variant="outline" onClick={onBack}>
             Back to List
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -251,12 +245,13 @@ export function DetailScreen({
   // --- Main Form View ---
   return (
     <div className="space-y-6">
-      <button
+      <Button
+        variant="link"
         onClick={onBack}
-        className="flex items-center gap-2 text-sm text-primary hover:underline"
+        className="px-0"
       >
         <ArrowLeft className="size-4" /> Back to List
-      </button>
+      </Button>
 
       <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
         <div className="p-6 border-b border-border">
@@ -335,7 +330,7 @@ export function DetailScreen({
           </h2>
 
           {apiError && (
-            <div className="mb-4 p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-200">
+            <div className="mb-4 p-3 bg-destructive-muted text-destructive-muted-foreground text-sm rounded-lg border border-destructive-border">
               {apiError}
             </div>
           )}
@@ -350,8 +345,8 @@ export function DetailScreen({
               onClick={() => setDecision("Approve")}
               className={`px-5 py-2.5 rounded-lg border text-sm font-medium flex items-center gap-2 transition-colors ${
                 decision === "Approve"
-                  ? "bg-green-600 text-white border-green-600"
-                  : "bg-white text-gray-700 border-border hover:bg-green-50"
+                  ? "bg-success text-primary-foreground border-success"
+                  : "bg-card text-foreground border-border hover:bg-success-muted"
               }`}
             >
               <CheckCircle className="size-4" /> Approve
@@ -361,8 +356,8 @@ export function DetailScreen({
               onClick={() => setDecision("Reject")}
               className={`px-5 py-2.5 rounded-lg border text-sm font-medium flex items-center gap-2 transition-colors ${
                 decision === "Reject"
-                  ? "bg-red-600 text-white border-red-600"
-                  : "bg-white text-gray-700 border-border hover:bg-red-50"
+                  ? "bg-destructive text-primary-foreground border-destructive"
+                  : "bg-card text-foreground border-border hover:bg-destructive-muted"
               }`}
             >
               <XCircle className="size-4" /> Reject
@@ -370,7 +365,7 @@ export function DetailScreen({
           </div>
 
           {decision === "Approve" && (
-            <div className="pl-4 border-l-2 border-green-500 space-y-4">
+            <div className="pl-4 border-l-2 border-success space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">
@@ -408,7 +403,7 @@ export function DetailScreen({
                   >
                     <div
                       className={`cursor-pointer flex items-center justify-center gap-2 w-full h-10 px-3 py-2 bg-input-background border border-dashed rounded-lg hover:bg-muted text-sm text-muted-foreground transition-colors ${
-                        errors.doc ? "border-red-400" : "border-border"
+                        errors.doc ? "border-destructive" : "border-border"
                       }`}
                     >
                       <UploadIcon className="size-4" />
@@ -430,7 +425,7 @@ export function DetailScreen({
           )}
 
           {decision === "Reject" && (
-            <div className="pl-4 border-l-2 border-red-500">
+            <div className="pl-4 border-l-2 border-destructive">
               <label className="block text-sm font-medium mb-1">
                 Reason for Rejection <span className="text-destructive">*</span>
               </label>
@@ -449,18 +444,17 @@ export function DetailScreen({
           )}
 
           <div className="flex justify-end gap-3 mt-6">
-            <button
+            <Button
+              variant="outline"
               onClick={onBack}
               disabled={isSubmitting}
-              className="px-6 py-2 bg-white border border-border text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
               Cancel
-            </button>
+            </Button>
             {decision && (
-              <button
+              <Button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="px-6 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-opacity-90 transition-colors disabled:opacity-50 flex items-center gap-2"
               >
                 {isSubmitting ? (
                   <>
@@ -469,7 +463,7 @@ export function DetailScreen({
                 ) : (
                   "Submit Decision"
                 )}
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -507,7 +501,7 @@ export function CommitteeApproval({
         flex: 1,
         cellRenderer: (params: any) => (
           <div className="flex items-center justify-center h-full">
-            <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">
+            <span className="px-3 py-1 bg-warning-muted text-warning-muted-foreground rounded-full text-xs font-medium">
               {params.value}
             </span>
           </div>
@@ -518,9 +512,11 @@ export function CommitteeApproval({
         headerClass: 'center-header' ,
         cellRenderer: (params: any) => (
           <div className="flex items-center justify-center h-full">
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setSelectedItem(params.data)}
-              className="p-2 text-muted-foreground cursor-pointer hover:text-primary hover:bg-muted rounded-md transition-colors inline-flex items-center justify-center"
+              className="text-muted-foreground hover:text-primary"
               title="View Details"
             >
               <svg
@@ -536,7 +532,7 @@ export function CommitteeApproval({
               >
                 <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
               </svg>
-            </button>
+            </Button>
           </div>
         ),
       },

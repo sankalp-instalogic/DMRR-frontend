@@ -66,7 +66,7 @@ export function OfficersStep({ data, setData }: OfficersStepProps) {
       {/* Line Department */}
       <div>
         <label className="block text-sm font-medium mb-2">
-          Line Department <span className="text-red-600">*</span>
+          Line Department <span className="text-destructive">*</span>
         </label>
         <Select
           size="large"
@@ -89,7 +89,7 @@ export function OfficersStep({ data, setData }: OfficersStepProps) {
       {/* Received Proposal From */}
       <div>
         <label className="block text-sm font-medium mb-2">
-          Received Proposal From <span className="text-red-600">*</span>
+          Received Proposal From <span className="text-destructive">*</span>
         </label>
         <Select
           size="large"
@@ -112,7 +112,7 @@ export function OfficersStep({ data, setData }: OfficersStepProps) {
       {/* Proposal Received Date */}
       <div>
         <label className="block text-sm font-medium mb-2">
-          Proposal Received Date <span className="text-red-600">*</span>
+          Proposal Received Date <span className="text-destructive">*</span>
         </label>
         <DatePicker
           size="large"
@@ -127,7 +127,7 @@ export function OfficersStep({ data, setData }: OfficersStepProps) {
       {/* Name of Source */}
       <div>
         <label className="block text-sm font-medium mb-2">
-          Name of Source <span className="text-red-600">*</span>
+          Name of Source <span className="text-destructive">*</span>
         </label>
         <Input
           size="large"
@@ -141,7 +141,7 @@ export function OfficersStep({ data, setData }: OfficersStepProps) {
       {/* Receiving Authority */}
       <div>
         <label className="block text-sm font-medium mb-2">
-          Receiving Authority <span className="text-red-600">*</span>
+          Receiving Authority <span className="text-destructive">*</span>
         </label>
         <Select
           size="large"
@@ -164,7 +164,7 @@ export function OfficersStep({ data, setData }: OfficersStepProps) {
       {/* Date of Receipt by Authority */}
       <div>
         <label className="block text-sm font-medium mb-2">
-          Date of Receipt by Authority <span className="text-red-600">*</span>
+          Date of Receipt by Authority <span className="text-destructive">*</span>
         </label>
         <DatePicker
           size="large"
@@ -179,7 +179,7 @@ export function OfficersStep({ data, setData }: OfficersStepProps) {
       {/* Officer In Charge */}
       <div>
         <label className="block text-sm font-medium mb-2">
-          Officer In Charge <span className="text-red-600">*</span>
+          Officer In Charge <span className="text-destructive">*</span>
         </label>
         <Select
           size="large"

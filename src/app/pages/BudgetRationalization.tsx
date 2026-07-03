@@ -1,4 +1,5 @@
 import { TrendingDown, TrendingUp, AlertCircle } from "lucide-react";
+import { Button } from "../components/ui/button";
 
 const districts = [
   { name: "Mumbai", allocated: 450, committed: 467, exceeded: 17, priority: "High" },
@@ -76,9 +77,9 @@ export function BudgetRationalization() {
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <button className="px-3 py-1 bg-primary text-primary-foreground rounded text-sm hover:opacity-90">
+                    <Button size="sm">
                       Revise
-                    </button>
+                    </Button>
                   </td>
                 </tr>
               ))}
@@ -120,12 +121,12 @@ export function BudgetRationalization() {
       </div>
 
       <div className="flex gap-4">
-        <button className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:opacity-90">
+        <Button size="lg">
           Re-submit to DMU
-        </button>
-        <button className="px-6 py-3 bg-secondary text-secondary-foreground rounded-lg hover:opacity-90">
+        </Button>
+        <Button variant="secondary" size="lg">
           Edit Scope
-        </button>
+        </Button>
         <button className="px-6 py-3 bg-accent text-accent-foreground rounded-lg hover:opacity-90">
           Reduce Cost
         </button>

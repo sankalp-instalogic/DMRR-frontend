@@ -9,6 +9,7 @@ import { Stage8 } from "../components/Stage8";
 import { Stage9 } from "../components/Stage9";
 import { Stage10 } from "../components/Stage10";
 import { Stage11 } from "../components/Stage11";
+import { Button } from "../components/ui/button";
 
 import type {
   MeetingStageData,
@@ -222,25 +223,26 @@ export function StageUpdate() {
             Update proposal stage: {currentProposal.id}
           </p>
         </div>
-        <button
+        <Button
+          variant="outline"
           onClick={() => navigate("/proposal-detail")}
-          className="px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors text-sm font-medium flex items-center gap-2"
+          className="rounded-lg hover:bg-muted"
         >
           <ArrowLeft className="size-4" />
           Back to Detail
-        </button>
+        </Button>
       </div>
 
       {/* Current Stage Indicator */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+      <div className="bg-info-muted border border-info-border rounded-xl p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <AlertCircle className="size-5 text-blue-600" />
+            <AlertCircle className="size-5 text-info" />
             <div>
-              <p className="font-semibold text-blue-900">
+              <p className="font-semibold text-info-muted-foreground">
                 Current Stage: {stages[currentStage - 1]?.name}
               </p>
-              <p className="text-sm text-blue-700">
+              <p className="text-sm text-info-muted-foreground">
                 Complete the fields below to transition to the next stage
               </p>
             </div>
@@ -302,19 +304,22 @@ export function StageUpdate() {
 
       {/* Action Buttons */}
       <div className="flex items-center justify-between">
-        <button
+        <Button
+          variant="outline"
+          size="lg"
           onClick={() => navigate("/proposal-detail")}
-          className="px-6 py-3 border border-border rounded-lg hover:bg-muted transition-colors font-medium"
+          className="px-6 py-3 h-auto rounded-lg hover:bg-muted"
         >
           Cancel
-        </button>
-        <button
+        </Button>
+        <Button
+          size="lg"
           onClick={handleConfirmTransition}
-          className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity font-medium flex items-center gap-2"
+          className="px-6 py-3 h-auto rounded-lg hover:opacity-90"
         >
           <Send className="size-4" />
           Confirm Transition
-        </button>
+        </Button>
       </div>
     </div>
   );
