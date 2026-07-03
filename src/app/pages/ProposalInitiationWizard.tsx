@@ -376,7 +376,7 @@ export function ProposalInitiationWizard() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-[30px] font-bold text-[#0B1F4D]">Proposal Create</h1>
+        <h1 className="text-[30px] font-bold text-primary">Proposal Create</h1>
         <p className="text-sm text-muted-foreground">
           Multi-step proposal creation wizard
         </p>

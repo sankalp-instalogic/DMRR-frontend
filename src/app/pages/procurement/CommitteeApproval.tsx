@@ -189,7 +189,7 @@ export function DetailScreen({
       <div className="space-y-6">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-sm text-[#0B1F4D] hover:underline"
+          className="flex items-center gap-2 text-sm text-primary hover:underline"
         >
           <ArrowLeft className="size-4" /> Back to List
         </button>
@@ -211,7 +211,7 @@ export function DetailScreen({
             </button>
             <button
               onClick={() => navigate(forwardPath)}
-              className="px-5 py-2 bg-[#0B1F4D] text-white rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-opacity-90 transition-colors"
+              className="px-5 py-2 bg-primary text-white rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-opacity-90 transition-colors"
             >
               <ArrowRight className="size-4" /> {forwardLabel}
             </button>
@@ -226,7 +226,7 @@ export function DetailScreen({
       <div className="space-y-6">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-sm text-[#0B1F4D] hover:underline"
+          className="flex items-center gap-2 text-sm text-primary hover:underline"
         >
           <ArrowLeft className="size-4" /> Back to List
         </button>
@@ -253,14 +253,14 @@ export function DetailScreen({
     <div className="space-y-6">
       <button
         onClick={onBack}
-        className="flex items-center gap-2 text-sm text-[#0B1F4D] hover:underline"
+        className="flex items-center gap-2 text-sm text-primary hover:underline"
       >
         <ArrowLeft className="size-4" /> Back to List
       </button>
 
       <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
         <div className="p-6 border-b border-border">
-          <h2 className="text-lg font-semibold text-[#0B1F4D] mb-4">
+          <h2 className="text-lg font-semibold text-primary mb-4">
             Procurement Details
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -268,19 +268,19 @@ export function DetailScreen({
               <p className="text-xs text-muted-foreground mb-1">
                 Procurement ID
               </p>
-              <p className="font-semibold text-[#0B1F4D]">{item.refNo}</p>
+              <p className="font-semibold text-primary">{item.refNo}</p>
             </div>
             <div className="bg-muted/40 rounded-lg p-4">
               <p className="text-xs text-muted-foreground mb-1">Item Name</p>
-              <p className="font-semibold text-[#0B1F4D]">{item.item}</p>
+              <p className="font-semibold text-primary">{item.item}</p>
             </div>
             <div className="bg-muted/40 rounded-lg p-4">
               <p className="text-xs text-muted-foreground mb-1">Demand From</p>
-              <p className="font-semibold text-[#0B1F4D]">{item.demandFrom}</p>
+              <p className="font-semibold text-primary">{item.demandFrom}</p>
             </div>
           </div>
 
-          <h3 className="text-sm font-semibold text-[#0B1F4D] mb-3">
+          <h3 className="text-sm font-semibold text-primary mb-3">
             Item Quantity & Location
           </h3>
 
@@ -330,7 +330,7 @@ export function DetailScreen({
         </div>
 
         <div className="p-6">
-          <h2 className="text-lg font-semibold text-[#0B1F4D] mb-4">
+          <h2 className="text-lg font-semibold text-primary mb-4">
             {title} Decision
           </h2>
 
@@ -460,7 +460,7 @@ export function DetailScreen({
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="px-6 py-2 bg-[#0B1F4D] text-white rounded-lg text-sm font-medium hover:bg-opacity-90 transition-colors disabled:opacity-50 flex items-center gap-2"
+                className="px-6 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-opacity-90 transition-colors disabled:opacity-50 flex items-center gap-2"
               >
                 {isSubmitting ? (
                   <>
@@ -520,7 +520,7 @@ export function CommitteeApproval({
           <div className="flex items-center justify-center h-full">
             <button
               onClick={() => setSelectedItem(params.data)}
-              className="p-2 text-muted-foreground cursor-pointer hover:text-[#0B1F4D] hover:bg-muted rounded-md transition-colors inline-flex items-center justify-center"
+              className="p-2 text-muted-foreground cursor-pointer hover:text-primary hover:bg-muted rounded-md transition-colors inline-flex items-center justify-center"
               title="View Details"
             >
               <svg

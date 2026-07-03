@@ -91,11 +91,11 @@ export function Login() {
             />
           </div>
 
-          <h2 className="text-[#0B1F4D] text-sm md:text-base font-bold tracking-[0.2em] mb-4 uppercase">
+          <h2 className="text-primary text-sm md:text-base font-bold tracking-[0.2em] mb-4 uppercase">
             Government of Maharashtra
           </h2>
 
-          <h1 className="text-[#0B1F4D] text-4xl md:text-5xl font-extrabold leading-tight mb-6">
+          <h1 className="text-primary text-4xl md:text-5xl font-extrabold leading-tight mb-6">
             Disaster Management,
             <br />
             Relief & Rehabilitation
@@ -113,7 +113,7 @@ export function Login() {
       <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 lg:p-12">
         <div className="w-full max-w-md bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 lg:p-10 border border-gray-100 transition-all duration-300">
           <div className="mb-10 text-center">
-            <h2 className="text-3xl font-bold text-[#0B1F4D] mb-2">
+            <h2 className="text-3xl font-bold text-primary mb-2">
               Portal Sign In
             </h2>
             <p className="text-[#64748B]">
@@ -164,9 +164,9 @@ export function Login() {
                     prefix={<Lock className="h-5 w-5 text-gray-400 mr-1.5 transition-colors" aria-hidden="true" />}
                     iconRender={(visible) =>
                       visible ? (
-                        <EyeOff className="h-5 w-5 text-gray-400 hover:text-[#0B1F4D] transition-colors cursor-pointer" aria-label="Hide password" />
+                        <EyeOff className="h-5 w-5 text-gray-400 hover:text-primary transition-colors cursor-pointer" aria-label="Hide password" />
                       ) : (
-                        <Eye className="h-5 w-5 text-gray-400 hover:text-[#0B1F4D] transition-colors cursor-pointer" aria-label="Show password" />
+                        <Eye className="h-5 w-5 text-gray-400 hover:text-primary transition-colors cursor-pointer" aria-label="Show password" />
                       )
                     }
                     className="bg-[#F8F9FB] border-gray-200 rounded-xl text-[#0F172A] placeholder-gray-400 hover:border-[#1E5AA8] focus:border-[#1E5AA8] focus-within:border-[#1E5AA8] focus-within:ring-2 focus-within:ring-[#1E5AA8]/20 transition-all duration-200 py-3 [&>input]:bg-[#F8F9FB]"
@@ -187,7 +187,7 @@ export function Login() {
               className={`w-full font-semibold py-4 px-4 rounded-xl shadow-lg transition-all duration-300 flex items-center justify-center gap-2 ${
                 loading
                   ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-[#0B1F4D] hover:bg-[#1E5AA8] text-white shadow-[#0B1F4D]/20 hover:shadow-xl hover:-translate-y-0.5 cursor-pointer"
+                  : "bg-primary hover:bg-[#1E5AA8] text-white shadow-primary/20 hover:shadow-xl hover:-translate-y-0.5 cursor-pointer"
               }`}
             >
               {loading ? (

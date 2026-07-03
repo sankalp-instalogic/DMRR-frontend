@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { useQuery } from "@tanstack/react-query";
 import { Select } from "antd";
-import { Button } from "@/app/components/ui/button";
+import { buttonVariants } from "../components/ui/button";
 import { formatCurrencyLakhs } from "../../utils/currencyFormatter";
 import {
   FileText,
@@ -30,6 +30,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { cn } from "../components/ui/utils";
 
 // Financial Year options formatted for Antd Select
 const financialYearOptions = [
@@ -140,7 +141,7 @@ export function Dashboard() {
   // --- Handle Loading & Error States ---
   if (isSummaryLoading || isChartsLoading) {
     return (
-      <div className="flex items-center justify-center h-125 text-[#0B1F4D] font-medium">
+      <div className="flex items-center justify-center h-125 text-primary font-medium">
         Loading Dashboard Metrics...
       </div>
     );
@@ -203,7 +204,7 @@ export function Dashboard() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-[30px] font-bold text-[#0B1F4D]">
+          <h1 className="text-[30px] font-bold text-primary">
             Operator Dashboard
           </h1>
           <p className="text-[14px] font-medium text-gray-500 mt-1">
@@ -213,13 +214,19 @@ export function Dashboard() {
         <div className="flex gap-3">
           <Link
             to="/proposal-initiation"
-            className="bg-[#0B1F4D] text-white px-4 h-10 flex items-center justify-center rounded-[10px] hover:bg-[#0B1F4D]/90 transition-all text-sm font-medium"
+            className={cn(
+              buttonVariants({ variant: "default", size: "lg" }),
+              "cursor-pointer",
+            )}
           >
             New Proposal
           </Link>
           <Link
             to="/proposal-list"
-            className="bg-white text-[#0B1F4D] border border-[#0B1F4D] px-4 h-10 flex items-center justify-center rounded-[10px] hover:bg-gray-50 transition-all text-sm font-medium"
+            className={cn(
+              buttonVariants({ variant: "outline", size: "lg" }),
+              "cursor-pointer",
+            )}
           >
             Open Proposal
           </Link>
@@ -229,8 +236,8 @@ export function Dashboard() {
       {/* Filters */}
       <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm mb-6">
         <div className="flex items-center gap-2 mb-3">
-          <Filter className="size-5 text-[#0B1F4D]" />
-          <h3 className="font-semibold text-[16px] text-[#0B1F4D]">
+          <Filter className="size-5 text-primary" />
+          <h3 className="font-semibold text-[16px] text-primary">
             Dashboard Filters
           </h3>
         </div>
@@ -271,7 +278,7 @@ export function Dashboard() {
 
       {/* SECTION 1 - MITIGATION PROPOSALS */}
       <div className="mb-6">
-        <h2 className="text-[20px] font-semibold mb-6 text-[#0B1F4D]">
+        <h2 className="text-[20px] font-semibold mb-6 text-primary">
           Section 1 — Mitigation Proposals
         </h2>
 
@@ -279,7 +286,7 @@ export function Dashboard() {
         <div className="mb-6">
           <div
             onClick={() => handleKPIDrillDown("all")}
-            className="bg-linear-to-br from-[#0B1F4D] to-[#1E5AA8] text-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-all cursor-pointer mb-6"
+            className="bg-linear-to-br from-primary to-[#1E5AA8] text-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-all cursor-pointer mb-6"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -354,10 +361,10 @@ export function Dashboard() {
               <div
                 key={idx}
                 onClick={() => navigate(item.link)}
-                className="bg-white border border-gray-200 rounded-2xl p-5 hover:border-[#0B1F4D] hover:shadow-md transition-all cursor-pointer"
+                className="bg-white border border-gray-200 rounded-2xl p-5 hover:border-primary hover:shadow-md transition-all cursor-pointer"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-semibold text-[16px] text-[#0B1F4D]">
+                  <span className="font-semibold text-[16px] text-primary">
                     {item.stage}
                   </span>
                   <ArrowRight className="size-4 text-gray-400" />
@@ -374,7 +381,7 @@ export function Dashboard() {
         </div>
 
         {/* C. Budget Section */}
-        <h3 className="text-[20px] font-semibold mb-6 text-[#0B1F4D]">
+        <h3 className="text-[20px] font-semibold mb-6 text-primary">
           Budget Overview - FY {selectedFY}
         </h3>
 
@@ -383,7 +390,7 @@ export function Dashboard() {
             <div className="text-[16px] font-semibold text-gray-500 mb-2">
               Budget Allocated
             </div>
-            <div className="text-[32px] font-bold text-[#0B1F4D]">
+            <div className="text-[32px] font-bold text-primary">
               ₹{totalAllocated.toLocaleString()}
             </div>
           </div>
@@ -450,7 +457,7 @@ export function Dashboard() {
             </div>
 
             <div>
-              <div className="bg-[#0B1F4D] rounded-2xl text-white p-5 shadow-sm mb-6">
+              <div className="bg-primary rounded-2xl text-white p-5 shadow-sm mb-6">
                 <div className="text-[16px] font-semibold text-white/90">
                   Preparedness & Capacity Building
                 </div>
@@ -459,7 +466,7 @@ export function Dashboard() {
                 </div>
               </div>
 
-              <div className="space-y-4 ml-8 border-l-4 border-[#0B1F4D] pl-8">
+              <div className="space-y-4 ml-8 border-l-4 border-primary pl-8">
                 <div className="bg-sky-50 rounded-2xl p-5 shadow-sm border border-sky-100">
                   <div className="text-[14px] font-medium text-sky-800">
                     Procurements
@@ -485,7 +492,7 @@ export function Dashboard() {
 
       {/* SECTION 2 - PROCUREMENT */}
       <div className="mt-6">
-        <h2 className="text-[20px] font-semibold mb-6 text-[#0B1F4D]">
+        <h2 className="text-[20px] font-semibold mb-6 text-primary">
           Section 2 — Preparedness & Capacity Building
         </h2>
 
@@ -493,7 +500,7 @@ export function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
             <div className="flex items-center gap-3 mb-2">
-              <Package className="size-6 text-[#0B1F4D]" />
+              <Package className="size-6 text-primary" />
               <div className="text-[14px] font-medium text-gray-500">
                 Total Procured Items
               </div>
@@ -520,7 +527,7 @@ export function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Trend Chart */}
           <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-            <h3 className="mb-6 text-[#0B1F4D] font-semibold text-[16px]">
+            <h3 className="mb-6 text-primary font-semibold text-[16px]">
               Year-wise Procurement Trend
             </h3>
             <ResponsiveContainer width="100%" height={300}>
@@ -550,7 +557,7 @@ export function Dashboard() {
 
           {/* Pie Chart */}
           <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-            <h3 className="mb-6 text-[#0B1F4D] font-semibold text-[16px]">
+            <h3 className="mb-6 text-primary font-semibold text-[16px]">
               Budget Spent by Beneficiary Department
             </h3>
             <ResponsiveContainer width="100%" height={300}>
@@ -581,7 +588,7 @@ export function Dashboard() {
 
           {/* Bar Chart 1 - Line Departments */}
           <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-            <h3 className="mb-6 text-[#0B1F4D] font-semibold text-[16px]">
+            <h3 className="mb-6 text-primary font-semibold text-[16px]">
               Line Department Proposals
             </h3>
             <ResponsiveContainer width="100%" height={320}>
@@ -612,7 +619,7 @@ export function Dashboard() {
 
           {/* Bar Chart 2 - District Utilization */}
           <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-            <h3 className="mb-6 text-[#0B1F4D] font-semibold text-[16px]">
+            <h3 className="mb-6 text-primary font-semibold text-[16px]">
               District-wise Budget Utilization
             </h3>
             <ResponsiveContainer width="100%" height={320}>
@@ -649,7 +656,7 @@ export function Dashboard() {
 
         {/* Notifications Panel */}
         {/* <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm mb-6">
-          <h3 className="mb-6 text-[20px] font-semibold text-[#0B1F4D]">
+          <h3 className="mb-6 text-[20px] font-semibold text-primary">
             Recent Alerts & Notifications
           </h3>
 

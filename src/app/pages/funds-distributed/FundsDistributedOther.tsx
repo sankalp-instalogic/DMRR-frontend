@@ -255,7 +255,7 @@ export function FundsDistributedOther() {
           <div className="flex h-full items-center">
             <button
               onClick={() => handleView(params.data)}
-              className="inline-flex items-center gap-1.5 px-4 h-9 bg-white border border-[#0B1F4D] text-[#0B1F4D] rounded-[10px] hover:bg-blue-50 transition-colors text-[14px] font-medium cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 h-9 bg-white border border-primary text-primary rounded-[10px] hover:bg-blue-50 transition-colors text-[14px] font-medium cursor-pointer"
             >
               <Eye className="size-4" />
               View
@@ -273,7 +273,7 @@ export function FundsDistributedOther() {
   if (isUtilsLoading) {
     return (
       <div className="flex items-center justify-center h-full min-h-100">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-[#0B1F4D]"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-primary"></div>
       </div>
     );
   }
@@ -294,7 +294,7 @@ export function FundsDistributedOther() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[30px] font-bold text-[#0B1F4D]">
+        <h1 className="text-[30px] font-bold text-primary">
           Funds Distributed to Other Utilizations
         </h1>
         <p className="text-[14px] font-medium text-gray-500 mt-1">
@@ -308,7 +308,7 @@ export function FundsDistributedOther() {
             onClick={() => setActiveTab("overview")}
             className={`px-4 py-2 font-medium text-[14px] transition-colors rounded-[10px] cursor-pointer ${
               activeTab === "overview"
-                ? "bg-[#0B1F4D] text-white"
+                ? "bg-primary text-white"
                 : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
             }`}
           >
@@ -321,7 +321,7 @@ export function FundsDistributedOther() {
             }}
             className={`px-4 py-2 font-medium text-[14px] transition-colors rounded-[10px] cursor-pointer ${
               activeTab === "new"
-                ? "bg-[#0B1F4D] text-white"
+                ? "bg-primary text-white"
                 : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
             }`}
           >
@@ -345,7 +345,7 @@ export function FundsDistributedOther() {
 
       {activeTab === "new" && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-[20px] font-semibold text-[#0B1F4D] mb-6">
+          <h2 className="text-[20px] font-semibold text-primary mb-6">
             New Utilization
           </h2>
 
@@ -524,8 +524,8 @@ export function FundsDistributedOther() {
                   >
                     {selectedFile ? (
                       <>
-                        <FileText className="size-6 text-[#0B1F4D] mb-2" />
-                        <span className="text-[14px] font-medium text-[#0B1F4D]">
+                        <FileText className="size-6 text-primary mb-2" />
+                        <span className="text-[14px] font-medium text-primary">
                           {selectedFile.name}
                         </span>
                         <span className="text-[12px] text-gray-500 mt-1">
@@ -535,8 +535,8 @@ export function FundsDistributedOther() {
                       </>
                     ) : (
                       <>
-                        <Plus className="size-6 text-[#0B1F4D] mb-2" />
-                        <span className="text-[14px] font-medium text-[#0B1F4D]">
+                        <Plus className="size-6 text-primary mb-2" />
+                        <span className="text-[14px] font-medium text-primary">
                           Click to upload Utilization Certificate
                         </span>
                         <span className="text-[12px] text-gray-500 mt-1">
@@ -553,14 +553,14 @@ export function FundsDistributedOther() {
               <button
                 type="button"
                 onClick={() => setActiveTab("overview")}
-                className="px-4 h-10 bg-white border border-[#0B1F4D] text-[#0B1F4D] rounded-[10px] font-medium hover:bg-gray-50 transition-colors text-[14px] cursor-pointer"
+                className="px-4 h-10 bg-white border border-primary text-primary rounded-[10px] font-medium hover:bg-gray-50 transition-colors text-[14px] cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={addMutation.isPending || uploadMutation.isPending}
-                className="px-4 h-10 bg-[#0B1F4D] text-white rounded-[10px] font-medium hover:bg-[#0B1F4D]/90 transition-colors text-[14px] disabled:opacity-50 cursor-pointer"
+                className="px-4 h-10 bg-primary text-white rounded-[10px] font-medium hover:bg-primary/90 transition-colors text-[14px] disabled:opacity-50 cursor-pointer"
               >
                 {addMutation.isPending || uploadMutation.isPending
                   ? "Saving..."
@@ -576,7 +576,7 @@ export function FundsDistributedOther() {
           <div className="flex items-center justify-between">
             <button
               onClick={() => setActiveTab("overview")}
-              className="inline-flex items-center gap-2 text-[14px] font-medium text-gray-600 hover:text-[#0B1F4D] transition-colors cursor-pointer"
+              className="inline-flex items-center gap-2 text-[14px] font-medium text-gray-600 hover:text-primary transition-colors cursor-pointer"
             >
               <ArrowLeft className="size-4" />
               Back
@@ -584,7 +584,7 @@ export function FundsDistributedOther() {
           </div>
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h2 className="text-[20px] font-semibold text-[#0B1F4D] mb-6 pb-4 border-b border-gray-200">
+            <h2 className="text-[20px] font-semibold text-primary mb-6 pb-4 border-b border-gray-200">
               Utilization Details
             </h2>
 
@@ -593,7 +593,7 @@ export function FundsDistributedOther() {
                 <p className="text-[14px] font-medium text-gray-500 mb-1">
                   Utilization Department
                 </p>
-                <p className="font-semibold text-[16px] text-[#0B1F4D]">
+                <p className="font-semibold text-[16px] text-primary">
                   {departmentsMap[viewRecord.lineDepartmentId] ||
                     "Unknown Dept"}
                 </p>
@@ -602,7 +602,7 @@ export function FundsDistributedOther() {
                 <p className="text-[14px] font-medium text-gray-500 mb-1">
                   Utilization Head
                 </p>
-                <p className="font-semibold text-[16px] text-[#0B1F4D]">
+                <p className="font-semibold text-[16px] text-primary">
                   {viewRecord.utilizationHead || "-"}
                 </p>
               </div>
@@ -610,7 +610,7 @@ export function FundsDistributedOther() {
                 <p className="text-[14px] font-medium text-gray-500 mb-1">
                   Allocated Amount
                 </p>
-                <p className="font-semibold text-[16px] text-[#0B1F4D]">
+                <p className="font-semibold text-[16px] text-primary">
                   ₹{((viewRecord.allocatedCr || 0) / 100).toFixed(2)} Cr
                 </p>
               </div>
@@ -618,7 +618,7 @@ export function FundsDistributedOther() {
                 <p className="text-[14px] font-medium text-gray-500 mb-1">
                   Utilized Amount
                 </p>
-                <p className="font-semibold text-[16px] text-[#0B1F4D]">
+                <p className="font-semibold text-[16px] text-primary">
                   ₹{((viewRecord.utilizedCr || 0) / 100).toFixed(2)} Cr
                 </p>
               </div>
@@ -626,14 +626,14 @@ export function FundsDistributedOther() {
                 <p className="text-[14px] font-medium text-gray-500 mb-1">
                   Date of Issuing
                 </p>
-                <p className="font-semibold text-[16px] text-[#0B1F4D]">
+                <p className="font-semibold text-[16px] text-primary">
                   {formattedDate(viewRecord.issuingDate)}
                 </p>
               </div>
             </div>
 
             <div className="mt-6 pt-6 border-t border-gray-200">
-              <p className="text-[16px] font-semibold text-[#0B1F4D] mb-4">
+              <p className="text-[16px] font-semibold text-primary mb-4">
                 Utilization Certificate
                 {isDocumentsLoading && (
                   <span className="text-sm text-gray-400 font-normal ml-2">
@@ -646,7 +646,7 @@ export function FundsDistributedOther() {
                 <div className="flex items-center gap-4 p-4 border border-gray-200 rounded-[10px] bg-gray-50/50">
                   <FileText className="size-8 text-red-500" />
                   <div className="flex-1">
-                    <p className="text-[14px] font-medium text-[#0B1F4D]">
+                    <p className="text-[14px] font-medium text-primary">
                       {utilDoc.fileName || "Utilization_Certificate.pdf"}
                     </p>
                   </div>

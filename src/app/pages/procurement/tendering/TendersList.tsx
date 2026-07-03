@@ -169,7 +169,7 @@ export function TendersList() {
                 `/procurement-tendering/tenders/independent/${params.data.id || params.data.procurementId}`,
               )
             }
-            className="p-2 inline-flex cursor-pointer justify-center hover:bg-muted rounded-lg text-muted-foreground hover:text-[#0B1F4D] transition-colors"
+            className="p-2 inline-flex cursor-pointer justify-center hover:bg-muted rounded-lg text-muted-foreground hover:text-primary transition-colors"
             title="View Details"
           >
             <Eye className="size-4" />
@@ -216,7 +216,7 @@ export function TendersList() {
               onClick={() =>
                 navigate(`/procurement-tendering/tenders/procurement/${row.id}`)
               }
-              className="p-2 inline-flex cursor-pointer justify-center hover:bg-muted rounded-lg text-muted-foreground hover:text-[#0B1F4D] transition-colors"
+              className="p-2 inline-flex cursor-pointer justify-center hover:bg-muted rounded-lg text-muted-foreground hover:text-primary transition-colors"
               title="View Details"
             >
               <Eye className="size-4" />
@@ -251,7 +251,7 @@ export function TendersList() {
       {/* --- TABLE 1: ALL TENDERS --- */}
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-[#0B1F4D]">
+          <h2 className="text-lg font-semibold text-primary">
             Independent Tenders
           </h2>
         </div>
@@ -279,7 +279,7 @@ export function TendersList() {
 
       {/* --- TABLE 2: PROCUREMENT RECORDS --- */}
       <div className="space-y-4 mt-8">
-        <h2 className="text-lg font-semibold text-[#0B1F4D]">
+        <h2 className="text-lg font-semibold text-primary">
           Procurement Tenders
         </h2>
 

@@ -16,7 +16,7 @@ export function UnderDevelopment({ moduleName }: UnderDevelopmentProps) {
         {moduleName && (
           <p className="text-sm text-amber-600 font-medium mb-2 uppercase tracking-wide">{moduleName}</p>
         )}
-        <h2 className="text-2xl font-bold text-[#0B1F4D] mb-3">Module Under Development</h2>
+        <h2 className="text-2xl font-bold text-primary mb-3">Module Under Development</h2>
         <p className="text-muted-foreground text-sm">
           This module is currently being developed and will be available soon.
         </p>

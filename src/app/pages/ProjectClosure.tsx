@@ -76,7 +76,7 @@ const YesNoField = ({
   onFileChange: (file: File | null) => void;
 }) => (
   <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-100">
-    <label className="block font-medium mb-3 text-sm text-[#0B1F4D]">
+    <label className="block font-medium mb-3 text-sm text-primary">
       {label}
       {isApiRequired && (
         <span className="text-red-500 ml-1" title="Required Document">
@@ -581,7 +581,7 @@ export function ProjectClosure() {
         {selectedProject && activeAction === "checklist" && (
           <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
             <div className="flex justify-between items-center mb-6 border-b pb-4">
-              <h3 className="text-xl font-bold text-[#0B1F4D]">
+              <h3 className="text-xl font-bold text-primary">
                 Document Verification Checklist: {selectedProject.proposalRefNo}
               </h3>
               <button
@@ -634,7 +634,7 @@ export function ProjectClosure() {
                 </div>
 
                 <div className="pt-6 border-t border-border">
-                  <h4 className="text-lg font-bold text-[#0B1F4D] mb-4">
+                  <h4 className="text-lg font-bold text-primary mb-4">
                     Existing Checklist Status
                   </h4>
                   <Table
@@ -677,7 +677,7 @@ export function ProjectClosure() {
         {selectedProject && activeAction === "completion" && (
           <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
             <div className="flex justify-between items-center mb-6 border-b pb-4">
-              <h3 className="text-xl font-bold text-[#0B1F4D]">
+              <h3 className="text-xl font-bold text-primary">
                 Final Project Completion: {selectedProject.proposalRefNo}
               </h3>
               <button

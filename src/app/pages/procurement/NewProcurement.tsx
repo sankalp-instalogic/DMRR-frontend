@@ -131,7 +131,7 @@ export function NewProcurement() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#0B1F4D]">New Procurement</h1>
+        <h1 className="text-2xl font-bold text-primary">New Procurement</h1>
         <p className="text-sm text-muted-foreground">
           Capture procurement details and initiate the approval workflow
         </p>
@@ -140,7 +140,7 @@ export function NewProcurement() {
       <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
         {/* Section 1: Basic Information */}
         <div className="p-6 border-b border-border">
-          <h2 className="text-lg font-semibold text-[#0B1F4D] mb-5">
+          <h2 className="text-lg font-semibold text-primary mb-5">
             Section 1: Basic Information
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -216,7 +216,7 @@ export function NewProcurement() {
                     }}
                     className={`px-5 py-2.5 rounded-lg border text-sm font-medium transition-colors ${
                       demandType === type
-                        ? "bg-[#0B1F4D] text-white border-[#0B1F4D]"
+                        ? "bg-primary text-white border-primary"
                         : "bg-white text-gray-700 border-border hover:bg-muted"
                     }`}
                   >
@@ -312,7 +312,7 @@ export function NewProcurement() {
 
         {/* Section 2: Procurement Details */}
         <div className="p-6 border-b border-border">
-          <h2 className="text-lg font-semibold text-[#0B1F4D] mb-5">
+          <h2 className="text-lg font-semibold text-primary mb-5">
             Section 2: Procurement Details
           </h2>
 
@@ -393,7 +393,7 @@ export function NewProcurement() {
           <button
             type="button"
             onClick={() => append({ quantity: "", location: "" })}
-            className="px-4 py-2 border border-dashed border-[#0B1F4D] text-[#0B1F4D] rounded-lg text-sm hover:bg-blue-50 flex items-center gap-2 transition-colors mb-6"
+            className="px-4 py-2 border border-dashed border-primary text-primary rounded-lg text-sm hover:bg-blue-50 flex items-center gap-2 transition-colors mb-6"
           >
             <Plus className="size-4" />
             Add Row
@@ -484,7 +484,7 @@ export function NewProcurement() {
             type="button"
             onClick={handleSubmit(onSubmit)}
             disabled={createProcurementMutation.isPending}
-            className="px-6 py-2 bg-[#0B1F4D] text-white font-medium rounded-lg hover:bg-opacity-90 flex items-center gap-2 transition-colors disabled:opacity-50"
+            className="px-6 py-2 bg-primary text-white font-medium rounded-lg hover:bg-opacity-90 flex items-center gap-2 transition-colors disabled:opacity-50"
           >
             <Save className="size-4" />
             {createProcurementMutation.isPending ? "Saving..." : "Save"}

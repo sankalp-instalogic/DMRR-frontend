@@ -350,7 +350,7 @@ export function ProcurementDashboard() {
 
       {/* Procurement Table Header */}
       <div className="flex justify-between items-center mt-6 mb-2">
-        <h2 className="text-lg font-semibold text-[#0B1F4D]">
+        <h2 className="text-lg font-semibold text-primary">
           Procurement Records
         </h2>
       </div>

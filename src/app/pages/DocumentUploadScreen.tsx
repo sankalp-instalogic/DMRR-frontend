@@ -297,7 +297,7 @@ export function DocumentUploadScreen() {
       {/* Info Box */}
       <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
         <div className="flex items-start gap-3">
-          <AlertCircle className="size-5 text-blue-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
+          <AlertCircle className="size-5 text-blue-600 shrink-0 mt-0.5" aria-hidden="true" />
           <div>
             <p className="font-semibold text-blue-900 mb-1">Document Upload Guidelines</p>
             <ul className="text-sm text-blue-700 space-y-1 list-disc list-inside">

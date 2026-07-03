@@ -275,7 +275,7 @@ export function NewTender() {
               <tr className="bg-gray-50/30">
                 <td
                   colSpan={4}
-                  className="px-6 py-2 font-medium text-[#0B1F4D] text-xs uppercase tracking-wider"
+                  className="px-6 py-2 font-medium text-primary text-xs uppercase tracking-wider"
                 >
                   Process 1
                 </td>
@@ -287,7 +287,7 @@ export function NewTender() {
               <tr className="bg-gray-50/30">
                 <td
                   colSpan={4}
-                  className="px-6 py-2 font-medium text-[#0B1F4D] text-xs uppercase tracking-wider"
+                  className="px-6 py-2 font-medium text-primary text-xs uppercase tracking-wider"
                 >
                   Process 2
                 </td>

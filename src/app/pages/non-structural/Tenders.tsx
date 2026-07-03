@@ -317,7 +317,7 @@ export function Tenders() {
         cellRenderer: (params: any) => (
           <button
             onClick={() => setViewTender(params.data)}
-            className="inline-flex cursor-pointer items-center gap-1.5 px-4 h-8 bg-white border border-[#0B1F4D] text-[#0B1F4D] rounded-[10px] hover:bg-blue-50 transition-colors text-[14px] font-medium mt-1.5"
+            className="inline-flex cursor-pointer items-center gap-1.5 px-4 h-8 bg-white border border-primary text-primary rounded-[10px] hover:bg-blue-50 transition-colors text-[14px] font-medium mt-1.5"
           >
             <Eye className="size-4" />
             View
@@ -338,7 +338,7 @@ export function Tenders() {
         <div className="flex items-center justify-between">
           <button
             onClick={() => setViewTender(null)}
-            className="flex items-center gap-2 cursor-pointer bg-white border border-[#0B1F4D] text-[#0B1F4D] px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-2 cursor-pointer bg-white border border-primary text-primary px-4 h-10 rounded-[10px] text-[14px] font-medium hover:bg-gray-50 transition-colors"
           >
             <ArrowLeft className="size-4" />
             Back
@@ -346,7 +346,7 @@ export function Tenders() {
         </div>
 
         <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-          <h2 className="text-[20px] font-semibold text-[#0B1F4D] mb-6 pb-4 border-b border-gray-200 flex items-center gap-2">
+          <h2 className="text-[20px] font-semibold text-primary mb-6 pb-4 border-b border-gray-200 flex items-center gap-2">
             Tender Details
             {isDocumentsLoading && (
               <Loader2 className="size-4 animate-spin text-gray-400" />
@@ -358,7 +358,7 @@ export function Tenders() {
               <label className="text-[14px] font-medium text-gray-500 mb-1 block">
                 Organization Chain
               </label>
-              <p className="font-semibold text-[16px] text-[#0B1F4D]">
+              <p className="font-semibold text-[16px] text-primary">
                 {viewTender.organizationChain}
               </p>
             </div>
@@ -366,7 +366,7 @@ export function Tenders() {
               <label className="text-[14px] font-medium text-gray-500 mb-1 block">
                 Tender Title
               </label>
-              <p className="font-semibold text-[16px] text-[#0B1F4D]">
+              <p className="font-semibold text-[16px] text-primary">
                 {viewTender.tenderTitle}
               </p>
             </div>
@@ -374,7 +374,7 @@ export function Tenders() {
               <label className="text-[14px] font-medium text-gray-500 mb-1 block">
                 Tender Ref No
               </label>
-              <p className="font-semibold text-[16px] text-[#0B1F4D]">
+              <p className="font-semibold text-[16px] text-primary">
                 {viewTender.tenderRefNo}
               </p>
             </div>
@@ -382,7 +382,7 @@ export function Tenders() {
               <label className="text-[14px] font-medium text-gray-500 mb-1 block">
                 Tender Code
               </label>
-              <p className="font-semibold text-[16px] text-[#0B1F4D]">
+              <p className="font-semibold text-[16px] text-primary">
                 {viewTender.tenderCode}
               </p>
             </div>
@@ -393,7 +393,7 @@ export function Tenders() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col relative">
           <div className="overflow-x-auto">
             <table className="w-full text-[13px] text-left">
-              <thead className="bg-[#F5F7FA] text-[#0B1F4D]">
+              <thead className="bg-[#F5F7FA] text-primary">
                 <tr className="h-14">
                   <th className="px-4 font-semibold whitespace-nowrap">
                     Stages
@@ -414,7 +414,7 @@ export function Tenders() {
                 <tr className="bg-[#F5F7FA] border-y border-gray-200">
                   <td
                     colSpan={4} // Increased colSpan to 4
-                    className="px-4 py-3 font-semibold text-[#0B1F4D]"
+                    className="px-4 py-3 font-semibold text-primary"
                   >
                     Process 1
                   </td>
@@ -426,7 +426,7 @@ export function Tenders() {
                       key={`p1-${index}`}
                       className="hover:bg-blue-50/50 transition-colors h-14 even:bg-gray-50/50"
                     >
-                      <td className="px-8 font-medium text-[#0B1F4D] whitespace-nowrap">
+                      <td className="px-8 font-medium text-primary whitespace-nowrap">
                         {stage}
                       </td>
                       <td className="px-4 text-center">
@@ -440,7 +440,7 @@ export function Tenders() {
                         <button
                           onClick={() => doc?.id && setPreviewDocId(doc.id)}
                           disabled={!doc}
-                          className="text-gray-500 cursor-pointer hover:text-[#0B1F4D] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          className="text-gray-500 cursor-pointer hover:text-primary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                           title="Preview Document"
                         >
                           <Eye className="size-4 mx-auto" />
@@ -450,7 +450,7 @@ export function Tenders() {
                         <button
                           onClick={() => handleDownload(doc)}
                           disabled={!doc}
-                          className="text-gray-500 cursor-pointer hover:text-[#0B1F4D] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          className="text-gray-500 cursor-pointer hover:text-primary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                           title="Download Document"
                         >
                           <Download className="size-4 mx-auto" />
@@ -464,7 +464,7 @@ export function Tenders() {
                 <tr className="bg-[#F5F7FA] border-y border-gray-200">
                   <td
                     colSpan={4} // Increased colSpan to 4
-                    className="px-4 py-3 font-semibold text-[#0B1F4D]"
+                    className="px-4 py-3 font-semibold text-primary"
                   >
                     Process 2
                   </td>
@@ -476,7 +476,7 @@ export function Tenders() {
                       key={`p2-${index}`}
                       className="hover:bg-blue-50/50 transition-colors h-14 even:bg-gray-50/50"
                     >
-                      <td className="px-8 font-medium text-[#0B1F4D] whitespace-nowrap">
+                      <td className="px-8 font-medium text-primary whitespace-nowrap">
                         {stage}
                       </td>
                       <td className="px-4 text-center">
@@ -490,7 +490,7 @@ export function Tenders() {
                         <button
                           onClick={() => doc?.id && setPreviewDocId(doc.id)}
                           disabled={!doc}
-                          className="text-gray-500 cursor-pointer hover:text-[#0B1F4D] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          className="text-gray-500 cursor-pointer hover:text-primary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                           title="Preview Document"
                         >
                           <Eye className="size-4 mx-auto" />
@@ -500,7 +500,7 @@ export function Tenders() {
                         <button
                           onClick={() => handleDownload(doc)}
                           disabled={!doc}
-                          className="text-gray-500 hover:text-[#0B1F4D] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          className="text-gray-500 hover:text-primary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                           title="Download Document"
                         >
                           <Download className="size-4 mx-auto" />
@@ -527,7 +527,7 @@ export function Tenders() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[30px] font-bold text-[#0B1F4D]">Tendering</h1>
+        <h1 className="text-[30px] font-bold text-primary">Tendering</h1>
         <p className="text-[14px] font-medium text-gray-500 mt-1">
           Manage Tender Activities
         </p>
@@ -539,7 +539,7 @@ export function Tenders() {
             onClick={() => setActiveTab("tenders")}
             className={`px-4 py-2 cursor-pointer font-medium text-[14px] transition-colors rounded-[10px] ${
               activeTab === "tenders"
-                ? "bg-[#0B1F4D] text-white"
+                ? "bg-primary text-white"
                 : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
             }`}
           >
@@ -550,7 +550,7 @@ export function Tenders() {
             onClick={() => setActiveTab("new")}
             className={`flex cursor-pointer items-center gap-2 px-4 py-2 font-medium text-[14px] transition-colors rounded-[10px] ${
               activeTab === "new"
-                ? "bg-[#0B1F4D] text-white"
+                ? "bg-primary text-white"
                 : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
             }`}
           >
@@ -567,7 +567,7 @@ export function Tenders() {
         <div className="relative mb-6">
           {isFetching && !isLoading && (
             <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-xl">
-              <span className="text-[#0B1F4D] font-medium bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">
+              <span className="text-primary font-medium bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">
                 Updating...
               </span>
             </div>
@@ -606,7 +606,7 @@ export function Tenders() {
           onSubmit={handleSubmit(onSubmit)}
           className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm space-y-6"
         >
-          <h2 className="text-[20px] font-semibold text-[#0B1F4D]">
+          <h2 className="text-[20px] font-semibold text-primary">
             Create New Tender
           </h2>
 
@@ -622,7 +622,7 @@ export function Tenders() {
                   <Input
                     {...field}
                     placeholder="Enter Organization Chain"
-                    className="h-10 rounded-[10px] text-[14px] hover:border-[#0B1F4D]/50 focus:border-[#0B1F4D]/50"
+                    className="h-10 rounded-[10px] text-[14px] hover:border-primary/50 focus:border-primary/50"
                   />
                 )}
               />
@@ -639,7 +639,7 @@ export function Tenders() {
                   <Input
                     {...field}
                     placeholder="Enter Tender Title"
-                    className="h-10 rounded-[10px] text-[14px] hover:border-[#0B1F4D]/50 focus:border-[#0B1F4D]/50"
+                    className="h-10 rounded-[10px] text-[14px] hover:border-primary/50 focus:border-primary/50"
                   />
                 )}
               />
@@ -656,7 +656,7 @@ export function Tenders() {
                   <Input
                     {...field}
                     placeholder="Enter Tender Reference Number"
-                    className="h-10 rounded-[10px] text-[14px] hover:border-[#0B1F4D]/50 focus:border-[#0B1F4D]/50"
+                    className="h-10 rounded-[10px] text-[14px] hover:border-primary/50 focus:border-primary/50"
                   />
                 )}
               />
@@ -673,7 +673,7 @@ export function Tenders() {
                   <Input
                     {...field}
                     placeholder="Enter Tender Code"
-                    className="h-10 rounded-[10px] text-[14px] hover:border-[#0B1F4D]/50 focus:border-[#0B1F4D]/50"
+                    className="h-10 rounded-[10px] text-[14px] hover:border-primary/50 focus:border-primary/50"
                   />
                 )}
               />
@@ -684,7 +684,7 @@ export function Tenders() {
           <div className="border border-gray-200 rounded-xl overflow-hidden mt-6">
             <div className="overflow-x-auto">
               <table className="w-full text-[13px] text-left">
-                <thead className="bg-[#F5F7FA] text-[#0B1F4D]">
+                <thead className="bg-[#F5F7FA] text-primary">
                   <tr className="h-14">
                     <th className="px-4 font-semibold whitespace-nowrap">
                       Stages
@@ -703,7 +703,7 @@ export function Tenders() {
                       key={stage.key}
                       className="hover:bg-blue-50/50 transition-colors h-14 even:bg-gray-50/50"
                     >
-                      <td className="px-4 font-medium text-[#0B1F4D] whitespace-nowrap">
+                      <td className="px-4 font-medium text-primary whitespace-nowrap">
                         {stage.name}
                       </td>
                       <td className="px-4 text-center">
@@ -723,7 +723,7 @@ export function Tenders() {
                             >
                               <button
                                 type="button"
-                                className="inline-flex cursor-pointer items-center gap-1.5 px-4 h-10 bg-white border border-[#0B1F4D] text-[#0B1F4D] rounded-[10px] hover:bg-blue-50 transition-colors text-[14px] font-medium"
+                                className="inline-flex cursor-pointer items-center gap-1.5 px-4 h-10 bg-white border border-primary text-primary rounded-[10px] hover:bg-blue-50 transition-colors text-[14px] font-medium"
                               >
                                 <UploadOutlined />
                                 Upload
@@ -753,7 +753,7 @@ export function Tenders() {
                 reset();
                 setActiveTab("tenders");
               }}
-              className="px-4 h-10 cursor-pointer bg-white border border-[#0B1F4D] text-[#0B1F4D] rounded-[10px] font-medium hover:bg-gray-50 transition-colors text-[14px]"
+              className="px-4 h-10 cursor-pointer bg-white border border-primary text-primary rounded-[10px] font-medium hover:bg-gray-50 transition-colors text-[14px]"
             >
               Cancel
             </button>
@@ -766,7 +766,7 @@ export function Tenders() {
                 uploadMutation.isPending ||
                 isSubmitting
               }
-              className="flex items-center gap-1.5 px-4 h-10 cursor-pointer bg-[#0B1F4D] text-white rounded-[10px] font-medium hover:bg-[#0B1F4D]/90 transition-colors text-[14px] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-1.5 px-4 h-10 cursor-pointer bg-primary text-white rounded-[10px] font-medium hover:bg-primary/90 transition-colors text-[14px] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {addMutation.isPending ||
               uploadMutation.isPending ||

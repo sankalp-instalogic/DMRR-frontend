@@ -158,7 +158,7 @@ export function FundsDistributedDistricts() {
         cellRenderer: (params: any) => (
           <button
             onClick={() => handleView(params.data)}
-            className="inline-flex items-center gap-1.5 px-4 h-8 mt-2 bg-white border border-[#0B1F4D] text-[#0B1F4D] rounded-[10px] hover:bg-blue-50 transition-colors text-[14px] font-medium cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 h-8 mt-2 bg-white border border-primary text-primary rounded-[10px] hover:bg-blue-50 transition-colors text-[14px] font-medium cursor-pointer"
           >
             <Eye className="size-4" />
             View
@@ -284,7 +284,7 @@ export function FundsDistributedDistricts() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[30px] font-bold text-[#0B1F4D]">
+        <h1 className="text-[30px] font-bold text-primary">
           Funds Distributed to Districts
         </h1>
         <p className="text-[14px] font-medium text-gray-500 mt-1">
@@ -298,7 +298,7 @@ export function FundsDistributedDistricts() {
             onClick={() => setActiveTab("overview")}
             className={`px-4 py-2 font-medium text-[14px] cursor-pointer transition-colors rounded-[10px] ${
               activeTab === "overview"
-                ? "bg-[#0B1F4D] text-white"
+                ? "bg-primary text-white"
                 : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
             }`}
           >
@@ -311,7 +311,7 @@ export function FundsDistributedDistricts() {
             }}
             className={`px-4 py-2 cursor-pointer font-medium text-[14px] transition-colors rounded-[10px] ${
               activeTab === "new"
-                ? "bg-[#0B1F4D] text-white"
+                ? "bg-primary text-white"
                 : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
             }`}
           >
@@ -324,7 +324,7 @@ export function FundsDistributedDistricts() {
         <div className="relative mb-6">
           {isFetching && !isLoading && (
             <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-xl">
-              <span className="text-[#0B1F4D] font-medium bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">
+              <span className="text-primary font-medium bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">
                 Updating...
               </span>
             </div>
@@ -359,7 +359,7 @@ export function FundsDistributedDistricts() {
 
       {activeTab === "new" && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-[20px] font-semibold text-[#0B1F4D] mb-6">
+          <h2 className="text-[20px] font-semibold text-primary mb-6">
             New District Allocation
           </h2>
 
@@ -505,8 +505,8 @@ export function FundsDistributedDistricts() {
                     htmlFor="gr-upload"
                     className="cursor-pointer flex flex-col items-center"
                   >
-                    <Plus className="size-6 text-[#0B1F4D] mb-2" />
-                    <span className="text-[14px] font-medium text-[#0B1F4D]">
+                    <Plus className="size-6 text-primary mb-2" />
+                    <span className="text-[14px] font-medium text-primary">
                       {utilizationCertificate
                         ? utilizationCertificate.name
                         : "Click to upload Utilization Certificate Document"}
@@ -522,13 +522,13 @@ export function FundsDistributedDistricts() {
             <div className="mt-6 flex gap-3 justify-end pt-4 border-t border-gray-200">
               <Button
                 onClick={() => setActiveTab("overview")}
-                className="px-4 h-10 cursor-pointer bg-white border border-[#0B1F4D] text-[#0B1F4D] rounded-[10px] font-medium hover:bg-gray-50 transition-colors text-[14px]"
+                className="px-4 h-10 cursor-pointer bg-white border border-primary text-primary rounded-[10px] font-medium hover:bg-gray-50 transition-colors text-[14px]"
               >
                 Cancel
               </Button>
               <Button
                 disabled={addMutation.isPending || uploadMutation.isPending}
-                className="px-4 h-10 bg-[#0B1F4D] text-white rounded-[10px] cursor-pointer font-medium hover:bg-[#0B1F4D]/90"
+                className="px-4 h-10 bg-primary text-white rounded-[10px] cursor-pointer font-medium hover:bg-primary/90"
               >
                 {addMutation.isPending || uploadMutation.isPending
                   ? "Saving..."
@@ -544,7 +544,7 @@ export function FundsDistributedDistricts() {
           <div className="flex items-center justify-between">
             <button
               onClick={() => setActiveTab("overview")}
-              className="inline-flex items-center gap-2 text-[14px] font-medium text-gray-600 hover:text-[#0B1F4D] transition-colors cursor-pointer"
+              className="inline-flex items-center gap-2 text-[14px] font-medium text-gray-600 hover:text-primary transition-colors cursor-pointer"
             >
               <ArrowLeft className="size-4" />
               Back
@@ -555,7 +555,7 @@ export function FundsDistributedDistricts() {
             ref={printRef}
             className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
           >
-            <h2 className="text-[20px] font-semibold text-[#0B1F4D] mb-6 pb-4 border-b border-gray-200">
+            <h2 className="text-[20px] font-semibold text-primary mb-6 pb-4 border-b border-gray-200">
               Allocation Details
             </h2>
 
@@ -564,7 +564,7 @@ export function FundsDistributedDistricts() {
                 <p className="text-[14px] font-medium text-gray-500 mb-1">
                   Budget Utilized
                 </p>
-                <p className="font-semibold text-[16px] text-[#0B1F4D]">
+                <p className="font-semibold text-[16px] text-primary">
                   ₹{viewRecord.utilizedLakhs} L
                 </p>
               </div>
@@ -572,7 +572,7 @@ export function FundsDistributedDistricts() {
                 <p className="text-[14px] font-medium text-gray-500 mb-1">
                   Date of Issuing
                 </p>
-                <p className="font-semibold text-[16px] text-[#0B1F4D]">
+                <p className="font-semibold text-[16px] text-primary">
                   {formattedDate(viewRecord.issuingDate)}
                 </p>
               </div>
@@ -580,14 +580,14 @@ export function FundsDistributedDistricts() {
                 <p className="text-[14px] font-medium text-gray-500 mb-1">
                   District
                 </p>
-                <p className="font-semibold text-[16px] text-[#0B1F4D]">
+                <p className="font-semibold text-[16px] text-primary">
                   {districtMap[viewRecord.districtId] || viewRecord.districtId}
                 </p>
               </div>
             </div>
 
             <div className="mt-6 pt-6 border-t border-gray-200">
-              <p className="text-[16px] font-semibold text-[#0B1F4D] mb-4">
+              <p className="text-[16px] font-semibold text-primary mb-4">
                 Utilization Certificate
                 {isDocumentsLoading && (
                   <span className="text-sm text-gray-400 font-normal ml-2">
@@ -600,7 +600,7 @@ export function FundsDistributedDistricts() {
                 <div className="flex items-center gap-4 p-4 border border-gray-200 rounded-[10px] bg-gray-50/50">
                   <FileText className="size-8 text-red-500" />
                   <div className="flex-1">
-                    <p className="text-[14px] font-medium text-[#0B1F4D]">
+                    <p className="text-[14px] font-medium text-primary">
                       {utilDoc.fileName || "Utilization Certificate.pdf"}
                     </p>
                   </div>

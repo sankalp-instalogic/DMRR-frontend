@@ -11,7 +11,7 @@ import { Table } from "../components/Table";
 import type { ColDef } from "ag-grid-community";
 import { Input, Select, DatePicker } from "antd";
 import dayjs from "dayjs";
-import { Button } from "@/app/components/ui/button";
+import { Button } from "../components/ui/button";
 
 export function Billing() {
   const axiosPrivate = useAxiosPrivate();
@@ -806,7 +806,7 @@ export function Billing() {
                   >
                     <button
                       onClick={section.onSave}
-                      className="px-4 py-2 bg-[#0B1F4D] text-white rounded-lg hover:bg-opacity-90 transition-colors text-sm font-medium"
+                      className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-colors text-sm font-medium"
                     >
                       {section.buttonText}
                     </button>
@@ -816,7 +816,7 @@ export function Billing() {
                   {section.yesNoKey === "paymentOrderMade" &&
                     paymentOrderHistory.length > 0 && (
                       <div className="col-span-full mt-6 pt-6 border-t border-gray-200">
-                        <h4 className="font-semibold text-[#0B1F4D] mb-4">
+                        <h4 className="font-semibold text-primary mb-4">
                           Previous Payment Orders
                         </h4>
                         <div className="bg-white rounded-lg overflow-hidden border border-gray-200">
@@ -839,7 +839,7 @@ export function Billing() {
           ))}
 
           {/* Payment Details */}
-          <h3 className="font-bold text-lg mb-4 text-[#0B1F4D]">
+          <h3 className="font-bold text-lg mb-4 text-primary">
             Payment Details
           </h3>
 
@@ -867,7 +867,7 @@ export function Billing() {
           </div>
 
           {/* GST TDS */}
-          <h3 className="font-bold text-lg mb-4 text-[#0B1F4D]">
+          <h3 className="font-bold text-lg mb-4 text-primary">
             Amount Received By Department Through GST & TDS
           </h3>
 

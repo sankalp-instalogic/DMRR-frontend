@@ -106,7 +106,7 @@ export function AIDocumentIntelligence() {
       {!loading && response && (
         <div className="bg-card border border-border rounded-xl p-8 shadow-sm space-y-6 border-t-4 border-t-accent">
           <div>
-            <h3 className="text-xl font-bold mb-4 text-[#0B1F4D]">AI Insight</h3>
+            <h3 className="text-xl font-bold mb-4 text-primary">AI Insight</h3>
             <p className="text-lg leading-relaxed">{response.text}</p>
           </div>
 

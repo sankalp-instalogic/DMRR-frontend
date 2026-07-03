@@ -40,7 +40,7 @@ export function ProcurementRegister() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#0B1F4D]">Procurement Register</h1>
+          <h1 className="text-2xl font-bold text-primary">Procurement Register</h1>
           <p className="text-sm text-muted-foreground">Search and browse all procurement records</p>
         </div>
       </div>
@@ -112,7 +112,7 @@ export function ProcurementRegister() {
             <RotateCcw className="size-4" />
             Reset
           </button>
-          <button className="px-4 py-2 bg-[#0B1F4D] hover:bg-opacity-90 text-white rounded-lg flex items-center gap-2 transition-colors font-medium text-sm">
+          <button className="px-4 py-2 bg-primary hover:bg-opacity-90 text-white rounded-lg flex items-center gap-2 transition-colors font-medium text-sm">
             <Search className="size-4" />
             Search
           </button>
@@ -146,7 +146,7 @@ export function ProcurementRegister() {
             <tbody className="divide-y divide-border">
               {procurementData.map((row) => (
                 <tr key={row.id} className="hover:bg-muted/50 transition-colors">
-                  <td className="px-4 py-3 font-medium text-[#0B1F4D]">{row.id}</td>
+                  <td className="px-4 py-3 font-medium text-primary">{row.id}</td>
                   <td className="px-4 py-3">{row.year}</td>
                   <td className="px-4 py-3">{row.item}</td>
                   <td className="px-4 py-3">{row.dept}</td>
@@ -188,7 +188,7 @@ export function ProcurementRegister() {
           <span className="text-sm text-muted-foreground">Showing 1 to 5 of 5 entries</span>
           <div className="flex gap-1">
             <button className="px-3 py-1 bg-white border border-border rounded text-sm disabled:opacity-50" disabled>Previous</button>
-            <button className="px-3 py-1 bg-[#0B1F4D] text-white border border-[#0B1F4D] rounded text-sm">1</button>
+            <button className="px-3 py-1 bg-primary text-white border border-primary rounded text-sm">1</button>
             <button className="px-3 py-1 bg-white border border-border rounded text-sm disabled:opacity-50" disabled>Next</button>
           </div>
         </div>

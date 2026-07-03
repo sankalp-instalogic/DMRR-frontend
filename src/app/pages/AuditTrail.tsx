@@ -1,16 +1,25 @@
-import { useState } from "react";
-import {
-  Search,
-  Filter,
-  Download,
-  FileText,
-  Activity,
-  ChevronLeft,
-  ChevronRight,
-  Loader2,
-} from "lucide-react";
+import { useMemo, useState } from "react";
+import { Activity, Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import type { ColDef, ICellRendererParams } from "ag-grid-community";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
+import { Table } from "../components/Table";
+import dateFormatter from "../../utils/dateFormatter"
+
+interface AuditLog {
+  timestampUtc: string;
+  userName?: string | null;
+  role?: string | null;
+  action?: string | null;
+  entity?: string | null;
+  remarks?: string | null;
+}
+
+interface AuditResponse {
+  items: AuditLog[];
+  totalCount: number;
+  totalPages: number;
+}
 
 export function AuditTrail() {
   const axiosPrivate = useAxiosPrivate();
@@ -19,7 +28,7 @@ export function AuditTrail() {
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
-  const fetchAuditLogs = async () => {
+  const fetchAuditLogs = async (): Promise<AuditResponse> => {
     const response = await axiosPrivate.get("/api/v1/Audit", {
       params: {
         Page: page,
@@ -35,33 +44,87 @@ export function AuditTrail() {
     placeholderData: (previousData) => previousData,
   });
 
-  const handleExport = (type: any) => {
-    alert(`Exporting Audit Trail as ${type}`);
-  };
-
   // Using your new payload structure (data.items)
   const auditLogs = data?.items || [];
   const totalPages = data?.totalPages || 1;
+  const totalCount = data?.totalCount || 0;
 
   // Updated filter to match the new keys
   const filteredLogs = auditLogs.filter(
-    (l: any) =>
+    (l) =>
       (l.userName?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
       (l.action?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
       (l.entity?.toLowerCase() || "").includes(searchTerm.toLowerCase()),
   );
 
-  // Helper to format the UTC timestamp into a readable local string
-  const formatDate = (utcString: any) => {
-    return new Date(utcString).toLocaleString([], {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    });
-  };
+  const columnDefs = useMemo<ColDef<AuditLog>[]>(
+    () => [
+      {
+        field: "timestampUtc",
+        headerName: "Timestamp",
+        flex: 1.4,
+        minWidth: 190,
+        valueFormatter: (params) =>
+          params.value ? dateFormatter(params.value) : "-",
+      },
+      {
+        field: "userName",
+        headerName: "User",
+        flex: 1,
+        minWidth: 140,
+        cellRenderer: (params: ICellRendererParams<AuditLog>) => (
+          <span
+            className={
+              !params.value ? "text-muted-foreground italic" : undefined
+            }
+          >
+            {params.value || "System"}
+          </span>
+        ),
+      },
+      {
+        field: "role",
+        headerName: "Role",
+        flex: 1,
+        minWidth: 120,
+        cellRenderer: (params: ICellRendererParams<AuditLog>) =>
+          params.value ? (
+            <span className="px-2 py-1 bg-secondary/10 text-secondary rounded text-xs">
+              {params.value}
+            </span>
+          ) : (
+            <span className="text-muted-foreground">-</span>
+          ),
+      },
+      {
+        field: "action",
+        headerName: "Action",
+        flex: 1.2,
+        minWidth: 150,
+        cellRenderer: (params: ICellRendererParams<AuditLog>) => (
+          <div className="flex items-center gap-2 h-full">
+            <Activity className="size-3 text-accent shrink-0" />
+            <span>{params.value || "-"}</span>
+          </div>
+        ),
+      },
+      {
+        field: "entity",
+        headerName: "Entity",
+        flex: 1,
+        minWidth: 130,
+        valueFormatter: (params) => params.value || "-",
+      },
+      {
+        field: "remarks",
+        headerName: "Remarks",
+        flex: 1.5,
+        minWidth: 180,
+        valueFormatter: (params) => params.value || "-",
+      },
+    ],
+    [],
+  );
 
   return (
     <div className="space-y-6">
@@ -87,113 +150,29 @@ export function AuditTrail() {
         </div>
       </div>
 
-      <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm flex flex-col">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-muted">
-              <tr>
-                <th className="px-6 py-4 text-left text-sm">Timestamp</th>
-                <th className="px-6 py-4 text-left text-sm">User</th>
-                <th className="px-6 py-4 text-left text-sm">Role</th>
-                <th className="px-6 py-4 text-left text-sm">Action</th>
-                <th className="px-6 py-4 text-left text-sm">Entity</th>
-                <th className="px-6 py-4 text-left text-sm">Remarks</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="px-6 py-8 text-center text-muted-foreground"
-                  >
-                    <Loader2 className="size-6 animate-spin mx-auto mb-2" />
-                    Loading audit logs...
-                  </td>
-                </tr>
-              ) : isError ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="px-6 py-8 text-center text-red-500"
-                  >
-                    Failed to load audit logs:{" "}
-                    {error?.message || "Unknown error"}
-                  </td>
-                </tr>
-              ) : filteredLogs.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="px-6 py-8 text-center text-muted-foreground"
-                  >
-                    No audit logs found.
-                  </td>
-                </tr>
-              ) : (
-                filteredLogs.map((log: any) => (
-                  <tr
-                    key={log.entityId}
-                    className="border-t border-border hover:bg-muted/50 transition-colors"
-                  >
-                    <td className="px-6 py-4 text-sm font-mono text-muted-foreground whitespace-nowrap">
-                      {formatDate(log.timestampUtc)}
-                    </td>
-                    <td className="px-6 py-4 text-sm font-medium">
-                      {log.userName || (
-                        <span className="text-muted-foreground italic">
-                          System
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-sm">
-                      {log.role ? (
-                        <span className="px-2 py-1 bg-secondary/10 text-secondary rounded text-xs">
-                          {log.role}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-sm flex items-center gap-2">
-                      <Activity className="size-3 text-accent" />
-                      {log.action}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-foreground">
-                      {log.entity}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground">
-                      {log.remarks || "-"}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+      {isLoading ? (
+        <div className="p-12 text-center text-muted-foreground border border-border rounded-xl bg-card">
+          Loading audit logs...
         </div>
-
-        <div className="flex items-center justify-between px-6 py-4 border-t border-border bg-card">
-          <div className="text-sm text-muted-foreground">
-            Showing Page {page} of {totalPages}
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setPage((old) => Math.max(old - 1, 1))}
-              disabled={page === 1 || isLoading}
-              className="p-2 border border-border rounded-lg hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ChevronLeft className="size-4" />
-            </button>
-            <button
-              onClick={() => setPage((old) => old + 1)}
-              disabled={page >= totalPages || isLoading}
-              className="p-2 border border-border rounded-lg hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ChevronRight className="size-4" />
-            </button>
-          </div>
+      ) : isError ? (
+        <div className="p-12 text-center text-red-500 border border-border rounded-xl bg-card">
+          {(error as Error)?.message || "Failed to load audit logs."}
         </div>
-      </div>
+      ) : filteredLogs.length === 0 ? (
+        <div className="p-12 text-center text-muted-foreground border border-border rounded-xl bg-card">
+          No audit logs found.
+        </div>
+      ) : (
+        <Table
+          rowData={filteredLogs}
+          columnDefs={columnDefs}
+          totalCount={totalCount}
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          rowHeight={56}
+        />
+      )}
     </div>
   );
 }

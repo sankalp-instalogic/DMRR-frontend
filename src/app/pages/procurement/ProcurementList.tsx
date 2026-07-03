@@ -243,7 +243,7 @@ export function ProcurementList() {
             </button>
             <button
               onClick={handleSearchSubmit}
-              className="px-4 py-2 cursor-pointer bg-[#0B1F4D] hover:bg-opacity-90 text-white rounded-lg flex items-center justify-center gap-2 transition-colors font-medium text-sm flex-1"
+              className="px-4 py-2 cursor-pointer bg-primary hover:bg-opacity-90 text-white rounded-lg flex items-center justify-center gap-2 transition-colors font-medium text-sm flex-1"
             >
               <Search className="size-4" />
               Search

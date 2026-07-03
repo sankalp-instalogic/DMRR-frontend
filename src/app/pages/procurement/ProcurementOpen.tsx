@@ -47,7 +47,7 @@ export function ProcurementOpen() {
             <ArrowLeft className="size-5 text-muted-foreground" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-[#0B1F4D]">Procurement Details</h1>
+            <h1 className="text-2xl font-bold text-primary">Procurement Details</h1>
             <p className="text-sm text-muted-foreground">Read-only view of procurement record {mockData.id}</p>
           </div>
         </div>
@@ -55,7 +55,7 @@ export function ProcurementOpen() {
           <button className="px-4 py-2 bg-white border border-border text-gray-700 font-medium rounded-lg hover:bg-gray-50 flex items-center gap-2 transition-colors">
             <Printer className="size-4" /> Print
           </button>
-          <button className="px-4 py-2 bg-[#0B1F4D] text-white font-medium rounded-lg hover:bg-opacity-90 flex items-center gap-2 transition-colors">
+          <button className="px-4 py-2 bg-primary text-white font-medium rounded-lg hover:bg-opacity-90 flex items-center gap-2 transition-colors">
             <Download className="size-4" /> Download Summary
           </button>
         </div>
@@ -64,7 +64,7 @@ export function ProcurementOpen() {
       <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden pointer-events-none">
         {/* SECTION 1: Basic Information */}
         <div className="p-6 border-b border-border">
-          <h2 className="text-lg font-semibold text-[#0B1F4D] mb-4">Section 1: Basic Information</h2>
+          <h2 className="text-lg font-semibold text-primary mb-4">Section 1: Basic Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium mb-1 text-muted-foreground">Financial Year</label>
@@ -87,7 +87,7 @@ export function ProcurementOpen() {
 
         {/* SECTION 2: Approvals */}
         <div className="p-6 border-b border-border">
-          <h2 className="text-lg font-semibold text-[#0B1F4D] mb-4">Section 2: Approvals</h2>
+          <h2 className="text-lg font-semibold text-primary mb-4">Section 2: Approvals</h2>
           
           <div className="space-y-6">
             {/* SEC Approval */}
@@ -95,12 +95,12 @@ export function ProcurementOpen() {
               <div className="flex items-center gap-4 mb-4">
                 <label className="font-medium text-sm">A. SEC Approval?</label>
                 <div className="flex items-center gap-4">
-                  <span className="font-medium text-[#0B1F4D]">{mockData.secApproval}</span>
+                  <span className="font-medium text-primary">{mockData.secApproval}</span>
                 </div>
               </div>
               
               {mockData.secApproval === "Yes" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pl-4 border-l-2 border-[#0B1F4D]">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pl-4 border-l-2 border-primary">
                   <div>
                     <label className="block text-sm font-medium mb-1 text-muted-foreground">Date of Approval</label>
                     <div className="w-full px-3 py-2 bg-muted/50 border border-border rounded-lg text-sm">{mockData.secApprovalDate}</div>
@@ -128,12 +128,12 @@ export function ProcurementOpen() {
               <div className="flex items-center gap-4 mb-4">
                 <label className="font-medium text-sm">B. AA Approval?</label>
                 <div className="flex items-center gap-4">
-                  <span className="font-medium text-[#0B1F4D]">{mockData.aaApproval}</span>
+                  <span className="font-medium text-primary">{mockData.aaApproval}</span>
                 </div>
               </div>
               
               {mockData.aaApproval === "Yes" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pl-4 border-l-2 border-[#0B1F4D]">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pl-4 border-l-2 border-primary">
                   <div>
                     <label className="block text-sm font-medium mb-1 text-muted-foreground">Date of Approval</label>
                     <div className="w-full px-3 py-2 bg-muted/50 border border-border rounded-lg text-sm">{mockData.aaApprovalDate}</div>
@@ -161,12 +161,12 @@ export function ProcurementOpen() {
               <div className="flex items-center gap-4 mb-4">
                 <label className="font-medium text-sm">C. Contract Awarded?</label>
                 <div className="flex items-center gap-4">
-                  <span className="font-medium text-[#0B1F4D]">{mockData.contractAwarded}</span>
+                  <span className="font-medium text-primary">{mockData.contractAwarded}</span>
                 </div>
               </div>
               
               {mockData.contractAwarded === "Yes" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pl-4 border-l-2 border-[#0B1F4D]">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pl-4 border-l-2 border-primary">
                   <div>
                     <label className="block text-sm font-medium mb-1 text-muted-foreground">Date of Award</label>
                     <div className="w-full px-3 py-2 bg-muted/50 border border-border rounded-lg text-sm">{mockData.contractAwardDate}</div>
@@ -193,7 +193,7 @@ export function ProcurementOpen() {
 
         {/* SECTION 3: Procurement Details */}
         <div className="p-6">
-          <h2 className="text-lg font-semibold text-[#0B1F4D] mb-4">Section 3: Procurement Details</h2>
+          <h2 className="text-lg font-semibold text-primary mb-4">Section 3: Procurement Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-medium mb-1 text-muted-foreground">Qty (No)</label>

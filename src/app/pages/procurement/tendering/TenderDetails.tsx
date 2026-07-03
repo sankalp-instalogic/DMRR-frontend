@@ -120,12 +120,12 @@ export function TenderDetails() {
       <div className="flex items-center gap-4">
         <Link
           to="/procurement-tendering/tenders"
-          className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground hover:text-[#0B1F4D]"
+          className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground hover:text-primary"
         >
           <ArrowLeft className="size-5" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-[#0B1F4D] flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-primary flex items-center gap-2">
             Tender Details
             {(isTenderLoading || isDocsLoading) && (
               <Loader2 className="size-5 animate-spin text-gray-400" />
@@ -140,7 +140,7 @@ export function TenderDetails() {
       {/* Basic Information Section */}
       <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
         <div className="px-6 py-4 border-b border-border bg-gray-50/50">
-          <h2 className="text-lg font-semibold text-[#0B1F4D]">
+          <h2 className="text-lg font-semibold text-primary">
             Basic Information
           </h2>
         </div>
@@ -197,7 +197,7 @@ export function TenderDetails() {
       {/* Tender Process Tracking Table */}
       <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
         <div className="px-6 py-4 border-b border-border bg-gray-50/50">
-          <h2 className="text-lg font-semibold text-[#0B1F4D]">
+          <h2 className="text-lg font-semibold text-primary">
             Tender Process Tracking
           </h2>
         </div>
@@ -215,7 +215,7 @@ export function TenderDetails() {
               <tr className="bg-gray-50/30">
                 <td
                   colSpan={3}
-                  className="px-6 py-2 font-medium text-[#0B1F4D] text-xs uppercase tracking-wider"
+                  className="px-6 py-2 font-medium text-primary text-xs uppercase tracking-wider"
                 >
                   Process 1
                 </td>
@@ -240,7 +240,7 @@ export function TenderDetails() {
                         <button
                           onClick={() => setPreviewDocument(doc)}
                           disabled={!doc}
-                          className="p-2 inline-flex justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-[#0B1F4D] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          className="p-2 inline-flex justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-primary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                           title="Preview Document"
                         >
                           <Eye className="size-4" />
@@ -248,7 +248,7 @@ export function TenderDetails() {
                         <button
                           onClick={() => handleDownload(doc)}
                           disabled={!doc}
-                          className="p-2 inline-flex justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-[#0B1F4D] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          className="p-2 inline-flex justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-primary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                           title="Download Document"
                         >
                           <Download className="size-4" />
@@ -263,7 +263,7 @@ export function TenderDetails() {
               <tr className="bg-gray-50/30">
                 <td
                   colSpan={3}
-                  className="px-6 py-2 font-medium text-[#0B1F4D] text-xs uppercase tracking-wider"
+                  className="px-6 py-2 font-medium text-primary text-xs uppercase tracking-wider"
                 >
                   Process 2
                 </td>
@@ -288,7 +288,7 @@ export function TenderDetails() {
                         <button
                           onClick={() => setPreviewDocument(doc)}
                           disabled={!doc}
-                          className="p-2 inline-flex justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-[#0B1F4D] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          className="p-2 inline-flex justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-primary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                           title="Preview Document"
                         >
                           <Eye className="size-4" />
@@ -296,7 +296,7 @@ export function TenderDetails() {
                         <button
                           onClick={() => handleDownload(doc)}
                           disabled={!doc}
-                          className="p-2 inline-flex justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-[#0B1F4D] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          className="p-2 inline-flex justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-primary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                           title="Download Document"
                         >
                           <Download className="size-4" />
@@ -328,7 +328,7 @@ export function TenderDetails() {
                         <button
                           onClick={() => setPreviewDocument(doc)}
                           disabled={!doc}
-                          className="p-2 inline-flex justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-[#0B1F4D] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          className="p-2 inline-flex justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-primary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                           title="Preview Document"
                         >
                           <Eye className="size-4" />
@@ -336,7 +336,7 @@ export function TenderDetails() {
                         <button
                           onClick={() => handleDownload(doc)}
                           disabled={!doc}
-                          className="p-2 inline-flex justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-[#0B1F4D] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          className="p-2 inline-flex justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-primary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                           title="Download Document"
                         >
                           <Download className="size-4" />
@@ -355,14 +355,14 @@ export function TenderDetails() {
       <div className="flex justify-end gap-3 sticky bottom-0 bg-white p-4 border-t border-border shadow-lg z-10 -mx-6 -mb-6 px-6">
         <button
           onClick={() => navigate("/procurement-tendering/tenders")}
-          className="px-6 py-2 cursor-pointer bg-muted text-[#0B1F4D] rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
+          className="px-6 py-2 cursor-pointer bg-muted text-primary rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
         >
           Back
         </button>
         <button
           onClick={() => completeStageMutation.mutate()}
           disabled={completeStageMutation.isPending}
-          className="px-6 py-2 flex items-center gap-2 cursor-pointer bg-[#0B1F4D] text-white rounded-lg text-sm font-medium hover:bg-[#0B1F4D]/80 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+          className="px-6 py-2 flex items-center gap-2 cursor-pointer bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/80 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
         >
           {completeStageMutation.isPending ? (
             <>

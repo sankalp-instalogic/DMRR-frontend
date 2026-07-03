@@ -27,7 +27,7 @@ export function AdminConfiguration() {
         <p className="text-sm text-muted-foreground">System settings and master data management</p>
       </div>
 
-      <h2 className="text-lg font-bold mt-8 mb-4 border-b border-border pb-2 text-[#0B1F4D] flex items-center gap-2">
+      <h2 className="text-lg font-bold mt-8 mb-4 border-b border-border pb-2 text-primary flex items-center gap-2">
         <Server className="size-5" /> System Administration
       </h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -41,7 +41,7 @@ export function AdminConfiguration() {
         ))}
       </div>
 
-      <h2 className="text-lg font-bold mt-8 mb-4 border-b border-border pb-2 text-[#0B1F4D] flex items-center gap-2">
+      <h2 className="text-lg font-bold mt-8 mb-4 border-b border-border pb-2 text-primary flex items-center gap-2">
         <Database className="size-5" /> Master Data Management
       </h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

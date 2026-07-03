@@ -330,7 +330,7 @@ export function Tendering() {
                 <button
                   onClick={() => ensureMutation.mutate(tender.proposalId)}
                   disabled={ensureMutation.isPending}
-                  className="px-3 py-1.5 bg-[#0B1F4D] cursor-pointer text-white rounded-lg flex items-center justify-center gap-1.5 hover:bg-[#0B1F4D]/90 transition-all text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-1.5 bg-primary cursor-pointer text-white rounded-lg flex items-center justify-center gap-1.5 hover:bg-primary/90 transition-all text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {ensureMutation.isPending &&
                   ensureMutation.variables === tender.proposalId
@@ -392,7 +392,7 @@ export function Tendering() {
       {/* Tender Form */}
       {selectedTender && (
         <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-          <h3 className="font-semibold text-[20px] text-[#0B1F4D] mb-6">
+          <h3 className="font-semibold text-[20px] text-primary mb-6">
             Tendering : {selectedTender.proposalRefNo} - {selectedTender.title}
           </h3>
 
@@ -559,7 +559,7 @@ export function Tendering() {
             <button
               onClick={handleSave}
               disabled={isSaving || isCompleting}
-              className="px-6 h-10 bg-[#0B1F4D] cursor-pointer text-white rounded-[10px] flex items-center justify-center gap-2 hover:bg-[#0B1F4D]/90 transition-all text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 h-10 bg-primary cursor-pointer text-white rounded-[10px] flex items-center justify-center gap-2 hover:bg-primary/90 transition-all text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSaving ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -573,7 +573,7 @@ export function Tendering() {
                 completeTenderMutation.mutate(selectedTender.proposalId)
               }
               disabled={isCompleting || isSaving}
-              className="px-6 h-10 bg-[#0B1F4D] cursor-pointer text-white rounded-[10px] flex items-center justify-center gap-2 hover:bg-[#0B1F4D]/90 transition-all text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 h-10 bg-primary cursor-pointer text-white rounded-[10px] flex items-center justify-center gap-2 hover:bg-primary/90 transition-all text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isCompleting ? (
                 <Loader2 className="w-4 h-4 animate-spin" />

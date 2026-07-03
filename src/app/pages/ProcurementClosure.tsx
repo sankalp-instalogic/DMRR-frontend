@@ -571,7 +571,7 @@ export function ProcurementClosure() {
               <div className="grid md:grid-cols-2 gap-6">
                 {/* COMPLETION CERTIFICATE */}
                 <div>
-                  <label className="block mb-2 font-medium text-sm text-[#0B1F4D]">
+                  <label className="block mb-2 font-medium text-sm text-primary">
                     Upload Completion Certificate
                   </label>
                   <input
@@ -588,7 +588,7 @@ export function ProcurementClosure() {
 
                 {/* SOCIAL AUDIT FILES */}
                 <div>
-                  <label className="block mb-2 font-medium text-sm text-[#0B1F4D]">
+                  <label className="block mb-2 font-medium text-sm text-primary">
                     Upload Social Audit File
                   </label>
                   <input

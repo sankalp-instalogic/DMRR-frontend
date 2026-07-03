@@ -226,7 +226,7 @@ export function ProcurementClosure() {
           <ArrowLeft className="size-5" />
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-[#0B1F4D]">
+          <h1 className="text-2xl font-bold text-primary">
             Procurement Closure
           </h1>
           <p className="text-muted-foreground mt-1 text-sm">
@@ -237,7 +237,7 @@ export function ProcurementClosure() {
 
       {/* Procurement Read-Only Details */}
       <div className="bg-white border border-border rounded-xl p-6 shadow-sm space-y-4">
-        <h3 className="text-lg font-semibold text-[#0B1F4D] border-b pb-2">
+        <h3 className="text-lg font-semibold text-primary border-b pb-2">
           Procurement Details
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
@@ -299,7 +299,7 @@ export function ProcurementClosure() {
       {/* Document Upload Table */}
       <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden mt-8">
         <div className="px-6 py-4 border-b border-border bg-gray-50/50">
-          <h2 className="text-lg font-semibold text-[#0B1F4D]">
+          <h2 className="text-lg font-semibold text-primary">
             Upload Documents
           </h2>
           <p className="text-sm text-muted-foreground">
@@ -323,7 +323,7 @@ export function ProcurementClosure() {
               <tr className="bg-gray-50/30">
                 <td
                   colSpan={3}
-                  className="px-6 py-2 font-medium text-[#0B1F4D] text-xs uppercase tracking-wider"
+                  className="px-6 py-2 font-medium text-primary text-xs uppercase tracking-wider"
                 >
                   Process 1
                 </td>
@@ -335,7 +335,7 @@ export function ProcurementClosure() {
               <tr className="bg-gray-50/30">
                 <td
                   colSpan={3}
-                  className="px-6 py-2 font-medium text-[#0B1F4D] text-xs uppercase tracking-wider"
+                  className="px-6 py-2 font-medium text-primary text-xs uppercase tracking-wider"
                 >
                   Process 2
                 </td>

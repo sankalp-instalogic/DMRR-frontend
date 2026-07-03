@@ -220,12 +220,12 @@ export function ProcurementTenderClosureDetails() {
       <div className="flex items-center gap-4">
         <Link
           to="/procurement-tendering/tenders"
-          className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground hover:text-[#0B1F4D]"
+          className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground hover:text-primary"
         >
           <ArrowLeft className="size-5" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-[#0B1F4D] flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-primary flex items-center gap-2">
             Procurement Closure Details
             {isProcurementLoading && (
               <Loader2 className="size-5 animate-spin text-gray-400" />
@@ -240,7 +240,7 @@ export function ProcurementTenderClosureDetails() {
       {/* Basic Information Section */}
       <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
         <div className="px-6 py-4 border-b border-border bg-gray-50/50">
-          <h2 className="text-lg font-semibold text-[#0B1F4D]">
+          <h2 className="text-lg font-semibold text-primary">
             Procurement Information
           </h2>
         </div>
@@ -323,7 +323,7 @@ export function ProcurementTenderClosureDetails() {
       {/* Document Upload Tracking Table */}
       <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
         <div className="px-6 py-4 border-b border-border bg-gray-50/50">
-          <h2 className="text-lg font-semibold text-[#0B1F4D]">
+          <h2 className="text-lg font-semibold text-primary">
             Closure Documents Upload
           </h2>
         </div>
@@ -343,7 +343,7 @@ export function ProcurementTenderClosureDetails() {
               <tr className="bg-gray-50/30">
                 <td
                   colSpan={3}
-                  className="px-6 py-2 font-medium text-[#0B1F4D] text-xs uppercase tracking-wider"
+                  className="px-6 py-2 font-medium text-primary text-xs uppercase tracking-wider"
                 >
                   Process 1
                 </td>
@@ -355,7 +355,7 @@ export function ProcurementTenderClosureDetails() {
               <tr className="bg-gray-50/30">
                 <td
                   colSpan={3}
-                  className="px-6 py-2 font-medium text-[#0B1F4D] text-xs uppercase tracking-wider"
+                  className="px-6 py-2 font-medium text-primary text-xs uppercase tracking-wider"
                 >
                   Process 2
                 </td>
@@ -367,7 +367,7 @@ export function ProcurementTenderClosureDetails() {
               <tr className="bg-gray-50/30">
                 <td
                   colSpan={3}
-                  className="px-6 py-2 font-medium text-[#0B1F4D] text-xs uppercase tracking-wider"
+                  className="px-6 py-2 font-medium text-primary text-xs uppercase tracking-wider"
                 >
                   Process 3
                 </td>
@@ -383,7 +383,7 @@ export function ProcurementTenderClosureDetails() {
         <button
           onClick={() => navigate("/procurement-tendering/tenders")}
           disabled={isSavingClosure}
-          className="px-6 py-2 cursor-pointer bg-muted text-[#0B1F4D] rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors disabled:opacity-70"
+          className="px-6 py-2 cursor-pointer bg-muted text-primary rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors disabled:opacity-70"
         >
           Cancel
         </button>

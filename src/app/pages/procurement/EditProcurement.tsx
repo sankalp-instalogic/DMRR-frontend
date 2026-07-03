@@ -57,7 +57,7 @@ export function EditProcurement() {
           <ArrowLeft className="size-5 text-muted-foreground" />
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-[#0B1F4D]">Edit Procurement</h1>
+          <h1 className="text-2xl font-bold text-primary">Edit Procurement</h1>
           <p className="text-sm text-muted-foreground">Modify procurement information for {id || "PROC-2025-001"}</p>
         </div>
       </div>
@@ -65,7 +65,7 @@ export function EditProcurement() {
       <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
         {/* SECTION 1: Basic Information */}
         <div className="p-6 border-b border-border">
-          <h2 className="text-lg font-semibold text-[#0B1F4D] mb-4">Section 1: Basic Information</h2>
+          <h2 className="text-lg font-semibold text-primary mb-4">Section 1: Basic Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium mb-1">Financial Year</label>
@@ -97,7 +97,7 @@ export function EditProcurement() {
 
         {/* SECTION 2: Approvals */}
         <div className="p-6 border-b border-border">
-          <h2 className="text-lg font-semibold text-[#0B1F4D] mb-4">Section 2: Approvals</h2>
+          <h2 className="text-lg font-semibold text-primary mb-4">Section 2: Approvals</h2>
           
           <div className="space-y-6">
             {/* SEC Approval */}
@@ -106,16 +106,16 @@ export function EditProcurement() {
                 <label className="font-medium text-sm">A. SEC Approval?</label>
                 <div className="flex items-center gap-4">
                   <label className="flex items-center gap-1.5 text-sm">
-                    <input type="radio" name="secApproval" value="Yes" checked={formData.secApproval === "Yes"} onChange={handleChange} className="text-[#0B1F4D]" /> Yes
+                    <input type="radio" name="secApproval" value="Yes" checked={formData.secApproval === "Yes"} onChange={handleChange} className="text-primary" /> Yes
                   </label>
                   <label className="flex items-center gap-1.5 text-sm">
-                    <input type="radio" name="secApproval" value="No" checked={formData.secApproval === "No"} onChange={handleChange} className="text-[#0B1F4D]" /> No
+                    <input type="radio" name="secApproval" value="No" checked={formData.secApproval === "No"} onChange={handleChange} className="text-primary" /> No
                   </label>
                 </div>
               </div>
               
               {formData.secApproval === "Yes" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pl-4 border-l-2 border-[#0B1F4D]">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pl-4 border-l-2 border-primary">
                   <div>
                     <label className="block text-sm font-medium mb-1">Date of Approval</label>
                     <input type="date" name="secApprovalDate" value={formData.secApprovalDate} onChange={handleChange} className="w-full px-3 py-2 bg-input-background border border-border rounded-lg" />
@@ -149,16 +149,16 @@ export function EditProcurement() {
                 <label className="font-medium text-sm">B. AA Approval?</label>
                 <div className="flex items-center gap-4">
                   <label className="flex items-center gap-1.5 text-sm">
-                    <input type="radio" name="aaApproval" value="Yes" checked={formData.aaApproval === "Yes"} onChange={handleChange} className="text-[#0B1F4D]" /> Yes
+                    <input type="radio" name="aaApproval" value="Yes" checked={formData.aaApproval === "Yes"} onChange={handleChange} className="text-primary" /> Yes
                   </label>
                   <label className="flex items-center gap-1.5 text-sm">
-                    <input type="radio" name="aaApproval" value="No" checked={formData.aaApproval === "No"} onChange={handleChange} className="text-[#0B1F4D]" /> No
+                    <input type="radio" name="aaApproval" value="No" checked={formData.aaApproval === "No"} onChange={handleChange} className="text-primary" /> No
                   </label>
                 </div>
               </div>
               
               {formData.aaApproval === "Yes" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pl-4 border-l-2 border-[#0B1F4D]">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pl-4 border-l-2 border-primary">
                   <div>
                     <label className="block text-sm font-medium mb-1">Date of Approval</label>
                     <input type="date" name="aaApprovalDate" value={formData.aaApprovalDate} onChange={handleChange} className="w-full px-3 py-2 bg-input-background border border-border rounded-lg" />
@@ -192,16 +192,16 @@ export function EditProcurement() {
                 <label className="font-medium text-sm">C. Contract Awarded?</label>
                 <div className="flex items-center gap-4">
                   <label className="flex items-center gap-1.5 text-sm">
-                    <input type="radio" name="contractAwarded" value="Yes" checked={formData.contractAwarded === "Yes"} onChange={handleChange} className="text-[#0B1F4D]" /> Yes
+                    <input type="radio" name="contractAwarded" value="Yes" checked={formData.contractAwarded === "Yes"} onChange={handleChange} className="text-primary" /> Yes
                   </label>
                   <label className="flex items-center gap-1.5 text-sm">
-                    <input type="radio" name="contractAwarded" value="No" checked={formData.contractAwarded === "No"} onChange={handleChange} className="text-[#0B1F4D]" /> No
+                    <input type="radio" name="contractAwarded" value="No" checked={formData.contractAwarded === "No"} onChange={handleChange} className="text-primary" /> No
                   </label>
                 </div>
               </div>
               
               {formData.contractAwarded === "Yes" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pl-4 border-l-2 border-[#0B1F4D]">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pl-4 border-l-2 border-primary">
                   <div>
                     <label className="block text-sm font-medium mb-1">Date of Award</label>
                     <input type="date" name="contractAwardDate" value={formData.contractAwardDate} onChange={handleChange} className="w-full px-3 py-2 bg-input-background border border-border rounded-lg" />
@@ -225,7 +225,7 @@ export function EditProcurement() {
 
         {/* SECTION 3: Procurement Details */}
         <div className="p-6 border-b border-border">
-          <h2 className="text-lg font-semibold text-[#0B1F4D] mb-4">Section 3: Procurement Details</h2>
+          <h2 className="text-lg font-semibold text-primary mb-4">Section 3: Procurement Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-medium mb-1">Qty (No)</label>
@@ -271,7 +271,7 @@ export function EditProcurement() {
           <button onClick={handleReset} className="px-6 py-2 bg-white border border-border text-gray-700 font-medium rounded-lg hover:bg-gray-50 flex items-center gap-2 transition-colors">
             <RotateCcw className="size-4" /> Reset Changes
           </button>
-          <button onClick={handleSave} className="px-6 py-2 bg-[#0B1F4D] text-white font-medium rounded-lg hover:bg-opacity-90 flex items-center gap-2 transition-colors">
+          <button onClick={handleSave} className="px-6 py-2 bg-primary text-white font-medium rounded-lg hover:bg-opacity-90 flex items-center gap-2 transition-colors">
             <Save className="size-4" /> Update Procurement
           </button>
         </div>

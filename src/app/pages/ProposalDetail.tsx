@@ -426,7 +426,7 @@ export function ProposalDetail() {
                 <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
                   <IndianRupee className="size-3" /> Budget Allocated
                 </div>
-                <div className="text-2xl font-bold text-[#0B1F4D]">
+                <div className="text-2xl font-bold text-primary">
                   {formatCurrencyLakhs(proposalData?.budgetAllocated)}
                 </div>
               </div>

@@ -15,7 +15,7 @@ export function NotFound() {
         </div>
 
         {/* Text Content */}
-        <h1 className="text-[32px] font-bold text-[#0B1F4D] mb-2">
+        <h1 className="text-[32px] font-bold text-primary mb-2">
           404 - Page Not Found
         </h1>
         <p className="text-[14px] font-medium text-gray-500 mb-8 max-w-sm">
