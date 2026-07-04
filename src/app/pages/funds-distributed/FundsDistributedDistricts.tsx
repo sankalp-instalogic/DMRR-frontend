@@ -6,10 +6,12 @@ import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 import type { ColDef } from "ag-grid-community";
 import { Table } from "../../components/Table";
 import { Button } from "../../components/ui/button";
+import { Spinner } from "../../components/ui/spinner";
 import { Input, Select, DatePicker } from "antd";
 import { DocumentPreviewModal } from "../../components/DocumentPreviewModal";
 import dayjs from "dayjs";
 import formattedDate from "../../../utils/dateFormatter";
+import { DocumentOwnerType, DocumentType } from "../../../../constants/documents";
 
 // Defined the shape of the payload based on your form
 interface FundRecord {
@@ -96,7 +98,7 @@ export function FundsDistributedDistricts() {
     queryKey: ["documents", viewRecord?.id],
     queryFn: async () => {
       const response = await axiosPrivate.get("/api/v1/Documents/list", {
-        params: { ownerType: "11", ownerId: viewRecord?.id },
+        params: { ownerType: String(DocumentOwnerType.Fund), ownerId: viewRecord?.id },
       });
       return response.data;
     },
@@ -154,14 +156,17 @@ export function FundsDistributedDistricts() {
       {
         headerName: "Action",
         cellRenderer: (params: any) => (
-          <Button
-            variant="outline"
-            onClick={() => handleView(params.data)}
-            className="px-4 h-8 mt-2 border-primary text-primary rounded-[10px] hover:bg-info-muted cursor-pointer"
-          >
-            <Eye className="size-4" />
-            View
-          </Button>
+          <div className="flex h-full items-center">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handleView(params.data)}
+              className="text-primary hover:bg-info-muted hover:text-primary cursor-pointer"
+              title="View"
+            >
+              <Eye className="size-4" />
+            </Button>
+          </div>
         ),
         width: 130,
         sortable: false,
@@ -186,8 +191,8 @@ export function FundsDistributedDistricts() {
       const uploadData = new FormData();
       uploadData.append("file", file);
       uploadData.append("ownerId", ownerId);
-      uploadData.append("ownerType", "11");
-      uploadData.append("documentType", "27");
+      uploadData.append("ownerType", String(DocumentOwnerType.Fund));
+      uploadData.append("documentType", String(DocumentType.UtilizationCertificate));
 
       const response = await axiosPrivate.post(
         "/api/v1/Documents/upload",
@@ -323,17 +328,17 @@ export function FundsDistributedDistricts() {
         <div className="relative mb-6">
           {isFetching && !isLoading && (
             <div className="absolute inset-0 bg-card/50 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-xl">
-              <span className="text-primary font-medium bg-card px-4 py-2 rounded-lg shadow-sm border border-border">
-                Updating...
-              </span>
+              <div className="bg-card px-4 py-2 rounded-lg shadow-sm border border-border">
+                <Spinner iconClassName="size-6" label="Updating..." />
+              </div>
             </div>
           )}
 
           <div className="flex justify-end mb-4"></div>
 
           {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground font-medium bg-card rounded-xl border border-border">
-              Loading records...
+            <div className="p-8 flex justify-center bg-card rounded-xl border border-border">
+              <Spinner label="Loading records..." />
             </div>
           ) : isError ? (
             <div className="p-8 text-center text-destructive font-medium bg-card rounded-xl border border-border">
@@ -530,9 +535,14 @@ export function FundsDistributedDistricts() {
                 disabled={addMutation.isPending || uploadMutation.isPending}
                 className="px-4 h-10 rounded-[10px] cursor-pointer"
               >
-                {addMutation.isPending || uploadMutation.isPending
-                  ? "Saving..."
-                  : "Save"}
+                {addMutation.isPending || uploadMutation.isPending ? (
+                  <>
+                    <Spinner inline iconClassName="size-4" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save"
+                )}
               </Button>
             </div>
           </form>
@@ -591,9 +601,7 @@ export function FundsDistributedDistricts() {
               <p className="text-[16px] font-semibold text-primary mb-4">
                 Utilization Certificate
                 {isDocumentsLoading && (
-                  <span className="text-sm text-muted-foreground font-normal ml-2">
-                    (Loading...)
-                  </span>
+                  <Spinner iconClassName="size-4" className="ml-2 inline-flex" />
                 )}
               </p>
 

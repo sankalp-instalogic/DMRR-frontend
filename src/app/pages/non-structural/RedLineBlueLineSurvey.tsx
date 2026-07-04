@@ -17,7 +17,9 @@ import { Table } from "../../components/Table";
 import type { ColDef } from "ag-grid-community";
 import { DocumentPreviewModal } from "../../components/DocumentPreviewModal";
 import { Button } from "../../components/ui/button";
+import { Spinner } from "../../components/ui/spinner";
 import formateDate from "../../../utils/dateFormatter"
+import { DocumentOwnerType, DocumentType } from "../../../../constants/documents";
 
 interface Survey {
   id?: string;
@@ -118,7 +120,7 @@ export function RedLineBlueLineSurvey() {
     queryKey: ["documents", selectedSurvey?.id],
     queryFn: async () => {
       const response = await axiosPrivate.get("/api/v1/Documents/list", {
-        params: { ownerType: "6", ownerId: selectedSurvey?.id },
+        params: { ownerType: String(DocumentOwnerType.Survey), ownerId: selectedSurvey?.id },
       });
       return response.data;
     },
@@ -157,13 +159,13 @@ export function RedLineBlueLineSurvey() {
     }: {
       file: File;
       ownerId: string;
-      documentType: string;
+      documentType: DocumentType;
     }) => {
       const uploadData = new FormData();
       uploadData.append("file", file);
       uploadData.append("ownerId", ownerId);
-      uploadData.append("ownerType", "6");
-      uploadData.append("documentType", documentType);
+      uploadData.append("ownerType", String(DocumentOwnerType.Survey));
+      uploadData.append("documentType", String(documentType));
 
       const response = await axiosPrivate.post(
         "/api/v1/Documents/upload",
@@ -192,7 +194,7 @@ export function RedLineBlueLineSurvey() {
             uploadMutation.mutateAsync({
               file: grDocumentFile,
               ownerId: responseData.id,
-              documentType: "25",
+              documentType: DocumentType.GRCopy,
             }),
           );
         }
@@ -202,7 +204,7 @@ export function RedLineBlueLineSurvey() {
             uploadMutation.mutateAsync({
               file: completionCertificateFile,
               ownerId: responseData.id,
-              documentType: "18",
+              documentType: DocumentType.CompletionCertificate,
             }),
           );
         }
@@ -301,14 +303,17 @@ export function RedLineBlueLineSurvey() {
         filter: false,
         width: 120,
         cellRenderer: (params: any) => (
-          <Button
-            variant="outline"
-            onClick={() => setSelectedSurvey(params.data)}
-            className="px-4 h-8 border-primary text-primary rounded-[10px] hover:bg-info-muted mt-1.5"
-          >
-            <Eye className="size-4" />
-            View
-          </Button>
+          <div className="flex h-full items-center">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSelectedSurvey(params.data)}
+              className="text-primary hover:bg-info-muted hover:text-primary"
+              title="View"
+            >
+              <Eye className="size-4" />
+            </Button>
+          </div>
         ),
       },
     ],
@@ -399,9 +404,7 @@ export function RedLineBlueLineSurvey() {
               <label className="text-[16px] font-semibold text-primary block mb-4">
                 GR Issued{" "}
                 {isDocumentsLoading && (
-                  <span className="text-sm text-muted-foreground font-normal ml-2">
-                    (Loading...)
-                  </span>
+                  <Spinner iconClassName="size-4" className="ml-2 inline-flex" />
                 )}
               </label>
               <div className="flex gap-3">
@@ -426,9 +429,7 @@ export function RedLineBlueLineSurvey() {
               <label className="text-[16px] font-semibold text-primary block mb-4">
                 Completion Certificate{" "}
                 {isDocumentsLoading && (
-                  <span className="text-sm text-muted-foreground font-normal ml-2">
-                    (Loading...)
-                  </span>
+                  <Spinner iconClassName="size-4" className="ml-2 inline-flex" />
                 )}
               </label>
               <div className="flex gap-3">
@@ -503,17 +504,15 @@ export function RedLineBlueLineSurvey() {
           {/* Faded Background Data Updater */}
           {isFetching && !isLoading && (
             <div className="absolute inset-0 bg-card/50 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-xl">
-              <span className="text-primary font-medium bg-card px-4 py-2 rounded-lg shadow-sm border border-border">
-                Updating...
-              </span>
+              <div className="bg-card px-4 py-2 rounded-lg shadow-sm border border-border">
+                <Spinner iconClassName="size-6" label="Updating..." />
+              </div>
             </div>
           )}
 
           {isLoading ? (
             <div className="bg-card border border-border rounded-xl p-12 flex justify-center shadow-sm">
-              <span className="text-muted-foreground font-medium">
-                Loading surveys...
-              </span>
+              <Spinner label="Loading surveys..." />
             </div>
           ) : isError ? (
             <div className="bg-card border border-border rounded-xl p-12 flex justify-center shadow-sm">
@@ -742,9 +741,14 @@ export function RedLineBlueLineSurvey() {
               }
               className="px-4 h-10 rounded-[10px]"
             >
-              {addMutation.isPending || uploadMutation.isPending || isSubmitting
-                ? "Saving..."
-                : "Save"}
+              {addMutation.isPending || uploadMutation.isPending || isSubmitting ? (
+                <>
+                  <Spinner inline iconClassName="size-4" />
+                  Saving...
+                </>
+              ) : (
+                "Save"
+              )}
             </Button>
           </div>
         </form>

@@ -4,6 +4,7 @@ import { CheckCircle2, ArrowRight, ArrowLeft, Send } from "lucide-react";
 import toast from "react-hot-toast";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { Button } from "../components/ui/button";
+import { Spinner } from "../components/ui/spinner";
 import {
   useAiPreflight,
   useIngestDocument,
@@ -16,6 +17,7 @@ import { LocationStep } from "./proposalInitialiation/LocationStep";
 import { OfficersStep } from "./proposalInitialiation/OfficerStep";
 import { NdmaReferenceStep } from "./proposalInitialiation/NdmaReferenceStep";
 import { DocumentsStep } from "./proposalInitialiation/DocumentStep";
+import { DocumentOwnerType, DocumentType } from "../../../constants/documents";
 
 function currentFinancialYear(): string {
   const now = new Date();
@@ -247,9 +249,9 @@ export function ProposalInitiationWizard() {
         toast.loading("Uploading document...", { id: toastId });
 
         const formData = new FormData();
-        formData.append("ownerType", "1");
+        formData.append("ownerType", String(DocumentOwnerType.Proposal));
         formData.append("ownerId", proposalId);
-        formData.append("documentType", "1");
+        formData.append("documentType", String(DocumentType.ProposalDocument));
         formData.append("file", step4Data.proposalDemandFile);
 
         const uploadResponse = await axiosPrivate.post("/api/v1/Documents/upload", formData, {
@@ -444,8 +446,17 @@ export function ProposalInitiationWizard() {
                   : "bg-success text-primary-foreground hover:opacity-90 cursor-pointer"
               }`}
             >
-              <Send className="size-4" />
-              {isSubmitting ? "Submitting..." : "Submit Proposal"}
+              {isSubmitting ? (
+                <>
+                  <Spinner inline iconClassName="size-4" />
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  <Send className="size-4" />
+                  Submit Proposal
+                </>
+              )}
             </button>
           )}
         </div>

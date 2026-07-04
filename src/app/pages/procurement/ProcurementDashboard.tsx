@@ -6,6 +6,7 @@ import { Select } from "antd";
 import type { ColDef } from "ag-grid-community";
 import { Table } from "../../components/Table"; // Adjust the path to where your Table component is saved
 import { Button } from "../../components/ui/button";
+import { Spinner } from "../../components/ui/spinner";
 
 // --- TypeScript Interfaces ---
 export interface ProcurementItem {
@@ -46,7 +47,7 @@ export function ProcurementDashboard() {
   const pageSize = 10;
 
   // Fetch Table Data
-  const { data, isError } = useQuery<ProcurementResponse, Error>({
+  const { data, isLoading, isError } = useQuery<ProcurementResponse, Error>({
     queryKey: [
       "procurements",
       page,
@@ -347,7 +348,11 @@ export function ProcurementDashboard() {
       </div>
 
       {/* Render the Custom AG Grid Table Component */}
-      {isError ? (
+      {isLoading ? (
+        <div className="bg-card border border-border rounded-xl p-8">
+          <Spinner label="Loading procurement records..." />
+        </div>
+      ) : isError ? (
         <div className="p-8 text-center text-destructive bg-card border border-border rounded-xl">
           Failed to load records. Please try again.
         </div>

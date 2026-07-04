@@ -6,6 +6,7 @@ import { Input, Select, DatePicker, InputNumber } from "antd";
 import dayjs from "dayjs";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 import { Button } from "../../components/ui/button";
+import { Spinner } from "../../components/ui/spinner";
 
 interface DetailRow {
   quantity: string | number;
@@ -489,8 +490,17 @@ export function NewProcurement() {
             onClick={handleSubmit(onSubmit)}
             disabled={createProcurementMutation.isPending}
           >
-            <Save className="size-4" />
-            {createProcurementMutation.isPending ? "Saving..." : "Save"}
+            {createProcurementMutation.isPending ? (
+              <>
+                <Spinner inline iconClassName="size-4" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="size-4" />
+                Save
+              </>
+            )}
           </Button>
         </div>
       </div>

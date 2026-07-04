@@ -6,28 +6,13 @@ import { Edit2, Plus, Trash2 } from "lucide-react";
 import { Table } from "../../components/Table";
 import PhoneInput from "antd-phone-input";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "../../components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "../../components/ui/alert-dialog";
 import { Button } from "../../components/ui/button";
+import { Spinner } from "../../components/ui/spinner";
 import {
   Input as AntdInput,
   Select as AntdSelect,
   Checkbox as AntdCheckbox,
+  Modal,
 } from "antd";
 import {
   Form,
@@ -267,6 +252,7 @@ export function OfficerMaster() {
               <Button
                 variant="ghost"
                 size="icon"
+                className={"hover:bg-primary/10 hover:text-primary"}
                 onClick={() => handleOpenEdit(params.data)}
               >
                 <Edit2 className="size-4" />
@@ -274,6 +260,7 @@ export function OfficerMaster() {
               <Button
                 variant="ghost"
                 size="icon"
+                className={"hover:bg-destructive/10"}
                 onClick={() => setOfficerToDelete(params.data.id)}
               >
                 <Trash2 className="size-4 text-destructive" />
@@ -287,11 +274,7 @@ export function OfficerMaster() {
   );
 
   if (isLoading || isDistrictsLoading || isDepartmentsLoading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-border border-t-blue-500"></div>
-      </div>
-    );
+    return <Spinner fullPage />;
   }
 
   if (isError) {
@@ -345,14 +328,15 @@ export function OfficerMaster() {
       </div>
 
       {/* --- ADD / EDIT MODAL --- */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>
-              {editingOfficer ? "Edit Officer" : "Add Officer"}
-            </DialogTitle>
-          </DialogHeader>
-
+      <Modal
+        open={isModalOpen}
+        title={editingOfficer ? "Edit Officer" : "Add Officer"}
+        onCancel={closeModal}
+        footer={null}
+        width={900}
+        centered
+        styles={{ body: { maxHeight: "75vh", overflowY: "auto" } }}
+      >
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="py-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -511,7 +495,7 @@ export function OfficerMaster() {
                 />
               </div>
 
-              <DialogFooter className="mt-6">
+              <div className="mt-6 flex justify-end gap-2">
                 <Button
                   type="button"
                   variant="outline"
@@ -526,43 +510,60 @@ export function OfficerMaster() {
                   className="cursor-pointer"
                   disabled={addMutation.isPending || editMutation.isPending}
                 >
-                  {addMutation.isPending || editMutation.isPending
-                    ? "Saving..."
-                    : "Save"}
+                  {addMutation.isPending || editMutation.isPending ? (
+                    <>
+                      <Spinner inline iconClassName="size-4" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save"
+                  )}
                 </Button>
-              </DialogFooter>
+              </div>
             </form>
           </Form>
-        </DialogContent>
-      </Dialog>
+      </Modal>
 
       {/* --- DELETE CONFIRMATION DIALOG --- */}
-      <AlertDialog
+      <Modal
         open={!!officerToDelete}
-        onOpenChange={() => setOfficerToDelete(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this officer entry? This action cannot be undone
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="cursor-pointer">
+        title="Are you absolutely sure?"
+        onCancel={() => setOfficerToDelete(null)}
+        centered
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              className="cursor-pointer"
+              onClick={() => setOfficerToDelete(null)}
+            >
               Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              className="cursor-pointer bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            </Button>
+            <Button
+              variant="destructive"
+              className="cursor-pointer"
+              disabled={deleteMutation.isPending}
               onClick={() => {
                 if (officerToDelete) deleteMutation.mutate(officerToDelete);
               }}
             >
-              {deleteMutation.isPending ? "Deleting..." : "Delete"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+              {deleteMutation.isPending ? (
+                <>
+                  <Spinner inline iconClassName="size-4" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </Button>
+          </div>
+        }
+      >
+        <p>
+          Are you sure you want to delete this officer entry? This action cannot
+          be undone
+        </p>
+      </Modal>
     </div>
   );
 }

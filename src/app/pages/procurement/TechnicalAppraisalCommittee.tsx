@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import useAxiosPrivate from "./../../../hooks/useAxiosPrivate"; // Adjust the path if needed
 import { CommitteeApproval } from "./CommitteeApproval";
+import { Spinner } from "../../components/ui/spinner";
 
 export function TechnicalAppraisalCommittee() {
   const axiosPrivate = useAxiosPrivate();
@@ -70,7 +71,7 @@ export function TechnicalAppraisalCommittee() {
   }));
 
   if (isLoading) {
-    return <div className="p-8 text-center text-muted-foreground">Loading pending technical appraisals...</div>;
+    return <Spinner fullPage label="Loading pending technical appraisals..." />;
   }
 
   if (isError) {

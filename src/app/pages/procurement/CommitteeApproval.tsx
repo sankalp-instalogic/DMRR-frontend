@@ -6,7 +6,6 @@ import {
   XCircle,
   Upload as UploadIcon, // Aliased to prevent conflict with Antd's Upload
   ArrowRight,
-  Loader2,
 } from "lucide-react";
 import { DatePicker, Input, Upload as AntUpload } from "antd";
 import dayjs from "dayjs";
@@ -15,6 +14,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 import { Table } from "../../components/Table"; // Adjust the import path to where your custom Table is located
 import { Button } from "../../components/ui/button";
+import { Spinner } from "../../components/ui/spinner";
+import { DocumentOwnerType, DocumentType } from "../../../../constants/documents";
 
 interface CommitteeItem {
   id: string;
@@ -76,18 +77,18 @@ export function DetailScreen({
   });
 
   // Helper to map Committee Enum to Document Type Enum
-  const getDocumentType = (type: number) => {
+  const getDocumentType = (type: number): DocumentType | undefined => {
     switch (type) {
       case 1:
-        return "34";
+        return DocumentType.PCSApprovalLetter;
       case 2:
-        return "35";
+        return DocumentType.TACApprovalLetter;
       case 3:
-        return "36";
+        return DocumentType.SECApprovalLetter;
       case 4:
-        return "37";
+        return DocumentType.AdministratiionApprovalLetter;
       default:
-        return "";
+        return undefined;
     }
   };
 
@@ -111,13 +112,13 @@ export function DetailScreen({
     }: {
       file: File;
       ownerId: string;
-      documentType: string;
+      documentType: DocumentType;
     }) => {
       const uploadData = new FormData();
       uploadData.append("file", file);
       uploadData.append("ownerId", ownerId);
-      uploadData.append("ownerType", "2");
-      uploadData.append("documentType", documentType);
+      uploadData.append("ownerType", String(DocumentOwnerType.Procurement));
+      uploadData.append("documentType", String(documentType));
 
       const response = await axiosPrivate.post(
         "/api/v1/Documents/upload",
@@ -458,7 +459,7 @@ export function DetailScreen({
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="size-4 animate-spin" /> Processing...
+                    <Spinner inline iconClassName="size-4" /> Processing...
                   </>
                 ) : (
                   "Submit Decision"

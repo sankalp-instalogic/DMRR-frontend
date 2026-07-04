@@ -1,17 +1,19 @@
 import { useState, useRef, useMemo } from "react";
-import { Upload, Save, Loader2, Pencil } from "lucide-react";
+import { Upload, Save, Pencil } from "lucide-react";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 
 // Ant Design Imports
-import { Input, Select, Spin } from "antd";
+import { Input, Select } from "antd";
 import type { ColDef } from "ag-grid-community";
 
 // Import your Custom Table Component (adjust path as needed)
 import { Table } from "../components/Table";
 import { Button } from "../components/ui/button";
+import { Spinner } from "../components/ui/spinner";
+import { DocumentOwnerType, DocumentType } from "../../../constants/documents";
 
 export function DDMAWorkflow() {
   const resolutionFileInputRef = useRef<HTMLInputElement>(null);
@@ -89,9 +91,9 @@ export function DDMAWorkflow() {
       // STEP 2: Execute File Uploads
       const uploadPromises = [];
 
-      const createUploadConfig = (file: File, docType: number) => {
+      const createUploadConfig = (file: File, docType: DocumentType) => {
         const formData = new FormData();
-        formData.append("ownerType", "1");
+        formData.append("ownerType", String(DocumentOwnerType.Proposal));
         formData.append("ownerId", selectedProposal.id);
         formData.append("documentType", docType.toString());
         formData.append("file", file);
@@ -102,9 +104,13 @@ export function DDMAWorkflow() {
       };
 
       if (resolutionFile)
-        uploadPromises.push(createUploadConfig(resolutionFile, 2));
+        uploadPromises.push(
+          createUploadConfig(resolutionFile, DocumentType.DDMAResolution),
+        );
       if (sanctionFile)
-        uploadPromises.push(createUploadConfig(sanctionFile, 17));
+        uploadPromises.push(
+          createUploadConfig(sanctionFile, DocumentType.SanctionOrder),
+        );
 
       if (uploadPromises.length > 0) {
         await Promise.all(uploadPromises);
@@ -270,7 +276,7 @@ export function DDMAWorkflow() {
       <div className="min-h-50 relative">
         {isCurrentLoading ? (
           <div className="flex items-center justify-center h-48 bg-card border rounded-xl shadow-sm">
-            <Spin indicator={<Loader2 className="size-8 animate-spin" />} />
+            <Spinner iconClassName="size-8" />
           </div>
         ) : isCurrentError ? (
           <div className="flex items-center justify-center h-48 bg-card border rounded-xl shadow-sm text-destructive">
@@ -467,7 +473,7 @@ export function DDMAWorkflow() {
                   disabled={processWorkflowMutation.isPending || !departmentId}
                 >
                   {processWorkflowMutation.isPending ? (
-                    <Loader2 className="size-5 animate-spin" />
+                    <Spinner inline iconClassName="size-5" />
                   ) : (
                     <Save className="size-5" />
                   )}

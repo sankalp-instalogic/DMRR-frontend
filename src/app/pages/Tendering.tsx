@@ -5,7 +5,6 @@ import {
   Upload,
   CheckCircle2,
   XCircle,
-  Loader2,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import useAxPrivate from "../../hooks/useAxiosPrivate";
@@ -15,13 +14,15 @@ import dayjs from "dayjs";
 import { Table } from "../components/Table";
 import { Link } from "react-router";
 import { Button } from "../components/ui/button";
+import { Spinner } from "../components/ui/spinner";
+import { DocumentOwnerType, DocumentType } from "../../../constants/documents";
 
 // Document Type Mapping Configuration
-const DOCUMENT_TYPES: Record<string, string> = {
-  bidEvaluationReport: "41",
-  workOrderCopy: "8",
-  tenderNotice: "9",
-  dmrrLetter: "40",
+const DOCUMENT_TYPES: Record<string, DocumentType> = {
+  bidEvaluationReport: DocumentType.BidevaluationReport,
+  workOrderCopy: DocumentType.WorkOrder,
+  tenderNotice: DocumentType.TenderNotice,
+  dmrrLetter: DocumentType.DMRRLetter,
 };
 
 export function Tendering() {
@@ -124,13 +125,13 @@ export function Tendering() {
     }: {
       file: File;
       ownerId: string;
-      documentType: string;
+      documentType: DocumentType;
     }) => {
       const uploadData = new FormData();
       uploadData.append("file", file);
       uploadData.append("ownerId", ownerId);
-      uploadData.append("ownerType", "1"); // Owner type 1 as per requirements
-      uploadData.append("documentType", documentType);
+      uploadData.append("ownerType", String(DocumentOwnerType.Proposal)); // Owner type 1 as per requirements
+      uploadData.append("documentType", String(documentType));
 
       const response = await axios.post(
         "/api/v1/Documents/upload",
@@ -335,9 +336,14 @@ export function Tendering() {
                   className="rounded-lg text-xs cursor-pointer"
                 >
                   {ensureMutation.isPending &&
-                  ensureMutation.variables === tender.proposalId
-                    ? "Ensuring..."
-                    : "Ensure"}
+                  ensureMutation.variables === tender.proposalId ? (
+                    <>
+                      <Spinner inline iconClassName="size-4" />
+                      Ensuring...
+                    </>
+                  ) : (
+                    "Ensure"
+                  )}
                 </Button>
               </div>
             );
@@ -362,8 +368,7 @@ export function Tendering() {
     [ensureMutation],
   );
 
-  if (isTendersLoading)
-    return <div className="p-4 text-muted-foreground">Loading tenders...</div>;
+  if (isTendersLoading) return <Spinner fullPage label="Loading tenders..." />;
   if (isTendersError)
     return <div className="p-4 text-destructive">Failed to load tenders.</div>;
 
@@ -566,7 +571,7 @@ export function Tendering() {
               className="px-6 h-10 rounded-[10px] cursor-pointer"
             >
               {isSaving ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Spinner inline iconClassName="size-4" />
               ) : (
                 <Save className="w-4 h-4" />
               )}
@@ -580,7 +585,7 @@ export function Tendering() {
               className="px-6 h-10 rounded-[10px] cursor-pointer"
             >
               {isCompleting ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Spinner inline iconClassName="size-4" />
               ) : (
                 <XCircle className="w-4 h-4" />
               )}

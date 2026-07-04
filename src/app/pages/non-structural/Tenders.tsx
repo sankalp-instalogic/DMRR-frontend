@@ -8,6 +8,7 @@ import { Table } from "../../components/Table";
 import type { ColDef } from "ag-grid-community";
 import { DocumentPreviewModal } from "../../components/DocumentPreviewModal";
 import { Button } from "../../components/ui/button";
+import { Spinner } from "../../components/ui/spinner";
 import {
   Save,
   Eye,
@@ -16,15 +17,15 @@ import {
   XCircle,
   ArrowLeft,
   Plus,
-  Loader2,
 } from "lucide-react";
+import { DocumentOwnerType, DocumentType } from "../../../../constants/documents";
 
 // Document Type Mapping (ownerType is 8 for Tenders)
-const DOCUMENT_TYPES: Record<string, string> = {
-  "Technical Bid Opening": "30",
-  "Technical Evaluation": "31",
-  "Financial Bid Opening": "32",
-  "Financial Evaluation": "33",
+const DOCUMENT_TYPES: Record<string, DocumentType> = {
+  "Technical Bid Opening": DocumentType.TechnicalBidOpening,
+  "Technical Evaluation": DocumentType.TechnicalEvaluation,
+  "Financial Bid Opening": DocumentType.FinancialBidOpening,
+  "Financial Evaluation": DocumentType.FinancialEvaluation,
 };
 
 const stageList = [
@@ -106,25 +107,25 @@ export function Tenders() {
     {
       name: "Technical Bid Opening",
       key: "docTechnicalBidOpening" as const,
-      type: "30",
+      type: DocumentType.TechnicalBidOpening,
       file: watchedDocs[0],
     },
     {
       name: "Technical Evaluation",
       key: "docTechnicalEvaluation" as const,
-      type: "31",
+      type: DocumentType.TechnicalEvaluation,
       file: watchedDocs[1],
     },
     {
       name: "Financial Bid Opening",
       key: "docFinancialBidOpening" as const,
-      type: "32",
+      type: DocumentType.FinancialBidOpening,
       file: watchedDocs[2],
     },
     {
       name: "Financial Evaluation",
       key: "docFinancialEvaluation" as const,
-      type: "33",
+      type: DocumentType.FinancialEvaluation,
       file: watchedDocs[3],
     },
   ];
@@ -157,7 +158,7 @@ export function Tenders() {
     queryKey: ["tenderDocuments", viewTender?.id],
     queryFn: async () => {
       const response = await axiosPrivate.get("/api/v1/Documents/list", {
-        params: { ownerType: "8", ownerId: viewTender?.id },
+        params: { ownerType: String(DocumentOwnerType.DataTender), ownerId: viewTender?.id },
       });
       return response.data;
     },
@@ -175,7 +176,7 @@ export function Tenders() {
       (doc: any) =>
         doc.documentTypeName === normalizedStageName ||
         doc.documentTypeName === stageName ||
-        doc.documentType?.toString() === DOCUMENT_TYPES[stageName],
+        doc.documentType?.toString() === String(DOCUMENT_TYPES[stageName]),
     );
   };
 
@@ -192,13 +193,13 @@ export function Tenders() {
     }: {
       file: File;
       ownerId: string;
-      documentType: string;
+      documentType: DocumentType;
     }) => {
       const uploadData = new FormData();
       uploadData.append("file", file);
       uploadData.append("ownerId", ownerId);
-      uploadData.append("ownerType", "8");
-      uploadData.append("documentType", documentType);
+      uploadData.append("ownerType", String(DocumentOwnerType.DataTender));
+      uploadData.append("documentType", String(documentType));
 
       const response = await axiosPrivate.post(
         "/api/v1/Documents/upload",
@@ -233,10 +234,10 @@ export function Tenders() {
       if (responseData?.id) {
         // Map form keys back to their backend stage types for uploading
         const fileMap = [
-          { file: formFiles.docTechnicalBidOpening, type: "30" },
-          { file: formFiles.docTechnicalEvaluation, type: "31" },
-          { file: formFiles.docFinancialBidOpening, type: "32" },
-          { file: formFiles.docFinancialEvaluation, type: "33" },
+          { file: formFiles.docTechnicalBidOpening, type: DocumentType.TechnicalBidOpening },
+          { file: formFiles.docTechnicalEvaluation, type: DocumentType.TechnicalEvaluation },
+          { file: formFiles.docFinancialBidOpening, type: DocumentType.FinancialBidOpening },
+          { file: formFiles.docFinancialEvaluation, type: DocumentType.FinancialEvaluation },
         ];
 
         const uploadPromises = fileMap.map(({ file, type }) => {
@@ -316,14 +317,17 @@ export function Tenders() {
         filter: false,
         width: 120,
         cellRenderer: (params: any) => (
-          <Button
-            variant="outline"
-            onClick={() => setViewTender(params.data)}
-            className="px-4 h-8 border-primary text-primary rounded-[10px] hover:bg-info-muted mt-1.5"
-          >
-            <Eye className="size-4" />
-            View
-          </Button>
+          <div className="flex h-full items-center">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setViewTender(params.data)}
+              className="text-primary hover:bg-info-muted hover:text-primary"
+              title="View"
+            >
+              <Eye className="size-4" />
+            </Button>
+          </div>
         ),
       },
     ],
@@ -351,9 +355,7 @@ export function Tenders() {
         <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
           <h2 className="text-[20px] font-semibold text-primary mb-6 pb-4 border-b border-border flex items-center gap-2">
             Tender Details
-            {isDocumentsLoading && (
-              <Loader2 className="size-4 animate-spin text-muted-foreground" />
-            )}
+            {isDocumentsLoading && <Spinner iconClassName="size-4" />}
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-6">
@@ -578,17 +580,15 @@ export function Tenders() {
         <div className="relative mb-6">
           {isFetching && !isLoading && (
             <div className="absolute inset-0 bg-card/50 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-xl">
-              <span className="text-primary font-medium bg-card px-4 py-2 rounded-lg shadow-sm border border-border">
-                Updating...
-              </span>
+              <div className="bg-card px-4 py-2 rounded-lg shadow-sm border border-border">
+                <Spinner iconClassName="size-6" label="Updating..." />
+              </div>
             </div>
           )}
 
           {isLoading ? (
             <div className="bg-card border border-border rounded-xl p-12 flex justify-center shadow-sm">
-              <span className="text-muted-foreground font-medium">
-                Loading tenders...
-              </span>
+              <Spinner label="Loading tenders..." />
             </div>
           ) : isError ? (
             <div className="bg-card border border-border rounded-xl p-12 flex justify-center shadow-sm">
@@ -784,7 +784,7 @@ export function Tenders() {
               {addMutation.isPending ||
               uploadMutation.isPending ||
               isSubmitting ? (
-                <Loader2 className="size-4 animate-spin" />
+                <Spinner inline iconClassName="size-4" />
               ) : (
                 <Save className="size-4" />
               )}

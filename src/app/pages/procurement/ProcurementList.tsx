@@ -7,6 +7,7 @@ import { Input, Select } from "antd";
 import type { ColDef } from "ag-grid-community";
 import { Table } from "../../components/Table";
 import { Button } from "../../components/ui/button";
+import { Spinner } from "../../components/ui/spinner";
 
 const statusColors: Record<string, string> = {
   Completed: "bg-success-muted text-success-muted-foreground",
@@ -190,7 +191,7 @@ export function ProcurementList() {
         </div>
         <Button
           onClick={() => navigate("/procurement/new")}
-          className="bg-accent hover:bg-accent/90 text-primary-foreground"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground"
         >
           <Plus className="size-4" />
           New Procurement
@@ -257,8 +258,8 @@ export function ProcurementList() {
       {/* Table Content */}
       <div className="w-full">
         {isLoading ? (
-          <div className="bg-card border border-border rounded-xl shadow-sm p-8 text-center text-muted-foreground">
-            Loading procurement data...
+          <div className="bg-card border border-border rounded-xl shadow-sm p-8">
+            <Spinner label="Loading procurement data..." />
           </div>
         ) : isError ? (
           <div className="bg-card border border-border rounded-xl shadow-sm p-8 text-center text-destructive font-medium">

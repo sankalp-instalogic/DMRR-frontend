@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router";
 import {
   ArrowLeft,
-  Loader2,
   CheckCircle2,
   XCircle,
   Upload as UploadIcon,
@@ -11,14 +10,16 @@ import {
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import useAxiosPrivate from "../../../../hooks/useAxiosPrivate";
 import { Button } from "../../../components/ui/button";
+import { Spinner } from "../../../components/ui/spinner";
 import { Upload, Button as AntdButton, Input } from "antd";
+import { DocumentOwnerType, DocumentType } from "../../../../../constants/documents";
 
-const DOCUMENT_TYPES: Record<string, string> = {
-  techBidOpening: "30",
-  techEvaluation: "31",
-  finBidOpening: "32",
-  finEvaluation: "33",
-  aoc: "10",
+const DOCUMENT_TYPES: Record<string, DocumentType> = {
+  techBidOpening: DocumentType.TechnicalBidOpening,
+  techEvaluation: DocumentType.TechnicalEvaluation,
+  finBidOpening: DocumentType.FinancialBidOpening,
+  finEvaluation: DocumentType.FinancialEvaluation,
+  aoc: DocumentType.AOC,
 };
 
 export function ProcurementClosure() {
@@ -117,13 +118,13 @@ export function ProcurementClosure() {
     }: {
       file: File;
       ownerId: string;
-      documentType: string;
+      documentType: DocumentType;
     }) => {
       const uploadData = new FormData();
       uploadData.append("file", file);
       uploadData.append("ownerId", ownerId);
-      uploadData.append("ownerType", "2");
-      uploadData.append("documentType", documentType);
+      uploadData.append("ownerType", String(DocumentOwnerType.Procurement));
+      uploadData.append("documentType", String(documentType));
 
       const response = await axiosPrivate.post(
         "/api/v1/Documents/upload",
@@ -207,11 +208,7 @@ export function ProcurementClosure() {
   };
 
   if (isProcurementLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="size-8 animate-spin text-secondary" />
-      </div>
-    );
+    return <Spinner fullPage />;
   }
 
   return (
@@ -359,7 +356,7 @@ export function ProcurementClosure() {
           </Button>
           <Button onClick={handleSaveClosure} disabled={isSavingClosure}>
             {isSavingClosure ? (
-              <Loader2 className="size-4 animate-spin mr-2" />
+              <Spinner inline iconClassName="size-4" />
             ) : (
               <Save className="size-4 mr-2" />
             )}

@@ -5,25 +5,9 @@ import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 import { Edit2, Plus, Trash2 } from "lucide-react";
 import { Table } from "../../components/Table";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "../../components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "../../components/ui/alert-dialog";
 import { Button } from "../../components/ui/button";
-import { Input as AntdInput, Checkbox as AntdCheckbox } from "antd";
+import { Spinner } from "../../components/ui/spinner";
+import { Input as AntdInput, Checkbox as AntdCheckbox, Modal } from "antd";
 import {
   Form,
   FormControl,
@@ -209,6 +193,7 @@ export function DepartmentMaster() {
               <Button
                 variant="ghost"
                 size="icon"
+                className={"hover:bg-primary/10 hover:text-primary"}
                 onClick={() => handleOpenEdit(params.data)}
               >
                 <Edit2 className="size-4" />
@@ -216,6 +201,7 @@ export function DepartmentMaster() {
               <Button
                 variant="ghost"
                 size="icon"
+                className={"hover:bg-destructive/10"}
                 onClick={() =>
                   setDepartmentToDelete(params.data.id || params.data.code)
                 }
@@ -231,11 +217,7 @@ export function DepartmentMaster() {
   );
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-border border-t-blue-500"></div>
-      </div>
-    );
+    return <Spinner fullPage />;
   }
 
   if (isError) {
@@ -289,14 +271,13 @@ export function DepartmentMaster() {
       </div>
 
       {/* --- ADD / EDIT MODAL --- */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {editingDepartment ? "Edit Department" : "Add Department"}
-            </DialogTitle>
-          </DialogHeader>
-
+      <Modal
+        open={isModalOpen}
+        title={editingDepartment ? "Edit Department" : "Add Department"}
+        onCancel={closeModal}
+        footer={null}
+        centered
+      >
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
@@ -390,7 +371,7 @@ export function DepartmentMaster() {
                 )}
               />
 
-              <DialogFooter className="mt-6">
+              <div className="mt-6 flex justify-end gap-2">
                 <Button
                   type="button"
                   variant="outline"
@@ -404,44 +385,61 @@ export function DepartmentMaster() {
                   className="cursor-pointer"
                   disabled={addMutation.isPending || editMutation.isPending}
                 >
-                  {addMutation.isPending || editMutation.isPending
-                    ? "Saving..."
-                    : "Save"}
+                  {addMutation.isPending || editMutation.isPending ? (
+                    <>
+                      <Spinner inline iconClassName="size-4" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save"
+                  )}
                 </Button>
-              </DialogFooter>
+              </div>
             </form>
           </Form>
-        </DialogContent>
-      </Dialog>
+      </Modal>
 
-      {/* --- DELETE CONFIRMATION DIALOG --- */}
-      <AlertDialog
+      {/* --- DELETE CONFIRMATION MODAL --- */}
+      <Modal
         open={!!departmentToDelete}
-        onOpenChange={() => setDepartmentToDelete(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this department entry? This action cannot be undone
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="cursor-pointer">
+        title="Are you absolutely sure?"
+        onCancel={() => setDepartmentToDelete(null)}
+        centered
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              className="cursor-pointer"
+              onClick={() => setDepartmentToDelete(null)}
+            >
               Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              className="cursor-pointer bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            </Button>
+            <Button
+              variant="destructive"
+              className="cursor-pointer"
+              disabled={deleteMutation.isPending}
               onClick={() => {
                 if (departmentToDelete)
                   deleteMutation.mutate(departmentToDelete);
               }}
             >
-              {deleteMutation.isPending ? "Deleting..." : "Delete"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+              {deleteMutation.isPending ? (
+                <>
+                  <Spinner inline iconClassName="size-4" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </Button>
+          </div>
+        }
+      >
+        <p>
+          Are you sure you want to delete this department entry? This action
+          cannot be undone
+        </p>
+      </Modal>
     </div>
   );
 }

@@ -24,6 +24,8 @@ import toast from "react-hot-toast";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { Table } from "../components/Table"; // Adjust path to your custom Table component
 import { DocumentPreviewModal } from "../components/DocumentPreviewModal";
+import { Spinner } from "../components/ui/spinner";
+import { DocumentOwnerType } from "../../../constants/documents";
 
 // Helper functions for formatting
 const formatDate = (dateString: string) => {
@@ -118,7 +120,7 @@ export function ProposalDetail() {
     queryKey: ["documents", id],
     queryFn: async () => {
       const response = await axiosPrivate.get(`/api/v1/Documents/list`, {
-        params: { ownerType: 1, ownerId: id },
+        params: { ownerType: DocumentOwnerType.Proposal, ownerId: id },
       });
       return response.data;
     },
@@ -457,9 +459,8 @@ export function ProposalDetail() {
       children: (
         <div className="mt-4">
           {isDocsLoading ? (
-            <div className="flex justify-center items-center h-32 text-muted-foreground bg-card border border-border rounded-xl shadow-sm">
-              <RefreshCw className="animate-spin size-6 mr-2" /> Fetching
-              Documents...
+            <div className="flex justify-center items-center h-32 bg-card border border-border rounded-xl shadow-sm">
+              <Spinner label="Loading documents..." iconClassName="size-6" />
             </div>
           ) : !documentsData || documentsData.length === 0 ? (
             <div className="flex justify-center items-center h-32 text-muted-foreground bg-card border border-border rounded-xl shadow-sm">
@@ -485,9 +486,8 @@ export function ProposalDetail() {
         <div className="bg-card border border-border rounded-xl p-6 shadow-sm mt-4">
           <h3 className="font-bold mb-6 text-primary">Workflow Timeline</h3>
           {isTimelineLoading ? (
-            <div className="flex justify-center items-center h-32 text-muted-foreground">
-              <RefreshCw className="animate-spin size-6 mr-2" /> Fetching
-              Timeline...
+            <div className="flex justify-center items-center h-32">
+              <Spinner label="Loading timeline..." iconClassName="size-6" />
             </div>
           ) : !timelineData || timelineData.length === 0 ? (
             <div className="flex justify-center items-center h-32 text-muted-foreground">
@@ -573,14 +573,11 @@ export function ProposalDetail() {
         <div className="mt-4">
           <div className="flex items-center gap-3 mb-4 px-1">
             <h3 className="font-bold text-primary">Audit Trail Logs</h3>
-            {isAuditFetching && (
-              <RefreshCw className="animate-spin size-4 text-muted-foreground" />
-            )}
+            {isAuditFetching && <Spinner iconClassName="size-4" />}
           </div>
           {isAuditLoading ? (
-            <div className="flex justify-center items-center h-32 text-muted-foreground bg-card border border-border rounded-xl shadow-sm">
-              <RefreshCw className="animate-spin size-6 mr-2" /> Fetching Audit
-              Trail...
+            <div className="flex justify-center items-center h-32 bg-card border border-border rounded-xl shadow-sm">
+              <Spinner label="Loading audit trail..." iconClassName="size-6" />
             </div>
           ) : isAuditError ||
             !auditData ||
@@ -608,11 +605,7 @@ export function ProposalDetail() {
   ];
 
   if (isProposalLoading) {
-    return (
-      <div className="flex justify-center items-center h-64 text-muted-foreground">
-        <RefreshCw className="animate-spin size-6 mr-2" /> Loading Proposal...
-      </div>
-    );
+    return <Spinner fullPage label="Loading Proposal..." iconClassName="size-6" />;
   }
 
   if (isProposalError || !proposalData) {

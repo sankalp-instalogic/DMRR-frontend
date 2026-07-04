@@ -5,7 +5,6 @@ import {
   RefreshCw,
   Plus,
   Trash2,
-  Loader2,
   Forward,
   Send,
 } from "lucide-react";
@@ -16,11 +15,13 @@ import toast from "react-hot-toast";
 import dayjs from "dayjs"; // Required for Ant Design DatePicker/TimePicker parsing
 
 // Ant Design & Table Imports
-import { Input, Spin, DatePicker, TimePicker } from "antd";
+import { Input, DatePicker, TimePicker } from "antd";
 import type { ColDef } from "ag-grid-community";
 import { Table } from "../components/Table"; // Adjust path as needed
 import { cn } from "../components/ui/utils";
 import { Button, buttonVariants } from "../components/ui/button";
+import { Spinner } from "../components/ui/spinner";
+import { DocumentOwnerType, DocumentType } from "../../../constants/documents";
 
 const { TextArea } = Input;
 
@@ -45,8 +46,8 @@ const COMMITTEE_CONFIG: Record<string, any> = {
     subtitle: "High-Powered Committee Review and Allocation Validation",
     nextRoute: "/evaluation/tac",
     nextStageName: "TAC",
-    momDocType: 3,
-    attendanceDocType: 39,
+    momDocType: DocumentType.PACMoM,
+    attendanceDocType: DocumentType.CommitteAttendanceSheet,
     timelineSearchStr: "PAC Revision",
   },
   tac: {
@@ -55,8 +56,8 @@ const COMMITTEE_CONFIG: Record<string, any> = {
     subtitle: "Technical Appraisal Committee Review",
     nextRoute: "/evaluation/sec",
     nextStageName: "SEC",
-    momDocType: 4,
-    attendanceDocType: 39,
+    momDocType: DocumentType.TACMoM,
+    attendanceDocType: DocumentType.CommitteAttendanceSheet,
     timelineSearchStr: "TAC Revision",
   },
   sec: {
@@ -65,8 +66,8 @@ const COMMITTEE_CONFIG: Record<string, any> = {
     subtitle: "State Empowered Committee review and approval",
     nextRoute: "/evaluation/aa",
     nextStageName: "Administrative Approval",
-    momDocType: 5,
-    attendanceDocType: 39,
+    momDocType: DocumentType.SECMoM,
+    attendanceDocType: DocumentType.CommitteAttendanceSheet,
     timelineSearchStr: "SEC Revision",
   },
   aa: {
@@ -75,8 +76,8 @@ const COMMITTEE_CONFIG: Record<string, any> = {
     subtitle: "Administrative Approval review and evaluation",
     nextRoute: "/evaluation/sdma",
     nextStageName: "SDMA",
-    momDocType: 6,
-    attendanceDocType: 39,
+    momDocType: DocumentType.AdministrativeApprovalOrder,
+    attendanceDocType: DocumentType.CommitteAttendanceSheet,
     timelineSearchStr: "AdministrativeApproval Revision", // Adjust to match API exactly
   },
   sdma: {
@@ -85,8 +86,8 @@ const COMMITTEE_CONFIG: Record<string, any> = {
     subtitle: "State Disaster Management Authority Final Approval",
     nextRoute: "/tendering", // Exits the evaluation flow
     nextStageName: "Tendering & Procurement",
-    momDocType: 7,
-    attendanceDocType: 39,
+    momDocType: DocumentType.SDMAMoM,
+    attendanceDocType: DocumentType.CommitteAttendanceSheet,
     timelineSearchStr: "SDMA Revision",
   },
 };
@@ -319,7 +320,7 @@ export function GenericEvaluation() {
 
       const createUploadConfig = (file: File, docType: number) => {
         const formData = new FormData();
-        formData.append("ownerType", "1");
+        formData.append("ownerType", String(DocumentOwnerType.Proposal));
         formData.append("ownerId", proposalId);
         formData.append("documentType", docType.toString());
         formData.append("file", file);
@@ -419,7 +420,7 @@ const payload = {
 
       if (revisedMomFile) {
         const formData = new FormData();
-        formData.append("ownerType", "1");
+        formData.append("ownerType", String(DocumentOwnerType.Proposal));
         formData.append("ownerId", proposalId);
         formData.append("documentType", config.momDocType.toString());
         formData.append("file", revisedMomFile);
@@ -533,7 +534,7 @@ const handleRejectOrRevision = (type: number) => {
       <div className="min-h-50 relative">
         {isLoading ? (
           <div className="flex items-center justify-center h-48 bg-card border rounded-xl shadow-sm">
-            <Spin indicator={<Loader2 className="size-8 animate-spin" />} />
+            <Spinner iconClassName="size-8" />
           </div>
         ) : currentTableData.length === 0 ? (
           <div className="flex items-center justify-center h-48 bg-card border rounded-xl shadow-sm text-muted-foreground">
@@ -562,7 +563,7 @@ const handleRejectOrRevision = (type: number) => {
             <div className="bg-card border border-border rounded-xl p-6 shadow-sm relative">
               {isLoadingTimeline && (
                 <div className="absolute inset-0 bg-background/50 flex items-center justify-center rounded-xl z-10">
-                  <Loader2 className="size-6 animate-spin text-primary" />
+                  <Spinner iconClassName="size-6" />
                 </div>
               )}
               <h3 className="mb-4 text-lg font-bold border-b pb-2">
@@ -916,7 +917,7 @@ const handleRejectOrRevision = (type: number) => {
                   className="px-6 py-3 bg-info text-primary-foreground rounded-lg flex items-center gap-2 hover:bg-info transition-colors font-medium text-sm shadow-sm disabled:opacity-50"
                 >
                   {revisedEvaluateMutation.isPending ? (
-                    <Loader2 className="size-5 animate-spin" />
+                    <Spinner inline iconClassName="size-5" />
                   ) : config.id === 5 ? (
                     <Send className="size-5" />
                   ) : (
@@ -934,7 +935,7 @@ const handleRejectOrRevision = (type: number) => {
                   className="px-6 py-3 bg-info text-primary-foreground rounded-lg flex items-center gap-2 hover:bg-info transition-colors font-medium text-sm animate-in fade-in zoom-in duration-300 disabled:opacity-50 shadow-sm"
                 >
                   {evaluateMutation.isPending ? (
-                    <Loader2 className="size-5 animate-spin" />
+                    <Spinner inline iconClassName="size-5" />
                   ) : config.id === 5 ? (
                     <Send className="size-5" />
                   ) : (
@@ -953,7 +954,7 @@ const handleRejectOrRevision = (type: number) => {
                     className="px-6 py-3 bg-destructive text-primary-foreground rounded-lg flex items-center gap-2 hover:bg-destructive transition-colors font-medium text-sm animate-in fade-in zoom-in duration-300 disabled:opacity-50 shadow-sm"
                   >
                     {evaluateMutation.isPending ? (
-                      <Loader2 className="size-5 animate-spin" />
+                      <Spinner inline iconClassName="size-5" />
                     ) : (
                       <XCircle className="size-5" />
                     )}
@@ -972,7 +973,7 @@ const handleRejectOrRevision = (type: number) => {
                     className="px-6 py-3 bg-warning text-primary-foreground rounded-lg flex items-center gap-2 hover:bg-warning transition-colors font-medium text-sm animate-in fade-in zoom-in duration-300 disabled:opacity-50 shadow-sm"
                   >
                     {evaluateMutation.isPending ? (
-                      <Loader2 className="size-5 animate-spin" />
+                      <Spinner inline iconClassName="size-5" />
                     ) : (
                       <RefreshCw className="size-5" />
                     )}

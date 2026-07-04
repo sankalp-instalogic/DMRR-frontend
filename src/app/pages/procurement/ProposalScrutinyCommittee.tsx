@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import useAxiosPrivate from "./../../../hooks/useAxiosPrivate";
 import { CommitteeApproval } from "./CommitteeApproval";
+import { Spinner } from "../../components/ui/spinner";
 
 export function ProposalScrutinyCommittee() {
   const axiosPrivate = useAxiosPrivate();
@@ -71,7 +72,7 @@ export function ProposalScrutinyCommittee() {
   }));
 
   if (isLoading) {
-    return <div className="p-8 text-center text-muted-foreground">Loading pending proposals...</div>;
+    return <Spinner fullPage label="Loading pending proposals..." />;
   }
 
   if (isError) {

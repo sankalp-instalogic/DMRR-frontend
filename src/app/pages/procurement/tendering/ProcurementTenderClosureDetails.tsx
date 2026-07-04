@@ -4,7 +4,6 @@ import {
   ArrowLeft,
   CheckCircle2,
   XCircle,
-  Loader2,
   Upload as UploadIcon,
   Save,
 } from "lucide-react";
@@ -12,14 +11,16 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Input, Upload, Button as AntdButton } from "antd";
 import useAxiosPrivate from "../../../../hooks/useAxiosPrivate";
 import { Button } from "../../../components/ui/button";
+import { Spinner } from "../../../components/ui/spinner";
+import { DocumentOwnerType, DocumentType } from "../../../../../constants/documents";
 
 // Document Type Mapping (ownerType is 2 for this table context)
-const DOCUMENT_TYPES: Record<string, string> = {
-  techBidOpening: "30",
-  techEvaluation: "31",
-  finBidOpening: "32",
-  finEvaluation: "33",
-  aoc: "10",
+const DOCUMENT_TYPES: Record<string, DocumentType> = {
+  techBidOpening: DocumentType.TechnicalBidOpening,
+  techEvaluation: DocumentType.TechnicalEvaluation,
+  finBidOpening: DocumentType.FinancialBidOpening,
+  finEvaluation: DocumentType.FinancialEvaluation,
+  aoc: DocumentType.AOC,
 };
 
 export function ProcurementTenderClosureDetails() {
@@ -119,14 +120,14 @@ export function ProcurementTenderClosureDetails() {
       documentType,
     }: {
       file: File;
-      documentType: string;
+      documentType: DocumentType;
     }) => {
       if (!id) throw new Error("No ID found");
       const uploadData = new FormData();
       uploadData.append("file", file);
       uploadData.append("ownerId", id);
-      uploadData.append("ownerType", "2");
-      uploadData.append("documentType", documentType);
+      uploadData.append("ownerType", String(DocumentOwnerType.Procurement));
+      uploadData.append("documentType", String(documentType));
 
       const response = await axiosPrivate.post(
         "/api/v1/Documents/upload",
@@ -226,9 +227,7 @@ export function ProcurementTenderClosureDetails() {
         <div>
           <h1 className="text-2xl font-bold text-primary flex items-center gap-2">
             Procurement Closure Details
-            {isProcurementLoading && (
-              <Loader2 className="size-5 animate-spin text-muted-foreground" />
-            )}
+            {isProcurementLoading && <Spinner iconClassName="size-6" />}
           </h1>
           <p className="text-muted-foreground mt-1">
             Review procurement details and upload final closure documents.
@@ -389,7 +388,7 @@ export function ProcurementTenderClosureDetails() {
         <Button onClick={handleSaveClosure} disabled={isSavingClosure}>
           {isSavingClosure ? (
             <>
-              <Loader2 className="size-4 animate-spin" />
+              <Spinner inline iconClassName="size-4" />
               Saving...
             </>
           ) : (

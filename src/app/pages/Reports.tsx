@@ -1,4 +1,4 @@
-import { Download, FileText, Printer } from "lucide-react";
+import { Download, Eye, FileText, Printer } from "lucide-react";
 import { Button } from "../components/ui/button";
 
 const reports = [
@@ -126,8 +126,8 @@ export function Reports() {
 
                 <td className="px-4 py-4">
                   <div className="flex justify-center">
-                    <Button className="hover:opacity-70">
-                      View
+                    <Button variant="ghost" size="icon" className="text-primary hover:bg-info-muted hover:text-primary" title="View">
+                      <Eye className="size-4" />
                     </Button>
                   </div>
                 </td>

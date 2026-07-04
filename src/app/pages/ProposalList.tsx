@@ -14,6 +14,7 @@ import type { ColDef, ICellRendererParams } from "ag-grid-community";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { useQuery } from "@tanstack/react-query";
 import { Table } from "../components/Table";
+import { Spinner } from "../components/ui/spinner";
 import formattedDate from "../../utils/dateFormatter";
 
 // Define the structure of a single item
@@ -322,10 +323,10 @@ export function ProposalList() {
             <div className="flex items-center h-full">
               <Link
                 to={`/proposal-detail/${params.data.id}`}
-                className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground rounded-lg transition-colors text-xs font-medium"
+                title="View"
+                className="inline-flex items-center justify-center size-9 text-primary hover:bg-info-muted rounded-lg transition-colors"
               >
-                <Eye className="size-3" />
-                View
+                <Eye className="size-4" />
               </Link>
             </div>
           );
@@ -471,8 +472,8 @@ export function ProposalList() {
 
       {/* Custom Table Component Replacement */}
       {isLoading ? (
-        <div className="p-12 text-center text-muted-foreground border border-border rounded-xl bg-card">
-          Loading proposals...
+        <div className="p-12 border border-border rounded-xl bg-card">
+          <Spinner label="Loading proposals..." />
         </div>
       ) : isError ? (
         <div className="p-12 text-center text-destructive border border-border rounded-xl bg-card">

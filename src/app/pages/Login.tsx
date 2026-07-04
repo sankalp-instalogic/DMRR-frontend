@@ -12,6 +12,7 @@ import { useAuth } from "../../context/AuthContext";
 import type { AuthPayload } from "../../context/AuthContext";
 import toast from "react-hot-toast";
 import { Button } from "../components/ui/button";
+import { Spinner } from "../components/ui/spinner";
 
 type LoginFormInputs = {
   username: "";
@@ -187,33 +188,13 @@ export function Login() {
               disabled={loading}
               className={`w-full h-auto py-4 rounded-xl shadow-lg ${
                 loading
-                  ? "bg-muted-foreground"
+                  ? "bg-muted-foreground cursor-no-drop"
                   : "hover:bg-secondary shadow-primary/20 hover:shadow-xl hover:-translate-y-0.5 cursor-pointer"
               }`}
             >
               {loading ? (
                 <>
-                  <svg
-                    aria-hidden="true"
-                    className="h-5 w-5 animate-spin"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                    />
-                  </svg>
+                  <Spinner inline iconClassName="size-4" />
                   <span>Signing In...</span>
                 </>
               ) : (

@@ -9,17 +9,18 @@ import {
   Upload as UploadIcon, // Renamed to avoid collision with Antd's Upload
   XCircle,
   Save,
-  Loader2,
 } from "lucide-react";
 import { Button as UIButton } from "../../../components/ui/button";
+import { Spinner } from "../../../components/ui/spinner";
+import { DocumentOwnerType, DocumentType } from "../../../../../constants/documents";
 
 // Document Type Mapping (ownerType is 8 for Tenders)
-const DOCUMENT_TYPES: Record<string, string> = {
-  techBidOpening: "30",
-  techEvaluation: "31",
-  finBidOpening: "32",
-  finEvaluation: "33",
-  aoc: "10",
+const DOCUMENT_TYPES: Record<string, DocumentType> = {
+  techBidOpening: DocumentType.TechnicalBidOpening,
+  techEvaluation: DocumentType.TechnicalEvaluation,
+  finBidOpening: DocumentType.FinancialBidOpening,
+  finEvaluation: DocumentType.FinancialEvaluation,
+  aoc: DocumentType.AOC,
 };
 
 export function NewTender() {
@@ -66,13 +67,13 @@ export function NewTender() {
     }: {
       file: File;
       ownerId: string;
-      documentType: string;
+      documentType: DocumentType;
     }) => {
       const uploadData = new FormData();
       uploadData.append("file", file);
       uploadData.append("ownerId", ownerId);
-      uploadData.append("ownerType", "15");
-      uploadData.append("documentType", documentType);
+      uploadData.append("ownerType", String(DocumentOwnerType.ProcurementTenders));
+      uploadData.append("documentType", String(documentType));
 
       const response = await axiosPrivate.post(
         "/api/v1/Documents/upload",
@@ -304,7 +305,7 @@ export function NewTender() {
         {/* Replaced standard button with Antd Button and built-in loading state */}
         <UIButton onClick={handleSave} disabled={isSaving}>
           {isSaving ? (
-            <Loader2 className="size-4 animate-spin" />
+            <Spinner inline iconClassName="size-4" />
           ) : (
             <Save className="size-4" />
           )}

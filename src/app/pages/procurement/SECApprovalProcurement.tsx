@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import useAxiosPrivate from "./../../../hooks/useAxiosPrivate"; // Adjust the path if needed
 import { CommitteeApproval } from "./CommitteeApproval";
+import { Spinner } from "../../components/ui/spinner";
 
 export function SECApprovalProcurement() {
   const axiosPrivate = useAxiosPrivate();
@@ -70,11 +71,7 @@ export function SECApprovalProcurement() {
   }));
 
   if (isLoading) {
-    return (
-      <div className="p-8 text-center text-muted-foreground">
-        Loading pending SEC approvals...
-      </div>
-    );
+    return <Spinner fullPage label="Loading pending SEC approvals..." />;
   }
 
   if (isError) {

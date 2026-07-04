@@ -11,6 +11,8 @@ import dayjs from "dayjs";
 // Import your custom Table component (adjust path as needed)
 import { Table } from "../components/Table";
 import { Button } from "../components/ui/button";
+import { Spinner } from "../components/ui/spinner";
+import { DocumentOwnerType, DocumentType } from "../../../constants/documents";
 
 export function ProjectExecution() {
   const axiosPrivate = useAxiosPrivate();
@@ -147,8 +149,8 @@ export function ProjectExecution() {
       if (mprData.file) {
         const formData = new FormData();
         formData.append("file", mprData.file);
-        formData.append("ownerType", "1");
-        formData.append("documentType", "11");
+        formData.append("ownerType", String(DocumentOwnerType.Proposal));
+        formData.append("documentType", String(DocumentType.MonthlyProgressReport));
         formData.append("ownerId", selectedProject?.proposalId || "");
 
         const uploadResponse = await axiosPrivate.post(
@@ -220,11 +222,11 @@ export function ProjectExecution() {
   });
 
   // Document Type Enum Mapping
-  const documentTypeMap: Record<string, string> = {
-    tpqaReport: "13",
-    utilizationCertificate: "27",
-    completionCertificate: "18",
-    siteInspectionReport: "42",
+  const documentTypeMap: Record<string, DocumentType> = {
+    tpqaReport: DocumentType.TPQAReport,
+    utilizationCertificate: DocumentType.UtilizationCertificate,
+    completionCertificate: DocumentType.CompletionCertificate,
+    siteInspectionReport: DocumentType.SiteInspectionReport,
   };
 
   // 7. Mutation for uploading Supporting Documents
@@ -237,8 +239,8 @@ export function ProjectExecution() {
 
         const formData = new FormData();
         formData.append("file", file);
-        formData.append("ownerType", "1");
-        formData.append("documentType", documentTypeMap[docKey]);
+        formData.append("ownerType", String(DocumentOwnerType.Proposal));
+        formData.append("documentType", String(documentTypeMap[docKey]));
         formData.append("ownerId", selectedProject?.proposalId || "");
 
         const uploadResponse = await axiosPrivate.post(
@@ -281,8 +283,8 @@ export function ProjectExecution() {
 
         const formData = new FormData();
         formData.append("file", photo.file);
-        formData.append("ownerType", "1");
-        formData.append("documentType", "12");
+        formData.append("ownerType", String(DocumentOwnerType.Proposal));
+        formData.append("documentType", String(DocumentType.GeoTaggedPhoto));
         formData.append("ownerId", selectedProject?.proposalId || "");
 
         const uploadResponse = await axiosPrivate.post(
@@ -517,9 +519,14 @@ export function ProjectExecution() {
                     className="px-2 py-1 text-xs bg-success cursor-pointer text-primary-foreground rounded-md transition-opacity hover:bg-success disabled:opacity-50 whitespace-nowrap"
                   >
                     {ensureBillingMutation.isPending &&
-                    ensureBillingMutation.variables === project.proposalId
-                      ? "Processing..."
-                      : "Ensure Billing"}
+                    ensureBillingMutation.variables === project.proposalId ? (
+                      <>
+                        <Spinner inline iconClassName="size-4" />
+                        Processing...
+                      </>
+                    ) : (
+                      "Ensure Billing"
+                    )}
                   </button>
                 )}
             </div>
@@ -716,8 +723,8 @@ export function ProjectExecution() {
                 <tbody className="divide-y divide-border">
                   {isMprListLoading ? (
                     <tr>
-                      <td colSpan={5} className="px-4 py-4 text-center">
-                        Loading previous MPRs...
+                      <td colSpan={5} className="px-4 py-4">
+                        <Spinner label="Loading previous MPRs..." iconClassName="size-4" />
                       </td>
                     </tr>
                   ) : mprList && mprList.length > 0 ? (
@@ -898,8 +905,8 @@ export function ProjectExecution() {
 
       {/* PROJECT LIST USING CUSTOM TABLE COMPONENT */}
       {isLoading ? (
-        <div className="p-8 text-center text-muted-foreground bg-card border border-border rounded-xl">
-          Loading projects...
+        <div className="p-8 bg-card border border-border rounded-xl">
+          <Spinner label="Loading projects..." />
         </div>
       ) : isError ? (
         <div className="p-8 text-center text-destructive bg-card border border-border rounded-xl">
@@ -943,9 +950,7 @@ export function ProjectExecution() {
           <div className="min-h-62.5 relative">
             {isDetailsLoading && (
               <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10">
-                <span className="text-muted-foreground">
-                  Loading details...
-                </span>
+                <Spinner label="Loading details..." iconClassName="size-6" />
               </div>
             )}
 
@@ -985,9 +990,14 @@ export function ProjectExecution() {
               {saveEntryMutation.isPending ||
               saveMprMutation.isPending ||
               savePhotosMutation.isPending ||
-              saveDocumentsMutation.isPending
-                ? "Saving..."
-                : "Save Details"}
+              saveDocumentsMutation.isPending ? (
+                <>
+                  <Spinner inline iconClassName="size-4" />
+                  Saving...
+                </>
+              ) : (
+                "Save Details"
+              )}
             </Button>
 
             {isEntrySaved && (
@@ -995,9 +1005,14 @@ export function ProjectExecution() {
                 onClick={() => markAsCompletedMutation.mutate()}
                 disabled={markAsCompletedMutation.isPending}
               >
-                {markAsCompletedMutation.isPending
-                  ? "Marking..."
-                  : "Mark As Execution Completed"}
+                {markAsCompletedMutation.isPending ? (
+                  <>
+                    <Spinner inline iconClassName="size-4" />
+                    Marking...
+                  </>
+                ) : (
+                  "Mark As Execution Completed"
+                )}
               </Button>
             )}
           </div>

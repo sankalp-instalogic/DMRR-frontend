@@ -2,11 +2,12 @@ import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
-import { Plus, Edit2, Trash2, X } from "lucide-react";
+import { Plus, Edit2, Trash2 } from "lucide-react";
 import {
   Input as AntdInput,
   Select as AntdSelect,
   InputNumber as AntdInputNumber,
+  Modal,
 } from "antd";
 
 import {
@@ -24,24 +25,8 @@ import {
 } from "recharts";
 
 import { Table } from "../../components/Table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "../../components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "../../components/ui/alert-dialog";
 import { Button } from "../../components/ui/button";
+import { Spinner } from "../../components/ui/spinner";
 import {
   Form,
   FormControl,
@@ -356,6 +341,7 @@ export function BudgetMaster() {
               <Button
                 variant="ghost"
                 size="icon"
+                className={"hover:bg-primary/10 hover:text-primary"}
                 onClick={() => handleOpenEdit(params.data)}
               >
                 <Edit2 className="size-4" />
@@ -363,6 +349,7 @@ export function BudgetMaster() {
               <Button
                 variant="ghost"
                 size="icon"
+                className={"hover:bg-destructive/10"}
                 onClick={() => setBudgetToDelete(params.data.id)}
               >
                 <Trash2 className="size-4 text-destructive" />
@@ -377,11 +364,7 @@ export function BudgetMaster() {
 
   // --- RENDER CHECKS ---
   if (isLoading || isDepartmentsLoading || isDistrictsLoading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-border border-t-info"></div>
-      </div>
-    );
+    return <Spinner fullPage />;
   }
 
   if (isError) {
@@ -437,18 +420,17 @@ export function BudgetMaster() {
       </div>
 
       {/* View Details Modal (Department Drill-Down) */}
-      {selectedDept && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-card rounded-xl shadow-xl w-237.5 max-h-[85vh] overflow-y-auto p-6 relative">
-            <button
-              onClick={() => setSelectedDept(null)}
-              className="absolute top-4 right-4 cursor-pointer"
-            >
-              <X className="size-5" />
-            </button>
-
-            <h2 className="text-xl font-bold mb-6">Line Department Details</h2>
-
+      <Modal
+        open={!!selectedDept}
+        title="Line Department Details"
+        onCancel={() => setSelectedDept(null)}
+        footer={null}
+        width={950}
+        centered
+        styles={{ body: { maxHeight: "75vh", overflowY: "auto" } }}
+      >
+        {selectedDept && (
+          <>
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div>
                 <label className="text-sm font-medium">Line Dept Name</label>
@@ -501,9 +483,9 @@ export function BudgetMaster() {
                 </tr>
               </tbody>
             </table>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </Modal>
 
       {/* Charts Section */}
       <div className="grid md:grid-cols-2 gap-6">
@@ -562,14 +544,15 @@ export function BudgetMaster() {
       </div>
 
       {/* --- ADD / EDIT DIALOG --- */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>
-              {editingBudget ? "Edit Budget Entry" : "Add Budget Entry"}
-            </DialogTitle>
-          </DialogHeader>
-
+      <Modal
+        open={isModalOpen}
+        title={editingBudget ? "Edit Budget Entry" : "Add Budget Entry"}
+        onCancel={closeModal}
+        footer={null}
+        width={800}
+        centered
+        styles={{ body: { maxHeight: "75vh", overflowY: "auto" } }}
+      >
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
@@ -694,7 +677,7 @@ export function BudgetMaster() {
                 />
               </div>
 
-              <DialogFooter className="mt-6">
+              <div className="mt-6 flex justify-end gap-2">
                 <Button
                   className="cursor-pointer"
                   type="button"
@@ -708,43 +691,60 @@ export function BudgetMaster() {
                   className="cursor-pointer"
                   disabled={addMutation.isPending || editMutation.isPending}
                 >
-                  {addMutation.isPending || editMutation.isPending
-                    ? "Saving..."
-                    : "Save"}
+                  {addMutation.isPending || editMutation.isPending ? (
+                    <>
+                      <Spinner inline iconClassName="size-4" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save"
+                  )}
                 </Button>
-              </DialogFooter>
+              </div>
             </form>
           </Form>
-        </DialogContent>
-      </Dialog>
+      </Modal>
 
-      {/* --- DELETE CONFIRMATION DIALOG --- */}
-      <AlertDialog
+      {/* --- DELETE CONFIRMATION MODAL --- */}
+      <Modal
         open={!!budgetToDelete}
-        onOpenChange={() => setBudgetToDelete(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this budget entry? This action cannot be undone
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="cursor-pointer">
+        title="Are you absolutely sure?"
+        onCancel={() => setBudgetToDelete(null)}
+        centered
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              className="cursor-pointer"
+              onClick={() => setBudgetToDelete(null)}
+            >
               Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              className="cursor-pointer bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            </Button>
+            <Button
+              variant="destructive"
+              className="cursor-pointer"
+              disabled={deleteMutation.isPending}
               onClick={() => {
                 if (budgetToDelete) deleteMutation.mutate(budgetToDelete);
               }}
             >
-              {deleteMutation.isPending ? "Deleting..." : "Delete"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+              {deleteMutation.isPending ? (
+                <>
+                  <Spinner inline iconClassName="size-4" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </Button>
+          </div>
+        }
+      >
+        <p>
+          Are you sure you want to delete this budget entry? This action cannot
+          be undone
+        </p>
+      </Modal>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import useAxiosPrivate from "./../../../hooks/useAxiosPrivate"; // Adjust the import path as necessary
 import { CommitteeApproval } from "./CommitteeApproval";
+import { Spinner } from "../../components/ui/spinner";
 
 export function ProcurementAdminApproval() {
   const axiosPrivate = useAxiosPrivate();
@@ -70,7 +71,7 @@ export function ProcurementAdminApproval() {
   }));
 
   if (isLoading) {
-    return <div className="p-8 text-center text-muted-foreground">Loading pending administrative approvals...</div>;
+    return <Spinner fullPage label="Loading pending administrative approvals..." />;
   }
 
   if (isError) {

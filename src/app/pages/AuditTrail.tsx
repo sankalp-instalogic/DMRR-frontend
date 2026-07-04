@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { ColDef, ICellRendererParams } from "ag-grid-community";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { Table } from "../components/Table";
+import { Spinner } from "../components/ui/spinner";
 import dateFormatter from "../../utils/dateFormatter"
 
 interface AuditLog {
@@ -151,8 +152,8 @@ export function AuditTrail() {
       </div>
 
       {isLoading ? (
-        <div className="p-12 text-center text-muted-foreground border border-border rounded-xl bg-card">
-          Loading audit logs...
+        <div className="p-12 border border-border rounded-xl bg-card">
+          <Spinner label="Loading audit logs..." />
         </div>
       ) : isError ? (
         <div className="p-12 text-center text-destructive border border-border rounded-xl bg-card">

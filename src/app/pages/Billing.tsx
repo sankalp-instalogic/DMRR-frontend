@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { getBillingSectionsConfig } from "../../../constants/billingYesNoQuestions";
+import { DocumentOwnerType, DocumentType } from "../../../constants/documents";
 import { Table } from "../components/Table";
 import type { ColDef } from "ag-grid-community";
 import { Input, Select, DatePicker } from "antd";
@@ -202,8 +203,8 @@ export function Billing() {
       if (ddmrFile) {
         const docFormData = new FormData();
         docFormData.append("file", ddmrFile);
-        docFormData.append("ownerType", "4");
-        docFormData.append("documentType", "14");
+        docFormData.append("ownerType", String(DocumentOwnerType.Billing));
+        docFormData.append("documentType", String(DocumentType.Invoice));
         docFormData.append("ownerId", selectedBill.id);
 
         await axiosPrivate.post("/api/v1/Documents/upload", docFormData, {
@@ -247,8 +248,8 @@ export function Billing() {
       if (doFile) {
         const docFormData = new FormData();
         docFormData.append("file", doFile);
-        docFormData.append("ownerType", "4");
-        docFormData.append("documentType", "14");
+        docFormData.append("ownerType", String(DocumentOwnerType.Billing));
+        docFormData.append("documentType", String(DocumentType.Invoice));
         docFormData.append("ownerId", selectedBill.id);
 
         await axiosPrivate.post("/api/v1/Documents/upload", docFormData, {
@@ -292,8 +293,8 @@ export function Billing() {
       if (ministerFile) {
         const docFormData = new FormData();
         docFormData.append("file", ministerFile);
-        docFormData.append("ownerType", "4");
-        docFormData.append("documentType", "14");
+        docFormData.append("ownerType", String(DocumentOwnerType.Billing));
+        docFormData.append("documentType", String(DocumentType.Invoice));
         docFormData.append("ownerId", selectedBill.id);
 
         await axiosPrivate.post("/api/v1/Documents/upload", docFormData, {
@@ -337,8 +338,8 @@ export function Billing() {
       if (paymentOrderFile) {
         const docFormData = new FormData();
         docFormData.append("file", paymentOrderFile);
-        docFormData.append("ownerType", "4");
-        docFormData.append("documentType", "16");
+        docFormData.append("ownerType", String(DocumentOwnerType.Billing));
+        docFormData.append("documentType", String(DocumentType.PaymentOrder));
         docFormData.append("ownerId", selectedBill.id);
 
         await axiosPrivate.post("/api/v1/Documents/upload", docFormData, {
@@ -390,8 +391,8 @@ export function Billing() {
       if (grantFile) {
         const docFormData = new FormData();
         docFormData.append("file", grantFile);
-        docFormData.append("ownerType", "4");
-        docFormData.append("documentType", "25");
+        docFormData.append("ownerType", String(DocumentOwnerType.Billing));
+        docFormData.append("documentType", String(DocumentType.GRCopy));
         docFormData.append("ownerId", selectedBill.id);
 
         await axiosPrivate.post("/api/v1/Documents/upload", docFormData, {
@@ -435,8 +436,8 @@ export function Billing() {
       if (ddoFile) {
         const docFormData = new FormData();
         docFormData.append("file", ddoFile);
-        docFormData.append("ownerType", "4");
-        docFormData.append("documentType", "14");
+        docFormData.append("ownerType", String(DocumentOwnerType.Billing));
+        docFormData.append("documentType", String(DocumentType.Invoice));
         docFormData.append("ownerId", selectedBill.id);
 
         await axiosPrivate.post("/api/v1/Documents/upload", docFormData, {
@@ -477,8 +478,8 @@ export function Billing() {
       if (treasuryFile) {
         const docFormData = new FormData();
         docFormData.append("file", treasuryFile);
-        docFormData.append("ownerType", "4");
-        docFormData.append("documentType", "14");
+        docFormData.append("ownerType", String(DocumentOwnerType.Billing));
+        docFormData.append("documentType", String(DocumentType.Invoice));
         docFormData.append("ownerId", selectedBill.id);
 
         await axiosPrivate.post("/api/v1/Documents/upload", docFormData, {
@@ -519,8 +520,8 @@ export function Billing() {
       if (vendorFile) {
         const docFormData = new FormData();
         docFormData.append("file", vendorFile);
-        docFormData.append("ownerType", "4");
-        docFormData.append("documentType", "14");
+        docFormData.append("ownerType", String(DocumentOwnerType.Billing));
+        docFormData.append("documentType", String(DocumentType.Invoice));
         docFormData.append("ownerId", selectedBill.id);
 
         await axiosPrivate.post("/api/v1/Documents/upload", docFormData, {

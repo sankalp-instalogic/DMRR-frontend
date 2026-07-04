@@ -1,12 +1,13 @@
 import { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router";
-import { Plus, Eye, Loader2 } from "lucide-react";
+import { Plus, Eye } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import useAxiosPrivate from "../../../../hooks/useAxiosPrivate";
 import type { ColDef } from "ag-grid-community";
 import { Table } from "../../../components/Table";
 import { cn } from "../../../../utils/utils";
 import { Button, buttonVariants } from "../../../components/ui/button";
+import { Spinner } from "../../../components/ui/spinner";
 
 export function TendersList() {
   const navigate = useNavigate();
@@ -261,9 +262,8 @@ export function TendersList() {
         </div>
 
         {isTendersLoading ? (
-          <div className="flex flex-col items-center justify-center p-8 bg-card rounded-xl border border-border text-muted-foreground">
-            <Loader2 className="size-6 animate-spin mb-2 text-secondary" />
-            <p>Loading tenders...</p>
+          <div className="p-8 bg-card rounded-xl border border-border">
+            <Spinner iconClassName="size-6" label="Loading tenders..." />
           </div>
         ) : isTendersError ? (
           <div className="p-8 text-center bg-card rounded-xl border border-border text-destructive">
@@ -288,9 +288,8 @@ export function TendersList() {
         </h2>
 
         {isProcurementLoading ? (
-          <div className="flex flex-col items-center justify-center p-8 bg-card rounded-xl border border-border text-muted-foreground">
-            <Loader2 className="size-6 animate-spin mb-2 text-secondary" />
-            <p>Loading procurement data...</p>
+          <div className="p-8 bg-card rounded-xl border border-border">
+            <Spinner iconClassName="size-6" label="Loading procurement data..." />
           </div>
         ) : isProcurementError ? (
           <div className="p-8 text-center bg-card rounded-xl border border-border text-destructive">

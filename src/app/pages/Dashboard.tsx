@@ -4,6 +4,7 @@ import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { useQuery } from "@tanstack/react-query";
 import { Select } from "antd";
 import { buttonVariants } from "../components/ui/button";
+import { Spinner } from "../components/ui/spinner";
 import { formatCurrencyLakhs } from "../../utils/currencyFormatter";
 import {
   FileText,
@@ -148,11 +149,7 @@ export function Dashboard() {
 
   // --- Handle Loading & Error States ---
   if (isSummaryLoading || isChartsLoading) {
-    return (
-      <div className="flex items-center justify-center h-125 text-primary font-medium">
-        Loading Dashboard Metrics...
-      </div>
-    );
+    return <Spinner fullPage label="Loading Dashboard Metrics..." />;
   }
 
   if (summaryError || !summaryData || chartsError) {

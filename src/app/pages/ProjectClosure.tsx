@@ -7,6 +7,8 @@ import dayjs from "dayjs";
 import type { ColDef } from "ag-grid-community";
 import { Table } from "../components/Table";
 import { Button } from "../components/ui/button";
+import { Spinner } from "../components/ui/spinner";
+import { DocumentOwnerType, DocumentType } from "../../../constants/documents";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -226,7 +228,7 @@ export function ProjectClosure() {
   const uploadDocument = async (file: File, documentType: number) => {
     if (!selectedProject) throw new Error("No project selected");
     const formData = new FormData();
-    formData.append("ownerType", "1");
+    formData.append("ownerType", String(DocumentOwnerType.Proposal));
     formData.append("documentType", documentType.toString());
     formData.append("ownerId", selectedProject.proposalId.toString());
     formData.append("file", file);
@@ -251,11 +253,14 @@ export function ProjectClosure() {
 
       if (completionData.completionCertificate)
         uploadPromises.push(
-          uploadDocument(completionData.completionCertificate, 18),
+          uploadDocument(
+            completionData.completionCertificate,
+            DocumentType.CompletionCertificate,
+          ),
         );
       if (completionData.socialAuditFiles?.length > 0) {
         completionData.socialAuditFiles.forEach((file) =>
-          uploadPromises.push(uploadDocument(file, 38)),
+          uploadPromises.push(uploadDocument(file, DocumentType.SocialAuditLetter)),
         );
       }
 
@@ -316,7 +321,7 @@ export function ProjectClosure() {
             const docType = getDocumentType(item.itemNumber);
 
             const formData = new FormData();
-            formData.append("ownerType", "1");
+            formData.append("ownerType", String(DocumentOwnerType.Proposal));
             formData.append("ownerId", selectedProject.proposalId.toString());
             formData.append("documentType", docType.toString());
             formData.append("file", file);
@@ -459,7 +464,14 @@ export function ProjectClosure() {
                     }}
                     disabled={closeProjectMutation.isPending}
                   >
-                    {closeProjectMutation.isPending ? "Closing..." : "Close"}
+                    {closeProjectMutation.isPending ? (
+                      <>
+                        <Spinner inline iconClassName="size-4" />
+                        Closing...
+                      </>
+                    ) : (
+                      "Close"
+                    )}
                   </Button>
                 )}
 
@@ -545,8 +557,8 @@ export function ProjectClosure() {
 
       {/* TABLE SECTION */}
       {isLoading ? (
-        <div className="bg-card border border-border rounded-xl p-8 text-center text-muted-foreground shadow-sm">
-          Loading projects...
+        <div className="bg-card border border-border rounded-xl p-8 shadow-sm">
+          <Spinner label="Loading projects..." />
         </div>
       ) : isError ? (
         <div className="bg-card border border-border rounded-xl p-8 text-center text-destructive shadow-sm">
@@ -586,8 +598,8 @@ export function ProjectClosure() {
             </div>
 
             {isChecklistLoading ? (
-              <div className="py-8 text-center text-muted-foreground">
-                Loading checklist items...
+              <div className="py-8">
+                <Spinner label="Loading checklist items..." iconClassName="size-6" />
               </div>
             ) : checklistItems.length === 0 ? (
               <div className="py-8 text-center text-muted-foreground">
@@ -658,9 +670,14 @@ export function ProjectClosure() {
                     : "bg-info hover:bg-info"
                 }`}
               >
-                {saveChecklistMutation.isPending
-                  ? "Saving..."
-                  : "Submit Checklist"}
+                {saveChecklistMutation.isPending ? (
+                  <>
+                    <Spinner inline iconClassName="size-4" />
+                    Saving...
+                  </>
+                ) : (
+                  "Submit Checklist"
+                )}
               </button>
             </div>
           </div>
@@ -808,9 +825,14 @@ export function ProjectClosure() {
                     : "hover:bg-success"
                 }`}
               >
-                {saveCompletionMutation.isPending
-                  ? "Saving..."
-                  : "Save Completion Details"}
+                {saveCompletionMutation.isPending ? (
+                  <>
+                    <Spinner inline iconClassName="size-4" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save Completion Details"
+                )}
               </button>
             </div>
           </div>
@@ -839,7 +861,14 @@ export function ProjectClosure() {
                 }
               }}
             >
-              {closeProjectMutation.isPending ? "Closing..." : "Close Project"}
+              {closeProjectMutation.isPending ? (
+                <>
+                  <Spinner inline iconClassName="size-4" />
+                  Closing...
+                </>
+              ) : (
+                "Close Project"
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

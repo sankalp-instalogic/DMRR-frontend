@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Modal, Tag, Spin } from "antd";
+import { Modal, Tag } from "antd";
 import { 
   FileText, 
   Calendar, 
@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
+import { Spinner } from "./ui/spinner";
 
 // Interfaces based on the API response structure you provided
 interface DocumentMetadata {
@@ -166,7 +167,7 @@ export function DocumentPreviewModal({ isOpen, onClose, documentId }: DocumentPr
           {/* Loading State */}
           {(isMetadataLoading || isFileLoading) && (
             <div className="flex flex-col items-center gap-3 text-muted-foreground">
-              <Spin size="large" />
+              <Spinner iconClassName="size-8" />
               <p className="text-sm font-medium animate-pulse">
                 {isMetadataLoading ? "Fetching document details..." : "Downloading file content..."}
               </p>

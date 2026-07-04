@@ -8,19 +8,14 @@ import dayjs from "dayjs";
 import { DocumentPreviewModal } from "../../components/DocumentPreviewModal";
 import type { ColDef } from "ag-grid-community";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "../../components/ui/dialog";
 import { Button } from "../../components/ui/button";
+import { Spinner } from "../../components/ui/spinner";
 import {
   Input as AntdInput,
   Select as AntdSelect,
   Checkbox as AntdCheckbox,
   DatePicker as AntdDatePicker,
+  Modal,
 } from "antd";
 import {
   Form,
@@ -30,6 +25,7 @@ import {
   FormLabel,
   FormMessage,
 } from "../../components/ui/form";
+import { DocumentOwnerType, DocumentType } from "../../../../constants/documents";
 
 // --- TYPES ---
 type FormValues = {
@@ -124,8 +120,8 @@ export function NDMAGuidelines() {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("ownerId", ownerId);
-      formData.append("ownerType", "13");
-      formData.append("documentType", "29");
+      formData.append("ownerType", String(DocumentOwnerType.NdmaGuideline));
+      formData.append("documentType", String(DocumentType.NDMAGuidelines));
 
       const response = await axiosPrivate.post(
         "/api/v1/Documents/upload",
@@ -333,11 +329,7 @@ export function NDMAGuidelines() {
   );
 
   if (isLoading || isDisastersLoading) {
-    return (
-      <div className="flex items-center justify-center h-full min-h-25">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-border border-t-primary"></div>
-      </div>
-    );
+    return <Spinner fullPage label="Loading guidelines..." />;
   }
 
   if (isError) {
@@ -389,13 +381,16 @@ export function NDMAGuidelines() {
       </div>
 
       {/* --- ADD MODAL --- */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Add Guideline</DialogTitle>
-          </DialogHeader>
-
-          <Form {...form}>
+      <Modal
+        open={isModalOpen}
+        title="Add Guideline"
+        onCancel={closeModal}
+        footer={null}
+        width={800}
+        centered
+        styles={{ body: { maxHeight: "80vh", overflowY: "auto" } }}
+      >
+        <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
               className="grid gap-4 py-4 md:grid-cols-2"
@@ -549,7 +544,7 @@ export function NDMAGuidelines() {
                 )}
               />
 
-              <DialogFooter className="mt-6 md:col-span-2">
+              <div className="mt-6 md:col-span-2 flex justify-end gap-2">
                 <Button
                   type="button"
                   variant="outline"
@@ -563,15 +558,19 @@ export function NDMAGuidelines() {
                   className="cursor-pointer"
                   disabled={addMutation.isPending || uploadMutation.isPending}
                 >
-                  {addMutation.isPending || uploadMutation.isPending
-                    ? "Saving..."
-                    : "Save"}
+                  {addMutation.isPending || uploadMutation.isPending ? (
+                    <>
+                      <Spinner inline iconClassName="size-4" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save"
+                  )}
                 </Button>
-              </DialogFooter>
+              </div>
             </form>
           </Form>
-        </DialogContent>
-      </Dialog>
+      </Modal>
 
       {/* --- PREVIEW MODAL --- */}
       <DocumentPreviewModal

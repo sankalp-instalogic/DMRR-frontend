@@ -5,29 +5,14 @@ import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 import { Edit2, Plus, Trash2, Upload } from "lucide-react";
 import { Table } from "../../components/Table";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "../../components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "../../components/ui/alert-dialog";
 import { Button } from "../../components/ui/button";
+import { Spinner } from "../../components/ui/spinner";
 import {
   Input as AntdInput,
   InputNumber as AntdInputNumber,
   Checkbox as AntdCheckbox,
   Select as AntdSelect,
+  Modal,
 } from "antd";
 import type { ColDef } from "ag-grid-community";
 import {
@@ -233,6 +218,7 @@ export function TalukaMaster() {
               <Button
                 variant="ghost"
                 size="icon"
+                className={"hover:bg-primary/10 hover:text-primary"}
                 onClick={() => handleOpenEdit(params.data)}
               >
                 <Edit2 className="size-4" />
@@ -240,6 +226,7 @@ export function TalukaMaster() {
               <Button
                 variant="ghost"
                 size="icon"
+                className={"hover:bg-destructive/10"}
                 onClick={() => setTalukaToDelete(params.data.id)}
               >
                 <Trash2 className="size-4 text-destructive" />
@@ -253,11 +240,7 @@ export function TalukaMaster() {
   );
 
   if (isLoading || isDistrictsLoading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-border border-t-blue-500"></div>
-      </div>
-    );
+    return <Spinner fullPage />;
   }
 
   if (isError) {
@@ -317,14 +300,13 @@ export function TalukaMaster() {
       </div>
 
       {/* --- ADD / EDIT MODAL --- */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {editingTaluka ? "Edit Taluka" : "Add Taluka"}
-            </DialogTitle>
-          </DialogHeader>
-
+      <Modal
+        open={isModalOpen}
+        title={editingTaluka ? "Edit Taluka" : "Add Taluka"}
+        onCancel={closeModal}
+        footer={null}
+        centered
+      >
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
@@ -433,7 +415,7 @@ export function TalukaMaster() {
                 )}
               />
 
-              <DialogFooter className="mt-6">
+              <div className="mt-6 flex justify-end gap-2">
                 <Button
                   type="button"
                   variant="outline"
@@ -447,44 +429,60 @@ export function TalukaMaster() {
                   className="cursor-pointer"
                   disabled={addMutation.isPending || editMutation.isPending}
                 >
-                  {addMutation.isPending || editMutation.isPending
-                    ? "Saving..."
-                    : "Save"}
+                  {addMutation.isPending || editMutation.isPending ? (
+                    <>
+                      <Spinner inline iconClassName="size-4" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save"
+                  )}
                 </Button>
-              </DialogFooter>
+              </div>
             </form>
           </Form>
-        </DialogContent>
-      </Dialog>
+      </Modal>
 
       {/* --- DELETE CONFIRMATION DIALOG --- */}
-      <AlertDialog
+      <Modal
         open={!!talukaToDelete}
-        onOpenChange={() => setTalukaToDelete(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this taluka entry? This action
-              cannot be undone
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="cursor-pointer">
+        title="Are you absolutely sure?"
+        onCancel={() => setTalukaToDelete(null)}
+        centered
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              className="cursor-pointer"
+              onClick={() => setTalukaToDelete(null)}
+            >
               Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              className="cursor-pointer bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            </Button>
+            <Button
+              variant="destructive"
+              className="cursor-pointer"
+              disabled={deleteMutation.isPending}
               onClick={() => {
                 if (talukaToDelete) deleteMutation.mutate(talukaToDelete);
               }}
             >
-              {deleteMutation.isPending ? "Deleting..." : "Delete"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+              {deleteMutation.isPending ? (
+                <>
+                  <Spinner inline iconClassName="size-4" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </Button>
+          </div>
+        }
+      >
+        <p>
+          Are you sure you want to delete this taluka entry? This action cannot
+          be undone
+        </p>
+      </Modal>
     </div>
   );
 }

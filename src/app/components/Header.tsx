@@ -1,15 +1,16 @@
 import { useNavigate } from "react-router";
 import { useAuth } from "../../context/AuthContext";
 import { useSidebar } from "../../context/SidebarContext";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User, LogOut, ChevronDown } from "lucide-react";
 
 import { Button } from "./ui/button";
-import { Dropdown, Avatar } from "antd";
+import { Avatar, AvatarFallback } from "./ui/avatar";
 import {
-  UserOutlined,
-  LogoutOutlined,
-  DownOutlined,
-} from "@ant-design/icons";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
 export default function Header() {
   const { sidebarOpen, setSidebarOpen } = useSidebar();
@@ -21,16 +22,6 @@ export default function Header() {
     logout();
     navigate("/login");
   };
-
-  const menuItems = [
-    {
-      key: "logout",
-      label: "Sign Out",
-      icon: <LogoutOutlined />,
-      danger: true,
-      onClick: handleLogout,
-    },
-  ];
 
   return (
     <header className="sticky top-0 z-50 bg-card border-b border-border shadow-sm">
@@ -79,36 +70,42 @@ export default function Header() {
 
         {/* Right Section */}
         <div className="flex items-center gap-5">
-          <Dropdown
-            menu={{ items: menuItems }}
-            placement="bottomRight"
-            trigger={["click"]}
-            arrow
-          >
-            <button
-              className="flex items-center gap-2 px-3 py-2 hover:bg-muted rounded-lg transition-colors border border-transparent hover:border-border cursor-pointer"
-              aria-label={`Account menu for ${auth?.username ?? "Unknown User"}`}
-              aria-haspopup="menu"
-            >
-              <Avatar
-                size="small"
-                style={{ backgroundColor: "var(--secondary)" }}
-                icon={<UserOutlined />}
-              />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className="flex items-center gap-2 px-3 py-2 hover:bg-muted rounded-lg transition-colors border border-transparent hover:border-border cursor-pointer"
+                aria-label={`Account menu for ${auth?.username ?? "Unknown User"}`}
+              >
+                <Avatar className="size-6">
+                  <AvatarFallback className="bg-secondary text-secondary-foreground">
+                    <User className="size-3.5" aria-hidden="true" />
+                  </AvatarFallback>
+                </Avatar>
 
-              <div className="text-left hidden sm:block">
-                <p className="text-sm font-semibold text-primary leading-none mb-1">
-                  {auth?.username ?? "Unknown User"}
-                </p>
+                <div className="text-left hidden sm:block">
+                  <p className="text-sm font-semibold text-primary leading-none mb-1">
+                    {auth?.username ?? "Unknown User"}
+                  </p>
 
-                <p className="text-[10px] text-muted-foreground leading-none">
-                  {auth?.role ?? "No Role"}
-                </p>
-              </div>
+                  <p className="text-[10px] text-muted-foreground leading-none">
+                    {auth?.role ?? "No Role"}
+                  </p>
+                </div>
 
-              <DownOutlined className="text-muted-foreground" aria-hidden="true" />
-            </button>
-          </Dropdown>
+                <ChevronDown
+                  className="size-4 text-muted-foreground"
+                  aria-hidden="true"
+                />
+              </button>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent align="end" className="min-w-36">
+              <DropdownMenuItem className=" cursor-pointer" variant="destructive" onClick={handleLogout}>
+                <LogOut aria-hidden="true" />
+                Sign Out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>

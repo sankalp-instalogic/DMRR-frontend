@@ -10,7 +10,9 @@ import { Input, Select, DatePicker } from "antd";
 import dayjs from "dayjs";
 import { DocumentPreviewModal } from "../../components/DocumentPreviewModal";
 import { Button } from "../../components/ui/button";
+import { Spinner } from "../../components/ui/spinner";
 import formattedDate from "../../../utils/dateFormatter";
+import { DocumentOwnerType, DocumentType } from "../../../../constants/documents";
 
 type RecordType = {
   id: string;
@@ -101,7 +103,7 @@ export function FundsDistributedOther() {
     queryKey: ["documents-other", viewRecord?.id],
     queryFn: async () => {
       const response = await axiosPrivate.get("/api/v1/Documents/list", {
-        params: { ownerType: "14", ownerId: viewRecord?.id },
+        params: { ownerType: String(DocumentOwnerType.FundsOthers), ownerId: viewRecord?.id },
       });
       return response.data;
     },
@@ -122,8 +124,8 @@ export function FundsDistributedOther() {
       const uploadData = new FormData();
       uploadData.append("file", file);
       uploadData.append("ownerId", ownerId);
-      uploadData.append("ownerType", "14");
-      uploadData.append("documentType", "27");
+      uploadData.append("ownerType", String(DocumentOwnerType.FundsOthers));
+      uploadData.append("documentType", String(DocumentType.UtilizationCertificate));
 
       return await axiosPrivate.post("/api/v1/Documents/upload", uploadData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -253,12 +255,13 @@ export function FundsDistributedOther() {
         cellRenderer: (params: ICellRendererParams) => (
           <div className="flex h-full items-center">
             <Button
-              variant="outline"
+              variant="ghost"
+              size="icon"
               onClick={() => handleView(params.data)}
-              className="px-4 h-9 border-primary text-primary rounded-[10px] hover:bg-info-muted cursor-pointer"
+              className="text-primary hover:bg-info-muted hover:text-primary cursor-pointer"
+              title="View"
             >
               <Eye className="size-4" />
-              View
             </Button>
           </div>
         ),
@@ -271,11 +274,7 @@ export function FundsDistributedOther() {
   );
 
   if (isUtilsLoading) {
-    return (
-      <div className="flex items-center justify-center h-full min-h-100">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-border border-t-primary"></div>
-      </div>
-    );
+    return <Spinner fullPage />;
   }
 
   if (isError) {
@@ -563,9 +562,14 @@ export function FundsDistributedOther() {
                 disabled={addMutation.isPending || uploadMutation.isPending}
                 className="px-4 h-10 rounded-[10px] cursor-pointer"
               >
-                {addMutation.isPending || uploadMutation.isPending
-                  ? "Saving..."
-                  : "Save"}
+                {addMutation.isPending || uploadMutation.isPending ? (
+                  <>
+                    <Spinner inline iconClassName="size-4" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save"
+                )}
               </Button>
             </div>
           </form>
@@ -638,9 +642,7 @@ export function FundsDistributedOther() {
               <p className="text-[16px] font-semibold text-primary mb-4">
                 Utilization Certificate
                 {isDocumentsLoading && (
-                  <span className="text-sm text-muted-foreground font-normal ml-2">
-                    (Loading...)
-                  </span>
+                  <Spinner iconClassName="size-4" className="ml-2 inline-flex" />
                 )}
               </p>
 

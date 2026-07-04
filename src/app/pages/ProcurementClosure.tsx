@@ -1,11 +1,13 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Search, Loader2 } from "lucide-react";
+import { Search } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import useAxiosPrivate from "../../hooks/useAxiosPrivate"; // Adjust path as needed
+import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import toast from "react-hot-toast";
 import { Table } from "../components/Table";
-import type { ColDef } from "ag-grid-community"; // Added for typing
+import type { ColDef } from "ag-grid-community";
 import { Button } from "../components/ui/button";
+import { Spinner } from "../components/ui/spinner";
+import { DocumentOwnerType, DocumentType } from "../../../constants/documents";
 
 export function ProcurementClosure() {
   const axiosPrivate = useAxiosPrivate();
@@ -133,7 +135,7 @@ export function ProcurementClosure() {
       file: File;
       ownerId: string;
       ownerType: number;
-      documentType: number;
+      documentType: DocumentType;
     }) => {
       const formData = new FormData();
       formData.append("file", file);
@@ -224,7 +226,9 @@ export function ProcurementClosure() {
 
     const itemId = selectedItem.id || selectedItem.procurementId;
     const isTender = selectedItem.itemType === "tender";
-    const ownerType = isTender ? 15 : 2;
+    const ownerType = isTender
+      ? DocumentOwnerType.ProcurementTenders
+      : DocumentOwnerType.Procurement;
 
     try {
       if (isTender) {
@@ -242,7 +246,7 @@ export function ProcurementClosure() {
               file: completionData.completionCertificate,
               ownerId: itemId,
               ownerType: ownerType,
-              documentType: 38,
+              documentType: DocumentType.SocialAuditLetter,
             }),
           );
         }
@@ -257,7 +261,7 @@ export function ProcurementClosure() {
                 file: file,
                 ownerId: itemId,
                 ownerType: ownerType,
-                documentType: 18,
+                documentType: DocumentType.CompletionCertificate,
               }),
             );
           }
@@ -447,9 +451,8 @@ export function ProcurementClosure() {
         </div>
 
         {isTendersLoading ? (
-          <div className="flex flex-col items-center justify-center p-8 text-muted-foreground">
-            <Loader2 className="size-6 animate-spin mb-2 text-secondary" />
-            <p>Loading tenders...</p>
+          <div className="p-8">
+            <Spinner label="Loading tenders..." iconClassName="size-6" />
           </div>
         ) : isTendersError ? (
           <div className="p-8 text-center text-destructive">
@@ -487,9 +490,8 @@ export function ProcurementClosure() {
         </div>
 
         {isProcurementLoading ? (
-          <div className="flex flex-col items-center justify-center p-8 text-muted-foreground">
-            <Loader2 className="size-6 animate-spin mb-2 text-secondary" />
-            <p>Loading procurement data...</p>
+          <div className="p-8">
+            <Spinner label="Loading procurement data..." iconClassName="size-6" />
           </div>
         ) : isProcurementError ? (
           <div className="p-8 text-center text-destructive font-medium">

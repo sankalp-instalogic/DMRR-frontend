@@ -5,7 +5,6 @@ import {
   CheckCircle2,
   Download,
   XCircle,
-  Loader2,
   Eye, // <-- Added Eye for preview icon
 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -13,6 +12,8 @@ import { Input } from "antd";
 import useAxiosPrivate from "../../../../hooks/useAxiosPrivate";
 import { DocumentPreviewModal } from "../../../components/DocumentPreviewModal";
 import { Button } from "../../../components/ui/button";
+import { Spinner } from "../../../components/ui/spinner";
+import { DocumentOwnerType } from "../../../../../constants/documents";
 
 const DOCUMENT_TYPES: Record<string, string> = {
   "Technical Bid Opening": "30",
@@ -55,7 +56,7 @@ export function TenderDetails() {
     queryKey: ["tenderDocuments", id],
     queryFn: async () => {
       const response = await axiosPrivate.get("/api/v1/Documents/list", {
-        params: { ownerType: "15", ownerId: id },
+        params: { ownerType: String(DocumentOwnerType.ProcurementTenders), ownerId: id },
       });
       return response.data;
     },
@@ -129,7 +130,7 @@ export function TenderDetails() {
           <h1 className="text-2xl font-bold text-primary flex items-center gap-2">
             Tender Details
             {(isTenderLoading || isDocsLoading) && (
-              <Loader2 className="size-5 animate-spin text-muted-foreground" />
+              <Spinner iconClassName="size-6" />
             )}
           </h1>
           <p className="text-muted-foreground mt-1">
@@ -378,7 +379,7 @@ export function TenderDetails() {
         >
           {completeStageMutation.isPending ? (
             <>
-              <Loader2 className="size-4 animate-spin" />
+              <Spinner inline iconClassName="size-4" />
               Processing...
             </>
           ) : (
