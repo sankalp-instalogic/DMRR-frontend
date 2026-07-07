@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import {
   useQuery,
@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import { getBillingSectionsConfig } from "../../../constants/billingYesNoQuestions";
 import { DocumentOwnerType, DocumentType } from "../../../constants/documents";
 import { Table } from "../components/Table";
+import { FileUpload } from "../components/FileUpload";
 import type { ColDef } from "ag-grid-community";
 import { Input, Select, DatePicker } from "antd";
 import dayjs from "dayjs";
@@ -23,6 +24,22 @@ export function Billing() {
 
   // --- FORM & SELECTION STATE ---
   const [selectedBill, setSelectedBill] = useState<any>(null);
+
+  // Ref for smooth scrolling to the form when a bill row is selected
+  const formContainerRef = useRef<HTMLDivElement>(null);
+
+  // Smooth scroll to the form whenever a bill row is selected
+  useEffect(() => {
+    if (selectedBill && formContainerRef.current) {
+      // A small timeout ensures the DOM has updated before scrolling
+      setTimeout(() => {
+        formContainerRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 100);
+    }
+  }, [selectedBill]);
 
   const [ddmrFile, setDdmrFile] = useState<File | null>(null);
   const [doFile, setDoFile] = useState<File | null>(null);
@@ -598,6 +615,14 @@ export function Billing() {
       setDdoFile,
       setTreasuryFile,
       setVendorFile,
+      ddmrFile,
+      doFile,
+      ministerFile,
+      paymentOrderFile,
+      grantFile,
+      ddoFile,
+      treasuryFile,
+      vendorFile,
     });
   }, [
     selectedBill,
@@ -672,7 +697,10 @@ export function Billing() {
 
       {/* FORM */}
       {selectedBill && (
-        <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+        <div
+          ref={formContainerRef}
+          className="bg-card border border-border rounded-xl p-6 shadow-sm"
+        >
           <h2 className="text-xl font-bold mb-6 text-primary">
             Billing Workflow - {selectedBill.proposalRefNo}
           </h2>
@@ -708,19 +736,15 @@ export function Billing() {
                           key={`file-${index}`}
                           className={field.containerClass || ""}
                         >
-                          {field.label && (
-                            <label className="block text-sm mb-1 text-muted-foreground">
-                              {field.label}
-                            </label>
-                          )}
-                          <Input
-                            type="file"
-                            size="large"
-                            onChange={(e) =>
-                              field.fileSetter &&
-                              field.fileSetter(e.target.files?.[0] || null)
+                          <FileUpload
+                            variant="compact"
+                            value={field.fileValue ?? null}
+                            onChange={(file) => field.fileSetter?.(file)}
+                            accept={
+                              field.accept || ".pdf,.doc,.docx,image/*"
                             }
-                            className="w-full bg-card"
+                            label={field.label}
+                            buttonText="Select File"
                           />
                         </div>
                       );

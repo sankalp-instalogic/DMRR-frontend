@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { Eye, Download, ArrowLeft, Plus, FileText } from "lucide-react";
+import { Eye, Download, ArrowLeft, FileText } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 import type { ColDef } from "ag-grid-community";
@@ -9,6 +9,7 @@ import { Button } from "../../components/ui/button";
 import { Spinner } from "../../components/ui/spinner";
 import { Input, Select, DatePicker } from "antd";
 import { DocumentPreviewModal } from "../../components/DocumentPreviewModal";
+import { FileUpload } from "../../components/FileUpload";
 import dayjs from "dayjs";
 import formattedDate from "../../../utils/dateFormatter";
 import { DocumentOwnerType, DocumentType } from "../../../../constants/documents";
@@ -490,36 +491,18 @@ export function FundsDistributedDistricts() {
                 )}
               />
 
-              {/* Custom File Upload UI */}
+              {/* File Upload */}
               <div className="space-y-2 md:col-span-2 mt-2">
                 <label className="text-[14px] font-medium text-foreground">
                   Utilization Certificate Upload
                 </label>
-                <div className="border-2 border-dashed border-border rounded-[10px] p-6 text-center hover:bg-muted transition-colors">
-                  <input
-                    type="file"
-                    className="hidden"
-                    id="gr-upload"
-                    accept=".pdf,.doc,.docx"
-                    onChange={(e) =>
-                      setUtilizationCertificate(e.target.files?.[0] || null)
-                    }
-                  />
-                  <label
-                    htmlFor="gr-upload"
-                    className="cursor-pointer flex flex-col items-center"
-                  >
-                    <Plus className="size-6 text-primary mb-2" />
-                    <span className="text-[14px] font-medium text-primary">
-                      {utilizationCertificate
-                        ? utilizationCertificate.name
-                        : "Click to upload Utilization Certificate Document"}
-                    </span>
-                    <span className="text-[12px] text-muted-foreground mt-1">
-                      Accepts PDF, DOC, DOCX
-                    </span>
-                  </label>
-                </div>
+                <FileUpload
+                  variant="compact"
+                  value={utilizationCertificate}
+                  onChange={setUtilizationCertificate}
+                  accept=".pdf,.doc,.docx,image/*"
+                  buttonText="Select File"
+                />
               </div>
             </div>
 

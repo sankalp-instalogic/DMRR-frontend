@@ -6,10 +6,6 @@ import { Dashboard } from "./pages/Dashboard";
 import { ProposalInitiationWizard } from "./pages/ProposalInitiationWizard";
 import { ProposalList } from "./pages/ProposalList";
 import { ProposalDetail } from "./pages/ProposalDetail";
-import { StageUpdate } from "./pages/StageUpdate";
-import { DocumentUploadScreen } from "./pages/DocumentUploadScreen";
-import { DocumentViewerScreen } from "./pages/DocumentViewerScreen";
-import { HierarchyMaster } from "./pages/HierarchyMaster";
 import { DDMAWorkflow } from "./pages/DDMAWorkflow";
 import { GenericEvaluation } from "./pages/GenericEvaluvation";
 import { Tendering } from "./pages/Tendering";
@@ -17,20 +13,14 @@ import { ProjectExecution } from "./pages/ProjectExecution";
 import { Billing } from "./pages/Billing";
 import { ProjectClosure } from "./pages/ProjectClosure";
 import { ProcurementDashboard } from "./pages/procurement/ProcurementDashboard";
-import { ProcurementRegister } from "./pages/procurement/ProcurementRegister";
 import { ProcurementList } from "./pages/procurement/ProcurementList";
-import { CreateProcurement } from "./pages/procurement/CreateProcurement";
 import { NewProcurement } from "./pages/procurement/NewProcurement";
-import { EditProcurement } from "./pages/procurement/EditProcurement";
-import { ProcurementOpen } from "./pages/procurement/ProcurementOpen";
 import { ProposalScrutinyCommittee } from "./pages/procurement/ProposalScrutinyCommittee";
 import { ProcurementClosure } from "./pages/ProcurementClosure";
 import { TechnicalAppraisalCommittee } from "./pages/procurement/TechnicalAppraisalCommittee";
 import { SECApprovalProcurement } from "./pages/procurement/SECApprovalProcurement";
 import { ProcurementAdminApproval } from "./pages/procurement/ProcurementAdminApproval";
-import { DocumentManagement } from "./pages/DocumentManagement";
 import { AIDocumentIntelligence } from "./pages/AIDocumentIntelligence";
-import { Reports } from "./pages/Reports";
 import { AuditTrail } from "./pages/AuditTrail";
 import { DistrictMaster } from "./pages/master/DistrictMaster";
 import { TalukaMaster } from "./pages/master/TalukaMaster";
@@ -81,10 +71,6 @@ export const router = createBrowserRouter([
           { path: "proposal-initiation", Component: ProposalInitiationWizard },
           { path: "proposal-list", Component: ProposalList },
           { path: "proposal-detail/:id", Component: ProposalDetail },
-          { path: "stage-update", Component: StageUpdate },
-          { path: "document-upload", Component: DocumentUploadScreen },
-          { path: "document-viewer", Component: DocumentViewerScreen },
-          { path: "hierarchy-master", Component: HierarchyMaster },
           { path: "ddma-workflow", Component: DDMAWorkflow },
           { path: "evaluation/:committeeType", Component: GenericEvaluation },
           { path: "tendering", Component: Tendering },
@@ -115,12 +101,8 @@ export const router = createBrowserRouter([
 
           // Proposals for Preparedness & Capacity Building - Procurements
           { path: "procurement", Component: ProcurementDashboard },
-          { path: "procurement-register", Component: ProcurementRegister },
           { path: "procurement-list", Component: ProcurementList },
-          { path: "procurement/create", Component: CreateProcurement },
           { path: "procurement/new", Component: NewProcurement },
-          { path: "procurement/edit/:id", Component: EditProcurement },
-          { path: "procurement/view/:id", Component: ProcurementOpen },
           { path: "procurement-psc", Component: ProposalScrutinyCommittee },
           { path: "procurement-tac", Component: TechnicalAppraisalCommittee },
           {
@@ -167,9 +149,7 @@ export const router = createBrowserRouter([
           { path: "prep/media-budget", Component: MediaBudget },
 
           // Other modules (unchanged)
-          { path: "documents", Component: DocumentManagement },
           { path: "ai-intelligence", Component: AIDocumentIntelligence },
-          { path: "reports", Component: Reports },
           { path: "audit-trail", Component: AuditTrail },
           { path: "master/district", Component: DistrictMaster },
           { path: "master/taluka", Component: TalukaMaster },

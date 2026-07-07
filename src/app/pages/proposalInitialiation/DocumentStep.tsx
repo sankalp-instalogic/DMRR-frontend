@@ -1,14 +1,11 @@
 import React from "react";
 import { Input } from "antd";
-import { Button } from "../../components/ui/button";
+import { FileUpload } from "../../components/FileUpload";
 import {
   AlertCircle,
   CheckCircle2,
-  FileCheck,
   FileText,
   Shield,
-  Upload,
-  XCircle,
 } from "lucide-react";
 
 export interface Step4Data {
@@ -22,7 +19,7 @@ interface DocumentsStepProps {
   ndmaValidationStatus: "idle" | "running" | "success" | "failed";
   ndmaValidationMessage: string;
   onValidate: () => void;
-  onFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onFileChange: (file: File | null) => void;
 }
 
 export function DocumentsStep(props: DocumentsStepProps) {
@@ -55,60 +52,14 @@ export function DocumentsStep(props: DocumentsStepProps) {
         />
       </div>
 
-      <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-        <Upload className="size-12 mx-auto text-muted-foreground mb-4" />
-        <h4 className="font-semibold mb-2">
-          Proposal Demand File <span className="text-destructive">*</span>
-        </h4>
-        <p className="text-sm text-muted-foreground mb-4">
-          Allowed formats: PDF, DOC, DOCX | Maximum size: 25 MB
-        </p>
-        <input
-          type="file"
-          accept=".pdf,.doc,.docx"
-          onChange={props.onFileUpload}
-          className="hidden"
-          id="file-upload"
-        />
-        <label
-          htmlFor="file-upload"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity cursor-pointer font-medium"
-        >
-          <Upload className="size-4" />
-          Choose File
-        </label>
-
-        {props.data.proposalDemandFile && (
-          <div className="mt-6 bg-success-muted border border-success-border rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <FileCheck className="size-5 text-success" />
-                <div className="text-left">
-                  <p className="font-medium text-sm text-success-muted-foreground">
-                    {props.data.proposalDemandFile.name}
-                  </p>
-                  <p className="text-xs text-success-muted-foreground">
-                    {(props.data.proposalDemandFile.size / 1024 / 1024).toFixed(
-                      2
-                    )}{" "}
-                    MB
-                  </p>
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() =>
-                  props.setData({ ...props.data, proposalDemandFile: null })
-                }
-                className="text-destructive hover:bg-destructive-muted"
-              >
-                <XCircle className="size-5" />
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
+      <FileUpload
+        value={props.data.proposalDemandFile}
+        onChange={props.onFileChange}
+        accept=".pdf,.doc,.docx"
+        label="Proposal Demand File"
+        required
+        description="Allowed formats: PDF, DOC, DOCX | Maximum size: 25 MB"
+      />
 
       {/* NDMA Validation */}
       <div className="border border-border rounded-lg p-6 mt-6">

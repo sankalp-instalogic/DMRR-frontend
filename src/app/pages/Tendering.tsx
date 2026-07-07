@@ -1,11 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
-import {
-  Save,
-  FileText,
-  Upload,
-  CheckCircle2,
-  XCircle,
-} from "lucide-react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { Save, FileText, CheckCircle2, XCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import useAxPrivate from "../../hooks/useAxiosPrivate";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -16,6 +10,7 @@ import { Link } from "react-router";
 import { Button } from "../components/ui/button";
 import { Spinner } from "../components/ui/spinner";
 import { DocumentOwnerType, DocumentType } from "../../../constants/documents";
+import { FileUpload } from "../components/FileUpload";
 
 // Document Type Mapping Configuration
 const DOCUMENT_TYPES: Record<string, DocumentType> = {
@@ -29,6 +24,9 @@ export function Tendering() {
   const axios = useAxPrivate();
   const queryClient = useQueryClient();
   const [selectedTender, setSelectedTender] = useState<any>(null);
+
+  // Ref for smooth scrolling to the form when a tender row is selected
+  const formContainerRef = useRef<HTMLDivElement>(null);
 
   // Table pagination state
   const [page, setPage] = useState(1);
@@ -70,6 +68,19 @@ export function Tendering() {
         tenderNotice: null,
         dmrrLetter: null,
       });
+    }
+  }, [selectedTender]);
+
+  // Smooth scroll to the form whenever a tender row is selected
+  useEffect(() => {
+    if (selectedTender && formContainerRef.current) {
+      // A small timeout ensures the DOM has updated before scrolling
+      setTimeout(() => {
+        formContainerRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 100);
     }
   }, [selectedTender]);
 
@@ -240,13 +251,6 @@ export function Tendering() {
     });
   };
 
-  const handleDocumentUpload =
-    (docKey: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files && e.target.files.length > 0) {
-        setDocuments({ ...documents, [docKey]: e.target.files[0] });
-      }
-    };
-
   // Helper function to render table rows for documents
   const renderDocumentRow = (docName: string, docKey: string) => {
     const isUploaded = documents[docKey] !== null;
@@ -255,16 +259,15 @@ export function Tendering() {
       <tr className="hover:bg-muted/50 transition-colors" key={docKey}>
         <td className="px-6 py-4 font-medium text-foreground">{docName}</td>
         <td className="px-6 py-4 text-center">
-          <label className="inline-flex items-center gap-2 bg-secondary text-primary-foreground px-3 py-1.5 rounded-lg cursor-pointer hover:bg-info transition-colors text-xs font-medium">
-            <Upload className="w-3.5 h-3.5" />
-            <span>Upload Document</span>
-            <input
-              type="file"
-              className="hidden"
-              accept=".csv,.xls,.xlsx,.pdf,image/*"
-              onChange={handleDocumentUpload(docKey)}
-            />
-          </label>
+          <FileUpload
+            variant="compact"
+            value={documents[docKey] ?? null}
+            onChange={(f) =>
+              setDocuments((prev) => ({ ...prev, [docKey]: f }))
+            }
+            accept=".csv,.xls,.xlsx,.pdf,image/*"
+            buttonText="Upload"
+          />
         </td>
         <td className="px-6 py-4 text-center">
           {isUploaded ? (
@@ -400,7 +403,10 @@ export function Tendering() {
 
       {/* Tender Form */}
       {selectedTender && (
-        <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+        <div
+          ref={formContainerRef}
+          className="bg-card border border-border rounded-xl p-6 shadow-sm"
+        >
           <h3 className="font-semibold text-[20px] text-primary mb-6">
             Tendering : {selectedTender.proposalRefNo} - {selectedTender.title}
           </h3>

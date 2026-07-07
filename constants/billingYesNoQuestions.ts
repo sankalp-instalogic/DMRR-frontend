@@ -10,11 +10,13 @@ export interface SelectOption {
 
 export interface FieldConfig {
   type: FieldType;
-  stateKey?: string; 
+  stateKey?: string;
   placeholder?: string;
   label?: string;
   containerClass?: string;
   options?: SelectOption[];
+  accept?: string;
+  fileValue?: File | null;
   fileSetter?: (file: File | null) => void;
 }
 
@@ -49,6 +51,16 @@ export interface BillingConfigDeps {
   setDdoFile: (file: File | null) => void;
   setTreasuryFile: (file: File | null) => void;
   setVendorFile: (file: File | null) => void;
+
+  // Current File Values
+  ddmrFile: File | null;
+  doFile: File | null;
+  ministerFile: File | null;
+  paymentOrderFile: File | null;
+  grantFile: File | null;
+  ddoFile: File | null;
+  treasuryFile: File | null;
+  vendorFile: File | null;
 }
 
 // --- 2. FACTORY FUNCTION ---
@@ -64,7 +76,7 @@ export const getBillingSectionsConfig = (deps: BillingConfigDeps): SectionConfig
     fields: [
       { type: "date", stateKey: "ddmrDate" },
       { type: "number", stateKey: "ddmrAmount", placeholder: "Amount" },
-      { type: "file", fileSetter: deps.setDdmrFile, label: "Upload Invoice", containerClass: "md:col-span-2" },
+      { type: "file", fileValue: deps.ddmrFile, fileSetter: deps.setDdmrFile, label: "Upload Invoice", containerClass: "md:col-span-2" },
     ],
   },
   {
@@ -78,7 +90,7 @@ export const getBillingSectionsConfig = (deps: BillingConfigDeps): SectionConfig
     fields: [
       { type: "date", stateKey: "doDate" },
       { type: "number", stateKey: "doAmount", placeholder: "Amount" },
-      { type: "file", fileSetter: deps.setDoFile, label: "Upload Document", containerClass: "md:col-span-2" },
+      { type: "file", fileValue: deps.doFile, fileSetter: deps.setDoFile, label: "Upload Document", containerClass: "md:col-span-2" },
     ],
   },
   {
@@ -92,7 +104,7 @@ export const getBillingSectionsConfig = (deps: BillingConfigDeps): SectionConfig
     fields: [
       { type: "date", stateKey: "ministerDate" },
       { type: "empty" },
-      { type: "file", fileSetter: deps.setMinisterFile, label: "Upload Document", containerClass: "md:col-span-2" },
+      { type: "file", fileValue: deps.ministerFile, fileSetter: deps.setMinisterFile, label: "Upload Document", containerClass: "md:col-span-2" },
     ],
   },
   {
@@ -116,7 +128,7 @@ export const getBillingSectionsConfig = (deps: BillingConfigDeps): SectionConfig
         ],
       },
       { type: "number", stateKey: "paymentOrderAmount", placeholder: "Amount Released" },
-      { type: "file", fileSetter: deps.setPaymentOrderFile },
+      { type: "file", fileValue: deps.paymentOrderFile, fileSetter: deps.setPaymentOrderFile },
     ],
   },
   {
@@ -130,7 +142,7 @@ export const getBillingSectionsConfig = (deps: BillingConfigDeps): SectionConfig
     fields: [
       { type: "date", stateKey: "grantDate" },
       { type: "number", stateKey: "grantAmount", placeholder: "Amount Released" },
-      { type: "file", fileSetter: deps.setGrantFile },
+      { type: "file", fileValue: deps.grantFile, fileSetter: deps.setGrantFile },
     ],
   },
   {
@@ -144,7 +156,7 @@ export const getBillingSectionsConfig = (deps: BillingConfigDeps): SectionConfig
     fields: [
       { type: "date", stateKey: "paymentDDODate" },
       { type: "number", stateKey: "paymentDDOAmount", placeholder: "Amount" },
-      { type: "file", fileSetter: deps.setDdoFile },
+      { type: "file", fileValue: deps.ddoFile, fileSetter: deps.setDdoFile },
     ],
   },
   {
@@ -159,7 +171,7 @@ export const getBillingSectionsConfig = (deps: BillingConfigDeps): SectionConfig
       { type: "date", stateKey: "treasuryDate" },
       { type: "text", stateKey: "treasuryBillNumber", placeholder: "Bill Number" },
       { type: "text", stateKey: "treasuryRtgsNumber", placeholder: "RTGS Number" },
-      { type: "file", fileSetter: deps.setTreasuryFile },
+      { type: "file", fileValue: deps.treasuryFile, fileSetter: deps.setTreasuryFile },
     ],
   },
   {
@@ -174,7 +186,7 @@ export const getBillingSectionsConfig = (deps: BillingConfigDeps): SectionConfig
       { type: "date", stateKey: "vendorDate" },
       { type: "text", stateKey: "vendorTransactionId", placeholder: "Transaction ID" },
       { type: "text", stateKey: "vendorRtgsNumber", placeholder: "RTGS Number" },
-      { type: "file", fileSetter: deps.setVendorFile },
+      { type: "file", fileValue: deps.vendorFile, fileSetter: deps.setVendorFile },
     ],
   },
 ];

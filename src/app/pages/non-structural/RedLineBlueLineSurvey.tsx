@@ -2,20 +2,13 @@ import { useState, useMemo } from "react";
 import { Plus, Eye, Download, ArrowLeft } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
-import {
-  Input,
-  Select,
-  DatePicker,
-  InputNumber,
-  Upload,
-  Button as AntButton,
-} from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import { Input, Select, DatePicker, InputNumber } from "antd";
 import dayjs from "dayjs";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 import { Table } from "../../components/Table";
 import type { ColDef } from "ag-grid-community";
 import { DocumentPreviewModal } from "../../components/DocumentPreviewModal";
+import { FileUpload } from "../../components/FileUpload";
 import { Button } from "../../components/ui/button";
 import { Spinner } from "../../components/ui/spinner";
 import formateDate from "../../../utils/dateFormatter"
@@ -683,17 +676,13 @@ export function RedLineBlueLineSurvey() {
                 name="grDocument"
                 control={control}
                 render={({ field }) => (
-                  <Upload
-                    beforeUpload={(file) => {
-                      field.onChange(file);
-                      return false;
-                    }}
-                    onRemove={() => field.onChange(null)}
-                    fileList={field.value ? [field.value as any] : []}
-                    maxCount={1}
-                  >
-                    <AntButton icon={<UploadOutlined />}>Select File</AntButton>
-                  </Upload>
+                  <FileUpload
+                    variant="compact"
+                    value={(field.value as File | null) ?? null}
+                    onChange={field.onChange}
+                    accept=".pdf,.doc,.docx,image/*"
+                    buttonText="Select File"
+                  />
                 )}
               />
             </div>
@@ -705,17 +694,13 @@ export function RedLineBlueLineSurvey() {
                 name="completionCertificate"
                 control={control}
                 render={({ field }) => (
-                  <Upload
-                    beforeUpload={(file) => {
-                      field.onChange(file);
-                      return false;
-                    }}
-                    onRemove={() => field.onChange(null)}
-                    fileList={field.value ? [field.value as any] : []}
-                    maxCount={1}
-                  >
-                    <AntButton icon={<UploadOutlined />}>Select File</AntButton>
-                  </Upload>
+                  <FileUpload
+                    variant="compact"
+                    value={(field.value as File | null) ?? null}
+                    onChange={field.onChange}
+                    accept=".pdf,.doc,.docx,image/*"
+                    buttonText="Select File"
+                  />
                 )}
               />
             </div>

@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { Modal, Tag } from "antd";
-import { 
-  FileText, 
-  Calendar, 
-  HardDrive, 
-  AlertCircle 
+import {
+  FileText,
+  Calendar,
+  HardDrive,
+  AlertCircle,
+  Download
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
@@ -102,6 +103,15 @@ export function DocumentPreviewModal({ isOpen, onClose, documentId }: DocumentPr
     onClose();
   };
 
+  // Decide how the fetched blob can be shown: images and PDFs render inline,
+  // everything else falls back to the "Preview not available" state.
+  const contentType = metadata?.contentType || "";
+  const isImage = contentType.startsWith("image/");
+  const isPdf =
+    contentType === "application/pdf" ||
+    metadata?.fileName?.toLowerCase().endsWith(".pdf");
+  const canPreview = isImage || isPdf;
+
   const getOcrStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case "completed": return "success";
@@ -185,8 +195,17 @@ export function DocumentPreviewModal({ isOpen, onClose, documentId }: DocumentPr
             </div>
           )}
 
+          {/* Image Viewer */}
+          {!isMetadataLoading && !isFileLoading && fileUrl && isImage && (
+            <img
+              src={fileUrl}
+              alt={metadata?.fileName || "Document preview"}
+              className="max-w-full max-h-full object-contain rounded-lg shadow-sm"
+            />
+          )}
+
           {/* Document Viewer (Iframe) */}
-          {!isMetadataLoading && !isFileLoading && fileUrl && (
+          {!isMetadataLoading && !isFileLoading && fileUrl && !isImage && isPdf && (
             <iframe
               src={`${fileUrl}#view=FitH`} // FitH forces PDF to fit window horizontally
               title={metadata?.fileName || "Document preview"}
@@ -194,6 +213,28 @@ export function DocumentPreviewModal({ isOpen, onClose, documentId }: DocumentPr
               style={{ border: 'none' }}
               allowFullScreen
             />
+          )}
+
+          {/* Non-previewable fallback (matches FileUpload's preview modal) */}
+          {!isMetadataLoading && !isFileLoading && fileUrl && !canPreview && (
+            <div className="flex flex-col items-center gap-3 text-muted-foreground text-center max-w-sm">
+              <AlertCircle className="size-8" aria-hidden="true" />
+              <h3 className="font-semibold text-base text-foreground">
+                Preview not available
+              </h3>
+              <p className="text-sm">
+                This file type can't be previewed in the browser. You can
+                download it to view its contents.
+              </p>
+              <a
+                href={fileUrl}
+                download={metadata?.fileName}
+                className="inline-flex items-center gap-2 mt-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity text-sm font-medium"
+              >
+                <Download className="size-4" />
+                Download
+              </a>
+            </div>
           )}
         </div>
       </div>

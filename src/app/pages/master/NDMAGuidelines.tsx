@@ -26,6 +26,7 @@ import {
   FormMessage,
 } from "../../components/ui/form";
 import { DocumentOwnerType, DocumentType } from "../../../../constants/documents";
+import { FileUpload } from "../../components/FileUpload";
 
 // --- TYPES ---
 type FormValues = {
@@ -515,13 +516,10 @@ export function NDMAGuidelines() {
               <FormItem className="md:col-span-2">
                 <FormLabel>Upload Document (Optional)</FormLabel>
                 <FormControl>
-                  <AntdInput
-                    type="file"
-                    onChange={(e) => {
-                      if (e.target.files && e.target.files.length > 0) {
-                        setSelectedFile(e.target.files[0]);
-                      }
-                    }}
+                  <FileUpload
+                    variant="compact"
+                    value={selectedFile}
+                    onChange={(f) => setSelectedFile(f)}
                   />
                 </FormControl>
               </FormItem>

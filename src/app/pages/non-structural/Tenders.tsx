@@ -1,12 +1,12 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
-import { Input, Upload } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import { Input } from "antd";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 import { Table } from "../../components/Table";
 import type { ColDef } from "ag-grid-community";
 import { DocumentPreviewModal } from "../../components/DocumentPreviewModal";
+import { FileUpload } from "../../components/FileUpload";
 import { Button } from "../../components/ui/button";
 import { Spinner } from "../../components/ui/spinner";
 import {
@@ -722,25 +722,13 @@ export function Tenders() {
                           name={stage.key}
                           control={control}
                           render={({ field }) => (
-                            <Upload
-                              beforeUpload={(file) => {
-                                field.onChange(file);
-                                return false; // Prevent automatic upload
-                              }}
-                              onRemove={() => field.onChange(null)}
-                              fileList={field.value ? [field.value as any] : []}
-                              maxCount={1}
-                              showUploadList={false} // Hidden so we rely on custom checkmark column below
-                            >
-                              <Button
-                                type="button"
-                                variant="outline"
-                                className="px-4 h-10 border-primary text-primary rounded-[10px] hover:bg-info-muted"
-                              >
-                                <UploadOutlined />
-                                Upload
-                              </Button>
-                            </Upload>
+                            <FileUpload
+                              variant="compact"
+                              value={(field.value as File | null) ?? null}
+                              onChange={field.onChange}
+                              accept=".csv,.xls,.xlsx,.pdf,image/*"
+                              buttonText="Select File"
+                            />
                           )}
                         />
                       </td>

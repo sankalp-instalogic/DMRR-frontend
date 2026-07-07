@@ -294,24 +294,8 @@ export function ProposalInitiationWizard() {
     }
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (file.size > 25 * 1024 * 1024) {
-        alert("File size exceeds 25MB limit.");
-        return;
-      }
-      const allowedTypes = [
-        "application/pdf",
-        "application/msword",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      ];
-      if (!allowedTypes.includes(file.type)) {
-        alert("Only PDF, DOC, and DOCX files are allowed.");
-        return;
-      }
-      setStep4Data({ ...step4Data, proposalDemandFile: file });
-    }
+  const handleFileChange = (file: File | null) => {
+    setStep4Data({ ...step4Data, proposalDemandFile: file });
   };
 
   const isStepValid = (step: number) => {
@@ -406,7 +390,7 @@ export function ProposalInitiationWizard() {
             ndmaValidationStatus={ndmaValidationStatus}
             ndmaValidationMessage={ndmaValidationMessage}
             onValidate={handleRunNdmaValidation}
-            onFileUpload={handleFileUpload}
+            onFileChange={handleFileChange}
           />
         )}
       </div>

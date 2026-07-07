@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo } from "react";
-import { Upload, Save, Pencil } from "lucide-react";
+import { Save, Pencil } from "lucide-react";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
@@ -14,10 +14,9 @@ import { Table } from "../components/Table";
 import { Button } from "../components/ui/button";
 import { Spinner } from "../components/ui/spinner";
 import { DocumentOwnerType, DocumentType } from "../../../constants/documents";
+import { FileUpload } from "../components/FileUpload";
 
 export function DDMAWorkflow() {
-  const resolutionFileInputRef = useRef<HTMLInputElement>(null);
-  const technicalSanctionFileInputRef = useRef<HTMLInputElement>(null);
   const workflowSectionRef = useRef<HTMLDivElement>(null);
 
   const [activeTab, setActiveTab] = useState("new");
@@ -398,34 +397,14 @@ export function DDMAWorkflow() {
               {/* UPLOAD RESOLUTION */}
               <div>
                 <label className="block text-sm mb-2">Upload Resolution</label>
-
-                <div className="border-2 border-dashed border-border rounded-lg p-6">
-                  <div className="text-center">
-                    <Upload className="size-8 text-muted-foreground mx-auto mb-3" />
-
-                    <input
-                      type="file"
-                      className="hidden"
-                      ref={resolutionFileInputRef}
-                      disabled={processWorkflowMutation.isPending}
-                      onChange={(e) => {
-                        if (e.target.files && e.target.files.length > 0) {
-                          setResolutionFile(e.target.files[0]);
-                        }
-                      }}
-                    />
-
-                    <Button
-                      type="button"
-                      disabled={processWorkflowMutation.isPending}
-                      onClick={() => resolutionFileInputRef.current?.click()}
-                    >
-                      {resolutionFile
-                        ? resolutionFile.name
-                        : "Upload DDMA Resolution"}
-                    </Button>
-                  </div>
-                </div>
+                <FileUpload
+                  variant="compact"
+                  value={resolutionFile}
+                  onChange={setResolutionFile}
+                  accept=".pdf,.doc,.docx,image/*"
+                  buttonText="Select File"
+                  disabled={processWorkflowMutation.isPending}
+                />
               </div>
 
               {/* UPLOAD TECHNICAL SANCTION */}
@@ -433,36 +412,14 @@ export function DDMAWorkflow() {
                 <label className="block text-sm mb-2">
                   Upload Technical Sanction
                 </label>
-
-                <div className="border-2 border-dashed border-border rounded-lg p-6">
-                  <div className="text-center">
-                    <Upload className="size-8 text-muted-foreground mx-auto mb-3" />
-
-                    <input
-                      type="file"
-                      className="hidden"
-                      ref={technicalSanctionFileInputRef}
-                      disabled={processWorkflowMutation.isPending}
-                      onChange={(e) => {
-                        if (e.target.files && e.target.files.length > 0) {
-                          setSanctionFile(e.target.files[0]);
-                        }
-                      }}
-                    />
-
-                    <Button
-                      type="button"
-                      disabled={processWorkflowMutation.isPending}
-                      onClick={() =>
-                        technicalSanctionFileInputRef.current?.click()
-                      }
-                    >
-                      {sanctionFile
-                        ? sanctionFile.name
-                        : "Upload Technical Sanction"}
-                    </Button>
-                  </div>
-                </div>
+                <FileUpload
+                  variant="compact"
+                  value={sanctionFile}
+                  onChange={setSanctionFile}
+                  accept=".pdf,.doc,.docx,image/*"
+                  buttonText="Select File"
+                  disabled={processWorkflowMutation.isPending}
+                />
               </div>
 
               {/* SAVE BUTTON */}

@@ -4,15 +4,15 @@ import {
   ArrowLeft,
   CheckCircle2,
   XCircle,
-  Upload as UploadIcon,
   Save,
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Input, Upload, Button as AntdButton } from "antd";
+import { Input } from "antd";
 import useAxiosPrivate from "../../../../hooks/useAxiosPrivate";
 import { Button } from "../../../components/ui/button";
 import { Spinner } from "../../../components/ui/spinner";
 import { DocumentOwnerType, DocumentType } from "../../../../../constants/documents";
+import { FileUpload } from "../../../components/FileUpload";
 
 // Document Type Mapping (ownerType is 2 for this table context)
 const DOCUMENT_TYPES: Record<string, DocumentType> = {
@@ -140,11 +140,6 @@ export function ProcurementTenderClosureDetails() {
 
   // --- EVENT HANDLERS ---
 
-  const handleFileUpload = (stageKey: string) => (file: File) => {
-    setFiles((prev) => ({ ...prev, [stageKey]: file }));
-    return false; // Prevent automatic upload by Antd
-  };
-
   const handleSaveClosure = async () => {
     if (!id) return;
 
@@ -183,23 +178,12 @@ export function ProcurementTenderClosureDetails() {
       <tr className="hover:bg-muted/50 transition-colors" key={stageKey}>
         <td className="px-6 py-4 pl-10">{stageName}</td>
         <td className="px-6 py-4 text-center">
-          <Upload
-            beforeUpload={handleFileUpload(stageKey)}
-            showUploadList={false}
-            accept="*"
-          >
-            <AntdButton
-              icon={<UploadIcon className="size-3.5" />}
-              style={{
-                backgroundColor: "var(--info)",
-                color: "var(--info-foreground)",
-                border: "none",
-              }}
-              className="hover:bg-info font-medium"
-            >
-              Upload Document
-            </AntdButton>
-          </Upload>
+          <FileUpload
+            variant="compact"
+            value={files[stageKey] ?? null}
+            onChange={(f) => setFiles((prev) => ({ ...prev, [stageKey]: f }))}
+            buttonText="Select File"
+          />
         </td>
         <td className="px-6 py-4 text-center">
           {isUploaded ? (

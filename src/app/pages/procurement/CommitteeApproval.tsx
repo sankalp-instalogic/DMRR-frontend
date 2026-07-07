@@ -4,10 +4,9 @@ import {
   ArrowLeft,
   CheckCircle,
   XCircle,
-  Upload as UploadIcon, // Aliased to prevent conflict with Antd's Upload
   ArrowRight,
 } from "lucide-react";
-import { DatePicker, Input, Upload as AntUpload } from "antd";
+import { DatePicker, Input } from "antd";
 import dayjs from "dayjs";
 import type { ColDef } from "ag-grid-community";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -16,6 +15,7 @@ import { Table } from "../../components/Table"; // Adjust the import path to whe
 import { Button } from "../../components/ui/button";
 import { Spinner } from "../../components/ui/spinner";
 import { DocumentOwnerType, DocumentType } from "../../../../constants/documents";
+import { FileUpload } from "../../components/FileUpload";
 
 interface CommitteeItem {
   id: string;
@@ -392,29 +392,12 @@ export function DetailScreen({
                     Upload Approval Document{" "}
                     <span className="text-destructive">*</span>
                   </label>
-                  {/* Antd Upload with original visual style wrapped inside */}
-                  <AntUpload
-                    beforeUpload={(file) => {
-                      setApprovalDoc(file as File);
-                      return false; // Prevent automatic upload
-                    }}
-                    showUploadList={false}
-                    maxCount={1}
-                    className="w-full"
-                  >
-                    <div
-                      className={`cursor-pointer flex items-center justify-center gap-2 w-full h-10 px-3 py-2 bg-input-background border border-dashed rounded-lg hover:bg-muted text-sm text-muted-foreground transition-colors ${
-                        errors.doc ? "border-destructive" : "border-border"
-                      }`}
-                    >
-                      <UploadIcon className="size-4" />
-                      <span className="truncate max-w-50">
-                        {approvalDoc
-                          ? approvalDoc.name
-                          : "Click to upload document"}
-                      </span>
-                    </div>
-                  </AntUpload>
+                  <FileUpload
+                    variant="compact"
+                    value={approvalDoc}
+                    onChange={setApprovalDoc}
+                    buttonText="Select File"
+                  />
                   {errors.doc && (
                     <p className="text-xs text-destructive mt-1">
                       {errors.doc}

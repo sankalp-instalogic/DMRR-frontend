@@ -7,6 +7,8 @@ import { Table } from "../components/Table";
 import type { ColDef } from "ag-grid-community";
 import { Button } from "../components/ui/button";
 import { Spinner } from "../components/ui/spinner";
+import { FileUpload } from "../components/FileUpload";
+import { X } from "lucide-react";
 import { DocumentOwnerType, DocumentType } from "../../../constants/documents";
 
 export function ProcurementClosure() {
@@ -569,15 +571,17 @@ export function ProcurementClosure() {
                   <label className="block mb-2 font-medium text-sm text-primary">
                     Upload Completion Certificate
                   </label>
-                  <input
-                    type="file"
-                    className="w-full border border-border rounded-lg p-2 bg-card file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-secondary/10 file:text-secondary hover:file:bg-secondary/20"
-                    onChange={(e) =>
+                  <FileUpload
+                    variant="compact"
+                    value={completionData.completionCertificate}
+                    onChange={(f) =>
                       setCompletionData({
                         ...completionData,
-                        completionCertificate: e.target.files?.[0] || null,
+                        completionCertificate: f,
                       })
                     }
+                    accept=".pdf,.doc,.docx,image/*"
+                    buttonText="Select File"
                   />
                 </div>
 
@@ -586,16 +590,53 @@ export function ProcurementClosure() {
                   <label className="block mb-2 font-medium text-sm text-primary">
                     Upload Social Audit File
                   </label>
-                  <input
-                    type="file"
-                    multiple
-                    className="w-full border border-border rounded-lg p-2 bg-card file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-secondary/10 file:text-secondary hover:file:bg-secondary/20"
-                    onChange={(e) =>
+                  {completionData.socialAuditFiles.length > 0 && (
+                    <ul className="space-y-1 mb-2">
+                      {completionData.socialAuditFiles.map((file, index) => (
+                        <li
+                          key={`${file.name}-${index}`}
+                          className="flex items-center justify-between gap-2 text-sm bg-card border border-border rounded-md px-3 py-1.5"
+                        >
+                          <span className="truncate" title={file.name}>
+                            {file.name}
+                          </span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Remove file"
+                            className="text-destructive hover:bg-destructive-muted size-7"
+                            onClick={() =>
+                              setCompletionData({
+                                ...completionData,
+                                socialAuditFiles:
+                                  completionData.socialAuditFiles.filter(
+                                    (_, i) => i !== index,
+                                  ),
+                              })
+                            }
+                          >
+                            <X className="size-4" />
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <FileUpload
+                    variant="compact"
+                    value={null}
+                    onChange={(f) => {
+                      if (!f) return;
                       setCompletionData({
                         ...completionData,
-                        socialAuditFiles: Array.from(e.target.files || []),
-                      })
-                    }
+                        socialAuditFiles: [
+                          ...completionData.socialAuditFiles,
+                          f,
+                        ],
+                      });
+                    }}
+                    accept=".pdf,.doc,.docx,image/*"
+                    buttonText="Add File"
                   />
                 </div>
               </div>

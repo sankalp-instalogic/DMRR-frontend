@@ -2,12 +2,13 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { DatePicker, Input } from "antd";
+import { DatePicker } from "antd";
 import dayjs from "dayjs";
 import type { ColDef } from "ag-grid-community";
 import { Table } from "../components/Table";
 import { Button } from "../components/ui/button";
 import { Spinner } from "../components/ui/spinner";
+import { FileUpload } from "../components/FileUpload";
 import { DocumentOwnerType, DocumentType } from "../../../constants/documents";
 import {
   AlertDialog,
@@ -62,6 +63,7 @@ const YesNoField = ({
   label,
   value,
   dateValue,
+  fileValue,
   isApiRequired,
   onChange,
   onDateChange,
@@ -70,6 +72,7 @@ const YesNoField = ({
   label: string;
   value: string;
   dateValue?: string;
+  fileValue?: File | null;
   requiresDocument: boolean;
   isApiRequired: boolean;
   onChange: (val: string) => void;
@@ -134,10 +137,12 @@ const YesNoField = ({
           <label className="block mb-2 font-medium text-sm text-muted-foreground">
             Upload Document
           </label>
-          <Input
-            type="file"
-            size="large"
-            onChange={(e) => onFileChange(e.target.files?.[0] || null)}
+          <FileUpload
+            variant="compact"
+            value={fileValue ?? null}
+            onChange={onFileChange}
+            accept=".pdf,.doc,.docx,image/*"
+            buttonText="Select File"
           />
         </div>
       </div>
@@ -614,6 +619,7 @@ export function ProjectClosure() {
                       label={`${item.itemNumber}. ${item.particulars}`}
                       value={checklistData[item.itemNumber] || ""}
                       dateValue={checklistDates[item.itemNumber]}
+                      fileValue={checklistFiles[item.itemNumber] ?? null}
                       requiresDocument={item.requiresDocument}
                       isApiRequired={item.requiresDocument}
                       onChange={(val) =>
@@ -629,10 +635,14 @@ export function ProjectClosure() {
                         }))
                       }
                       onFileChange={(file) =>
-                        setChecklistFiles((prev) => ({
-                          ...prev,
-                          [item.itemNumber]: file,
-                        }))
+                        setChecklistFiles((prev) => {
+                          if (file === null) {
+                            const next = { ...prev };
+                            delete next[item.itemNumber];
+                            return next;
+                          }
+                          return { ...prev, [item.itemNumber]: file };
+                        })
                       }
                     />
                   ))}
@@ -782,16 +792,17 @@ export function ProjectClosure() {
                   <label className="block mb-2 font-medium text-sm">
                     Upload Completion Certificate
                   </label>
-                  <Input
-                    type="file"
-                    size="large"
-                    className="w-full border rounded-lg p-2 cursor-pointer bg-card"
-                    onChange={(e) =>
+                  <FileUpload
+                    variant="compact"
+                    value={completionData.completionCertificate}
+                    onChange={(file) =>
                       setCompletionData({
                         ...completionData,
-                        completionCertificate: e.target.files?.[0] || null,
+                        completionCertificate: file,
                       })
                     }
+                    accept=".pdf,.doc,.docx,image/*"
+                    buttonText="Select File"
                   />
                 </div>
 
@@ -799,17 +810,50 @@ export function ProjectClosure() {
                   <label className="block mb-2 font-medium text-sm">
                     Upload Social Audit Files
                   </label>
-                  <Input
-                    type="file"
-                    size="large"
-                    multiple
-                    className="w-full border rounded-lg p-2 cursor-pointer bg-card"
-                    onChange={(e) =>
-                      setCompletionData({
-                        ...completionData,
-                        socialAuditFiles: Array.from(e.target.files || []),
-                      })
-                    }
+                  {completionData.socialAuditFiles.length > 0 && (
+                    <ul className="mb-3 space-y-2">
+                      {completionData.socialAuditFiles.map((file, index) => (
+                        <li
+                          key={`${file.name}-${index}`}
+                          className="flex items-center justify-between gap-3 bg-muted border border-border rounded-lg px-3 py-2"
+                        >
+                          <span
+                            className="text-sm truncate"
+                            title={file.name}
+                          >
+                            {file.name}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setCompletionData((prev) => ({
+                                ...prev,
+                                socialAuditFiles: prev.socialAuditFiles.filter(
+                                  (_, i) => i !== index,
+                                ),
+                              }))
+                            }
+                            className="text-destructive text-sm font-medium shrink-0 cursor-pointer hover:opacity-80"
+                          >
+                            Remove
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <FileUpload
+                    variant="compact"
+                    value={null}
+                    onChange={(file) => {
+                      if (file) {
+                        setCompletionData((prev) => ({
+                          ...prev,
+                          socialAuditFiles: [...prev.socialAuditFiles, file],
+                        }));
+                      }
+                    }}
+                    accept=".pdf,.doc,.docx,image/*"
+                    buttonText="Add File"
                   />
                 </div>
               </div>

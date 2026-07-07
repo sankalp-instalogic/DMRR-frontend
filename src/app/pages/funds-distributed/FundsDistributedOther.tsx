@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { Eye, Download, ArrowLeft, Plus, FileText } from "lucide-react";
+import { Eye, Download, ArrowLeft, FileText } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 import { queryClient } from "../../App";
@@ -9,6 +9,7 @@ import type { ColDef, ICellRendererParams } from "ag-grid-community";
 import { Input, Select, DatePicker } from "antd";
 import dayjs from "dayjs";
 import { DocumentPreviewModal } from "../../components/DocumentPreviewModal";
+import { FileUpload } from "../../components/FileUpload";
 import { Button } from "../../components/ui/button";
 import { Spinner } from "../../components/ui/spinner";
 import formattedDate from "../../../utils/dateFormatter";
@@ -499,52 +500,18 @@ export function FundsDistributedOther() {
                 )}
               />
 
-              {/* File Upload UI */}
+              {/* File Upload */}
               <div className="space-y-2 md:col-span-2 mt-2">
                 <label className="text-[14px] font-medium text-foreground">
                   Utilization Certificate Upload
                 </label>
-                <div className="border-2 border-dashed border-border rounded-[10px] p-6 text-center hover:bg-muted transition-colors">
-                  <input
-                    type="file"
-                    className="hidden"
-                    id="cert-upload"
-                    accept=".pdf,.doc,.docx"
-                    onChange={(e) => {
-                      if (e.target.files && e.target.files.length > 0) {
-                        setSelectedFile(e.target.files[0]);
-                      }
-                      e.target.value = "";
-                    }}
-                  />
-                  <label
-                    htmlFor="cert-upload"
-                    className="cursor-pointer flex flex-col items-center"
-                  >
-                    {selectedFile ? (
-                      <>
-                        <FileText className="size-6 text-primary mb-2" />
-                        <span className="text-[14px] font-medium text-primary">
-                          {selectedFile.name}
-                        </span>
-                        <span className="text-[12px] text-muted-foreground mt-1">
-                          Click to change file (
-                          {(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="size-6 text-primary mb-2" />
-                        <span className="text-[14px] font-medium text-primary">
-                          Click to upload Utilization Certificate
-                        </span>
-                        <span className="text-[12px] text-muted-foreground mt-1">
-                          Accepts PDF, DOC, DOCX
-                        </span>
-                      </>
-                    )}
-                  </label>
-                </div>
+                <FileUpload
+                  variant="compact"
+                  value={selectedFile}
+                  onChange={setSelectedFile}
+                  accept=".pdf,.doc,.docx,image/*"
+                  buttonText="Select File"
+                />
               </div>
             </div>
 

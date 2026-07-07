@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { Upload, CheckCircle2, XCircle, Trash2, Download } from "lucide-react";
+import { CheckCircle2, XCircle, Trash2, Download } from "lucide-react";
 
 // Ant Design Imports (Added Tabs)
 import { Input, InputNumber, DatePicker, Tabs } from "antd";
@@ -13,6 +13,7 @@ import { Table } from "../components/Table";
 import { Button } from "../components/ui/button";
 import { Spinner } from "../components/ui/spinner";
 import { DocumentOwnerType, DocumentType } from "../../../constants/documents";
+import { FileUpload } from "../components/FileUpload";
 
 export function ProjectExecution() {
   const axiosPrivate = useAxiosPrivate();
@@ -25,6 +26,22 @@ export function ProjectExecution() {
   const [activeTab, setActiveTab] = useState<
     "entry" | "mpr" | "photos" | "documents"
   >("entry");
+
+  // Ref for smooth scrolling to the details section when a project is selected
+  const formContainerRef = useRef<HTMLDivElement>(null);
+
+  // Smooth scroll to the details section whenever a project row is selected
+  useEffect(() => {
+    if (selectedProject && formContainerRef.current) {
+      // A small timeout ensures the DOM has updated before scrolling
+      setTimeout(() => {
+        formContainerRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 100);
+    }
+  }, [selectedProject]);
 
   // State specifically for the Entry Details tab
   const [entryDetails, setEntryDetails] = useState({
@@ -375,13 +392,6 @@ export function ProjectExecution() {
     setPhotos(updatedPhotos);
   };
 
-  const handleDocumentUpload =
-    (docKey: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files && e.target.files.length > 0) {
-        setDocuments({ ...documents, [docKey]: e.target.files[0] });
-      }
-    };
-
   const handleDownloadDocument = async (doc: any) => {
     if (!doc?.id) return;
     try {
@@ -448,15 +458,15 @@ export function ProjectExecution() {
       <tr className="hover:bg-muted/50 transition-colors" key={docKey}>
         <td className="px-6 py-4 font-medium text-foreground">{docName}</td>
         <td className="px-6 py-4 text-center">
-          <label className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-3 py-1.5 rounded-lg cursor-pointer hover:opacity-90 transition-opacity text-xs font-medium">
-            <Upload className="w-3.5 h-3.5" />
-            <span>Upload Document</span>
-            <input
-              type="file"
-              className="hidden"
-              onChange={handleDocumentUpload(docKey)}
-            />
-          </label>
+          <FileUpload
+            variant="compact"
+            value={documents[docKey] ?? null}
+            onChange={(f) =>
+              setDocuments((prev) => ({ ...prev, [docKey]: f }))
+            }
+            accept=".pdf,.doc,.docx,image/*"
+            buttonText="Upload"
+          />
         </td>
         <td className="px-6 py-4 text-center">
           {isUploaded ? (
@@ -691,15 +701,13 @@ export function ProjectExecution() {
               <label className="text-xs font-medium text-muted-foreground mb-1 block">
                 Report File
               </label>
-              <input
-                type="file"
-                onChange={(e) =>
-                  setMprDetails({
-                    ...mprDetails,
-                    file: e.target.files?.[0] || null,
-                  })
+              <FileUpload
+                variant="compact"
+                value={mprDetails.file}
+                onChange={(f) =>
+                  setMprDetails({ ...mprDetails, file: f })
                 }
-                className="w-full border border-dashed rounded-lg p-1.5 text-xs file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-muted bg-background"
+                buttonText="Select File"
               />
             </div>
           </div>
@@ -795,13 +803,13 @@ export function ProjectExecution() {
 
           {photos.map((photo, index) => (
             <div key={index} className="flex gap-2 mb-3 items-center">
-              <input
-                type="file"
+              <FileUpload
+                variant="compact"
+                className="w-1/5"
+                value={photos[index].file ?? null}
+                onChange={(f) => updatePhotoField(index, "file", f)}
                 accept="image/*"
-                onChange={(e) =>
-                  updatePhotoField(index, "file", e.target.files?.[0] || null)
-                }
-                className="border rounded p-2 text-sm w-1/5"
+                buttonText="Select Image"
               />
               <InputNumber
                 placeholder="Latitude"
@@ -925,7 +933,10 @@ export function ProjectExecution() {
 
       {/* EXECUTION FORM */}
       {selectedProject && (
-        <div className="bg-card border border-border rounded-xl p-6 shadow-sm mt-6">
+        <div
+          ref={formContainerRef}
+          className="bg-card border border-border rounded-xl p-6 shadow-sm mt-6"
+        >
           <div className="flex justify-between items-start mb-6">
             <div>
               <h3 className="font-bold text-lg">

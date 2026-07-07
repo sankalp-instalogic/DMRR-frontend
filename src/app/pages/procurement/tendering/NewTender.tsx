@@ -2,17 +2,17 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router"; // Note: react-router-dom is standard for v6
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import useAxiosPrivate from "../../../../hooks/useAxiosPrivate"; // Adjust path as necessary
-import { Input, Button, Upload } from "antd"; // <-- Added Ant Design imports
+import { Input } from "antd";
 import {
   ArrowLeft,
   CheckCircle2,
-  Upload as UploadIcon, // Renamed to avoid collision with Antd's Upload
   XCircle,
   Save,
 } from "lucide-react";
 import { Button as UIButton } from "../../../components/ui/button";
 import { Spinner } from "../../../components/ui/spinner";
 import { DocumentOwnerType, DocumentType } from "../../../../../constants/documents";
+import { FileUpload } from "../../../components/FileUpload";
 
 // Document Type Mapping (ownerType is 8 for Tenders)
 const DOCUMENT_TYPES: Record<string, DocumentType> = {
@@ -46,13 +46,6 @@ export function NewTender() {
   // Works perfectly with Antd Input
   const handleBasicInfoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setBasicInfo({ ...basicInfo, [e.target.name]: e.target.value });
-  };
-
-  // Updated to work with Antd Upload's beforeUpload hook
-  const handleFileUpload = (stageKey: string) => (file: File) => {
-    setFiles((prev) => ({ ...prev, [stageKey]: file }));
-    // Return false to stop Antd from trying to auto-upload the file immediately
-    return false;
   };
 
   // ==========================================
@@ -139,24 +132,12 @@ export function NewTender() {
       <tr className="hover:bg-muted/50 transition-colors" key={stageKey}>
         <td className="px-6 py-4 pl-10">{stageName}</td>
         <td className="px-6 py-4 text-center">
-          {/* Replaced HTML file input with Antd Upload */}
-          <Upload
-            beforeUpload={handleFileUpload(stageKey)}
-            showUploadList={false}
-            accept="*" // Adjust accepted file types if needed (e.g., ".pdf,.doc")
-          >
-            <Button
-              icon={<UploadIcon className="size-3.5" />}
-              style={{
-                backgroundColor: "var(--secondary)",
-                color: "var(--secondary-foreground)",
-                border: "none",
-              }}
-              className="hover:bg-info/90 font-medium"
-            >
-              Upload Document
-            </Button>
-          </Upload>
+          <FileUpload
+            variant="compact"
+            value={files[stageKey] ?? null}
+            onChange={(f) => setFiles((prev) => ({ ...prev, [stageKey]: f }))}
+            buttonText="Select File"
+          />
         </td>
         <td className="px-6 py-4 text-center">
           {isUploaded ? (

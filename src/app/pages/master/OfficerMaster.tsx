@@ -23,6 +23,18 @@ import {
   FormMessage,
 } from "../../components/ui/form";
 
+// --- PHONE HELPERS ---
+// Backend stores bare national numbers (e.g. "9821001128"); antd-phone-input
+// needs the full E.164 form (e.g. "+919821001128") to display correctly.
+const toNationalPhone = (raw?: string) => {
+  const digits = (raw || "").replace(/\D/g, "");
+  return digits.length > 10 && digits.startsWith("91") ? digits.slice(-10) : digits;
+};
+const toInputPhone = (raw?: string) => {
+  const national = toNationalPhone(raw);
+  return national ? `+91${national}` : "";
+};
+
 // --- TYPES ---
 type FormValues = {
   name: string;
@@ -179,7 +191,7 @@ export function OfficerMaster() {
         officer.lineDepartmentId || officer.lineDepartment?.id || "",
       districtId: officer.districtId || officer.district?.id || "",
       email: officer.email || "",
-      phone: officer.phone || "1234567890",
+      phone: toInputPhone(officer.phone),
       isActive: officer.isActive ?? true,
     });
     setIsModalOpen(true);
@@ -192,10 +204,11 @@ export function OfficerMaster() {
   };
 
   const onSubmit = (data: FormValues) => {
+    const payload = { ...data, phone: toNationalPhone(data.phone) };
     if (editingOfficer) {
-      editMutation.mutate({ id: editingOfficer.id, data });
+      editMutation.mutate({ id: editingOfficer.id, data: payload });
     } else {
-      addMutation.mutate(data);
+      addMutation.mutate(payload);
     }
   };
 
@@ -460,10 +473,11 @@ export function OfficerMaster() {
                       <FormLabel>Phone</FormLabel>
                       <FormControl>
                         <PhoneInput
-                        preferredCountries={["in"]}
+                          key={`${editingOfficer?.id ?? "add"}-${isModalOpen}`}
                           country="in"
+                          onlyCountries={["in"]}
+                          disableDropdown
                           disableParentheses
-                          enableSearch
                           value={field.value}
                           onChange={(value) => {
                             field.onChange(

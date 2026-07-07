@@ -22,6 +22,7 @@ import { cn } from "../components/ui/utils";
 import { Button, buttonVariants } from "../components/ui/button";
 import { Spinner } from "../components/ui/spinner";
 import { DocumentOwnerType, DocumentType } from "../../../constants/documents";
+import { FileUpload } from "../components/FileUpload";
 
 const { TextArea } = Input;
 
@@ -751,20 +752,14 @@ const handleRejectOrRevision = (type: number) => {
                   <label className="block text-sm font-medium mb-2">
                     Upload Attendance Sheet <span className="text-destructive">*</span>
                   </label>
-                  <input
-                    type="file"
-                    accept=".pdf,.doc,.docx"
+                  <FileUpload
+                    variant="compact"
+                    value={attendanceSheet}
+                    onChange={(f) => setAttendanceSheet(f)}
+                    accept=".pdf,.doc,.docx,image/*"
+                    buttonText="Select File"
                     disabled={evaluateMutation.isPending}
-                    onChange={(e) =>
-                      setAttendanceSheet(e.target.files?.[0] || null)
-                    }
-                    className="w-full px-4 py-3 border border-border rounded-lg bg-background file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
                   />
-                  {attendanceSheet && (
-                    <p className="text-sm text-success mt-2">
-                      ✓ File selected: {attendanceSheet.name}
-                    </p>
-                  )}
                 </div>
               )}
 
@@ -816,20 +811,14 @@ const handleRejectOrRevision = (type: number) => {
                     Upload Document (MoM)
                     <span className="text-destructive">*</span>
                   </label>
-                  <input
-                    type="file"
-                    accept=".pdf,.doc,.docx"
-                    onChange={(e) =>
-                      setRevisedMomFile(e.target.files?.[0] || null)
-                    }
+                  <FileUpload
+                    variant="compact"
+                    value={revisedMomFile}
+                    onChange={(f) => setRevisedMomFile(f)}
+                    accept=".pdf,.doc,.docx,image/*"
+                    buttonText="Select File"
                     disabled={revisedEvaluateMutation.isPending}
-                    className="w-full px-4 py-3 border border-border rounded-lg bg-background file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
                   />
-                  {revisedMomFile && (
-                    <p className="text-sm text-success mt-2 font-medium">
-                      ✓ File selected: {revisedMomFile.name}
-                    </p>
-                  )}
                 </div>
               )}
 
@@ -855,18 +844,14 @@ const handleRejectOrRevision = (type: number) => {
                       Upload MoM file
                       <span className="text-destructive">*</span>
                     </label>
-                    <input
-                      type="file"
-                      accept=".pdf,.doc,.docx"
+                    <FileUpload
+                      variant="compact"
+                      value={momFile}
+                      onChange={(f) => setMomFile(f)}
+                      accept=".pdf,.doc,.docx,image/*"
+                      buttonText="Select File"
                       disabled={evaluateMutation.isPending}
-                      onChange={(e) => setMomFile(e.target.files?.[0] || null)}
-                      className="w-full px-4 py-3 border border-success-border rounded-lg bg-background file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-success-muted file:text-success-muted-foreground hover:file:bg-success-muted"
                     />
-                    {momFile && (
-                      <p className="text-sm text-success mt-2 font-medium">
-                        ✓ File selected: {momFile.name}
-                      </p>
-                    )}
                   </div>
                 </div>
               )}
