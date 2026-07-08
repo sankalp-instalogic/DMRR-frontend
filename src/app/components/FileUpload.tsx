@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { cn } from "./ui/utils";
-import { Button } from "./ui/button";
+import { Button, buttonVariants } from "./ui/button";
 import {
   MAX_FILE_SIZE,
   formatBytes,
@@ -35,7 +35,11 @@ interface FilePreviewModalProps {
  * Modal. Images and PDFs render inline; anything else falls back to file
  * metadata plus a download link.
  */
-export function FilePreviewModal({ file, open, onClose }: FilePreviewModalProps) {
+export function FilePreviewModal({
+  file,
+  open,
+  onClose,
+}: FilePreviewModalProps) {
   const [url, setUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -50,7 +54,8 @@ export function FilePreviewModal({ file, open, onClose }: FilePreviewModalProps)
 
   const type = file?.type || "";
   const isImage = type.startsWith("image/");
-  const isPdf = type === "application/pdf" || file?.name.toLowerCase().endsWith(".pdf");
+  const isPdf =
+    type === "application/pdf" || file?.name.toLowerCase().endsWith(".pdf");
   const canPreview = isImage || isPdf;
 
   return (
@@ -105,7 +110,10 @@ export function FilePreviewModal({ file, open, onClose }: FilePreviewModalProps)
 
           {!canPreview && (
             <div className="flex flex-col items-center gap-3 text-muted-foreground text-center max-w-sm">
-              <AlertCircle className="size-8" aria-hidden="true" />
+              <AlertCircle
+                className="size-8 text-destructive"
+                aria-hidden="true"
+              />
               <h3 className="font-semibold text-base text-foreground">
                 Preview not available
               </h3>
@@ -117,7 +125,9 @@ export function FilePreviewModal({ file, open, onClose }: FilePreviewModalProps)
                 <a
                   href={url}
                   download={file?.name}
-                  className="inline-flex items-center gap-2 mt-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity text-sm font-medium"
+                  className={cn(
+                    buttonVariants({ variant: "default", size: "lg" }),
+                  )}
                 >
                   <Download className="size-4" />
                   Download
@@ -201,7 +211,9 @@ export function FileUpload({
     }
 
     if (file.size > maxSize) {
-      toast.error(`File is too large. Maximum size is ${formatBytes(maxSize)}.`);
+      toast.error(
+        `File is too large. Maximum size is ${formatBytes(maxSize)}.`,
+      );
       return;
     }
 
@@ -249,7 +261,10 @@ export function FileUpload({
         <div className="flex items-center gap-3 overflow-hidden">
           <FileCheck className="size-5 text-success shrink-0" />
           <div className="text-left overflow-hidden">
-            <p className="font-medium text-sm text-success-muted-foreground truncate" title={value.name}>
+            <p
+              className="font-medium text-sm text-success-muted-foreground truncate"
+              title={value.name}
+            >
               {value.name}
             </p>
             <p className="text-xs text-success-muted-foreground">
