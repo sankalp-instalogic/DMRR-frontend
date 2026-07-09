@@ -10,6 +10,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { Spinner } from "./ui/spinner";
+import formattedDate from "../../utils/dateFormatter";
 
 // Interfaces based on the API response structure you provided
 interface DocumentMetadata {
@@ -156,9 +157,7 @@ export function DocumentPreviewModal({ isOpen, onClose, documentId }: DocumentPr
                   </span>
                   <span className="flex items-center gap-1">
                     <Calendar className="size-3" />
-                    {new Date(metadata.createdAtUtc).toLocaleDateString("en-IN", {
-                      day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit"
-                    })}
+                    {formattedDate(metadata.createdAtUtc)}
                   </span>
                   <Tag color="blue" className="m-0 text-[10px] border-none">
                     v{metadata.version}

@@ -2,7 +2,7 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { Search } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
-import toast from "react-hot-toast";
+import toast from "../../utils/toast";
 import { Table } from "../components/Table";
 import type { ColDef } from "ag-grid-community";
 import { Button } from "../components/ui/button";

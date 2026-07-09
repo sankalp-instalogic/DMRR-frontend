@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Save, FileText, CheckCircle2, XCircle } from "lucide-react";
-import toast from "react-hot-toast";
+import toast from "../../utils/toast";
 import useAxPrivate from "../../hooks/useAxiosPrivate";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Input, Select, Radio, DatePicker } from "antd";

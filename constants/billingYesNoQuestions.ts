@@ -35,16 +35,20 @@ export interface BillingConfigDeps {
   // Save Handlers
   handleSaveDDMR: () => Promise<void>;
   handleSaveDO: () => Promise<void>;
+  handleSaveDirector: () => Promise<void>;
+  handleSavePS: () => Promise<void>;
   handleSaveMinister: () => Promise<void>;
   handleSavePaymentOrder: () => Promise<void>;
   handleSaveGrant: () => Promise<void>;
   handleSaveDDO: () => Promise<void>;
   handleSaveTreasury: () => Promise<void>;
   handleSaveVendor: () => Promise<void>;
-  
+
   // File Setters
   setDdmrFile: (file: File | null) => void;
   setDoFile: (file: File | null) => void;
+  setDirectorFile: (file: File | null) => void;
+  setPsFile: (file: File | null) => void;
   setMinisterFile: (file: File | null) => void;
   setPaymentOrderFile: (file: File | null) => void;
   setGrantFile: (file: File | null) => void;
@@ -55,6 +59,8 @@ export interface BillingConfigDeps {
   // Current File Values
   ddmrFile: File | null;
   doFile: File | null;
+  directorFile: File | null;
+  psFile: File | null;
   ministerFile: File | null;
   paymentOrderFile: File | null;
   grantFile: File | null;
@@ -94,12 +100,40 @@ export const getBillingSectionsConfig = (deps: BillingConfigDeps): SectionConfig
     ],
   },
   {
+    id: "director",
+    yesNoLabel: "Bill Received By Director?",
+    yesNoKey: "billReceivedDirector",
+    gridClass: "grid md:grid-cols-2 gap-4 mb-2",
+    btnContainerClass: "md:col-span-2",
+    buttonText: "Save Director Section",
+    onSave: deps.handleSaveDirector,
+    fields: [
+      { type: "date", stateKey: "directorDate" },
+      { type: "number", stateKey: "directorAmount", placeholder: "Amount" },
+      { type: "file", fileValue: deps.directorFile, fileSetter: deps.setDirectorFile, label: "Upload Document", containerClass: "md:col-span-2" },
+    ],
+  },
+  {
+    id: "ps",
+    yesNoLabel: "Bill Sent To PS?",
+    yesNoKey: "billSentPS",
+    gridClass: "grid md:grid-cols-2 gap-4 mb-2",
+    btnContainerClass: "md:col-span-2",
+    buttonText: "Save PS Section",
+    onSave: deps.handleSavePS,
+    fields: [
+      { type: "date", stateKey: "psDate" },
+      { type: "empty" },
+      { type: "file", fileValue: deps.psFile, fileSetter: deps.setPsFile, label: "Upload Document", containerClass: "md:col-span-2" },
+    ],
+  },
+  {
     id: "minister",
-    yesNoLabel: "Bill Sent To PS / Minister?",
+    yesNoLabel: "Bill Sent To Minister?",
     yesNoKey: "billSentMinister",
     gridClass: "grid md:grid-cols-2 gap-4 mb-2",
     btnContainerClass: "md:col-span-2",
-    buttonText: "Save PS / Minister Section",
+    buttonText: "Save Minister Section",
     onSave: deps.handleSaveMinister,
     fields: [
       { type: "date", stateKey: "ministerDate" },

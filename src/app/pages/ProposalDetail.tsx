@@ -19,8 +19,9 @@ import {
 } from "lucide-react";
 
 import { formatCurrencyLakhs } from "../../utils/currencyFormatter";
+import formattedDate from "../../utils/dateFormatter";
 import { useQuery } from "@tanstack/react-query";
-import toast from "react-hot-toast";
+import toast from "../../utils/toast";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { Table } from "../components/Table"; // Adjust path to your custom Table component
 import { DocumentPreviewModal } from "../components/DocumentPreviewModal";
@@ -28,27 +29,18 @@ import { Spinner } from "../components/ui/spinner";
 import { DocumentOwnerType } from "../../../constants/documents";
 
 // Helper functions for formatting
-const formatDate = (dateString: string) => {
-  if (!dateString) return "N/A";
-  const date = new Date(dateString);
-  return date.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-};
+const formatDate = (dateString: string) => formattedDate(dateString);
 
 const formatDateTime = (dateString: string) => {
-  if (!dateString) return "N/A";
+  if (!dateString) return "-";
   const date = new Date(dateString);
-  return date.toLocaleString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
+  if (isNaN(date.getTime())) return "-";
+  const time = date.toLocaleTimeString("en-GB", {
     hour: "2-digit",
     minute: "2-digit",
     hour12: true,
   });
+  return `${formattedDate(date)}, ${time}`;
 };
 
 const formatBytes = (bytes: number, decimals = 2) => {

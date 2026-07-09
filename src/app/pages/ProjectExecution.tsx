@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import toast from "react-hot-toast";
+import toast from "../../utils/toast";
 import { CheckCircle2, XCircle, Trash2, Download } from "lucide-react";
 
 // Ant Design Imports (Added Tabs)
@@ -12,6 +12,7 @@ import dayjs from "dayjs";
 import { Table } from "../components/Table";
 import { Button } from "../components/ui/button";
 import { Spinner } from "../components/ui/spinner";
+import formattedDate from "../../utils/dateFormatter";
 import { DocumentOwnerType, DocumentType } from "../../../constants/documents";
 import { FileUpload } from "../components/FileUpload";
 
@@ -743,7 +744,7 @@ export function ProjectExecution() {
                       >
                         <td className="px-4 py-3">{mpr.reportingMonth}</td>
                         <td className="px-4 py-3">
-                          {new Date(mpr.reportDate).toLocaleDateString()}
+                          {formattedDate(mpr.reportDate)}
                         </td>
                         <td className="px-4 py-3">{mpr.progressPercent}%</td>
                         <td

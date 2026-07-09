@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { CheckCircle2, ArrowRight, ArrowLeft, Send } from "lucide-react";
-import toast from "react-hot-toast";
+import toast from "../../utils/toast";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { Button } from "../components/ui/button";
 import { Spinner } from "../components/ui/spinner";

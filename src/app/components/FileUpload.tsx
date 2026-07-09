@@ -9,7 +9,7 @@ import {
   AlertCircle,
   Download,
 } from "lucide-react";
-import toast from "react-hot-toast";
+import toast from "../../utils/toast";
 import { cn } from "./ui/utils";
 import { Button, buttonVariants } from "./ui/button";
 import {

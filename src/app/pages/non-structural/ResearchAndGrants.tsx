@@ -11,6 +11,7 @@ import { DocumentPreviewModal } from "../../components/DocumentPreviewModal";
 import { FileUpload } from "../../components/FileUpload";
 import { Button } from "../../components/ui/button";
 import { Spinner } from "../../components/ui/spinner";
+import formattedDate from "../../../utils/dateFormatter";
 import { DocumentOwnerType, DocumentType } from "../../../../constants/documents";
 
 interface Grant {
@@ -33,10 +34,7 @@ interface PaginatedResponse {
   totalPages: number;
 }
 
-const formatDate = (dateString: string | null) => {
-  if (!dateString) return "-";
-  return dateString.split("T")[0];
-};
+const formatDate = (dateString: string | null) => formattedDate(dateString);
 
 const formatCurrency = (amount: number | string) => {
   if (amount === undefined || amount === null || amount === "") return "-";

@@ -5,7 +5,7 @@ import {
   keepPreviousData,
   useQueryClient,
 } from "@tanstack/react-query";
-import toast from "react-hot-toast";
+import toast from "../../utils/toast";
 import { getBillingSectionsConfig } from "../../../constants/billingYesNoQuestions";
 import { DocumentOwnerType, DocumentType } from "../../../constants/documents";
 import { Table } from "../components/Table";
@@ -13,6 +13,7 @@ import { FileUpload } from "../components/FileUpload";
 import type { ColDef } from "ag-grid-community";
 import { Input, Select, DatePicker } from "antd";
 import dayjs from "dayjs";
+import formattedDate from "../../utils/dateFormatter";
 import { Button } from "../components/ui/button";
 
 export function Billing() {
@@ -43,6 +44,8 @@ export function Billing() {
 
   const [ddmrFile, setDdmrFile] = useState<File | null>(null);
   const [doFile, setDoFile] = useState<File | null>(null);
+  const [directorFile, setDirectorFile] = useState<File | null>(null);
+  const [psFile, setPsFile] = useState<File | null>(null);
   const [ministerFile, setMinisterFile] = useState<File | null>(null);
   const [paymentOrderFile, setPaymentOrderFile] = useState<File | null>(null);
   const [grantFile, setGrantFile] = useState<File | null>(null);
@@ -58,6 +61,11 @@ export function Billing() {
     billReceivedDO: "",
     doDate: "",
     doAmount: "",
+    billReceivedDirector: "",
+    directorDate: "",
+    directorAmount: "",
+    billSentPS: "",
+    psDate: "",
     billSentMinister: "",
     ministerDate: "",
     paymentOrderMade: "",
@@ -196,8 +204,7 @@ export function Billing() {
         headerName: "Entry Date",
         field: "entryDate",
         flex: 1,
-        valueFormatter: (params) =>
-          params.value ? dayjs(params.value).format("DD MMM YYYY") : "N/A",
+        valueFormatter: (params) => formattedDate(params.value),
       },
       {
         headerName: "Logged At",
@@ -205,8 +212,8 @@ export function Billing() {
         flex: 1,
         valueFormatter: (params) =>
           params.value
-            ? dayjs(params.value).format("DD MMM YYYY, HH:mm")
-            : "N/A",
+            ? `${formattedDate(params.value)}, ${dayjs(params.value).format("HH:mm")}`
+            : "-",
       },
     ],
     [],
@@ -221,7 +228,7 @@ export function Billing() {
         const docFormData = new FormData();
         docFormData.append("file", ddmrFile);
         docFormData.append("ownerType", String(DocumentOwnerType.Billing));
-        docFormData.append("documentType", String(DocumentType.Invoice));
+        docFormData.append("documentType", String(DocumentType.CheckListDoc1));
         docFormData.append("ownerId", selectedBill.id);
 
         await axiosPrivate.post("/api/v1/Documents/upload", docFormData, {
@@ -266,7 +273,7 @@ export function Billing() {
         const docFormData = new FormData();
         docFormData.append("file", doFile);
         docFormData.append("ownerType", String(DocumentOwnerType.Billing));
-        docFormData.append("documentType", String(DocumentType.Invoice));
+        docFormData.append("documentType", String(DocumentType.CheckListDoc2));
         docFormData.append("ownerId", selectedBill.id);
 
         await axiosPrivate.post("/api/v1/Documents/upload", docFormData, {
@@ -302,16 +309,16 @@ export function Billing() {
     }
   };
 
-  // --- SAVE SECTION 3 (PS/MINISTER) ---
-  const handleSaveMinister = async () => {
+  // --- SAVE SECTION (DIRECTOR) ---
+  const handleSaveDirector = async () => {
     if (!selectedBill) return;
 
     try {
-      if (ministerFile) {
+      if (directorFile) {
         const docFormData = new FormData();
-        docFormData.append("file", ministerFile);
+        docFormData.append("file", directorFile);
         docFormData.append("ownerType", String(DocumentOwnerType.Billing));
-        docFormData.append("documentType", String(DocumentType.Invoice));
+        docFormData.append("documentType", String(DocumentType.CheckListDoc3));
         docFormData.append("ownerId", selectedBill.id);
 
         await axiosPrivate.post("/api/v1/Documents/upload", docFormData, {
@@ -322,7 +329,97 @@ export function Billing() {
       }
 
       const payload = {
-        gate: "BillToPSMinister",
+        gate: "BillAtDirector",
+        yesNo: formData.billReceivedDirector === "Yes",
+        entryDate: formData.directorDate
+          ? new Date(formData.directorDate).toISOString()
+          : new Date().toISOString(),
+        amount: Number(formData.directorAmount) || 0,
+        installmentType: "",
+        billNumber: selectedBill.id,
+        rtgsNumber: "",
+        transactionId: "",
+        remarks: "",
+      };
+
+      await axiosPrivate.post(
+        `/api/v1/Billing/${selectedBill.id}/stages`,
+        payload,
+      );
+
+      toast.success("Director Section saved successfully!");
+    } catch (error) {
+      console.error("Error saving Director section:", error);
+      toast.error("Failed to save Director section. Please try again.");
+    }
+  };
+
+  // --- SAVE SECTION (PS) ---
+  const handleSavePS = async () => {
+    if (!selectedBill) return;
+
+    try {
+      if (psFile) {
+        const docFormData = new FormData();
+        docFormData.append("file", psFile);
+        docFormData.append("ownerType", String(DocumentOwnerType.Billing));
+        docFormData.append("documentType", String(DocumentType.CheckListDoc4));
+        docFormData.append("ownerId", selectedBill.id);
+
+        await axiosPrivate.post("/api/v1/Documents/upload", docFormData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+      }
+
+      const payload = {
+        gate: "BillToPSr",
+        yesNo: formData.billSentPS === "Yes",
+        entryDate: formData.psDate
+          ? new Date(formData.psDate).toISOString()
+          : new Date().toISOString(),
+        amount: 0,
+        installmentType: "",
+        billNumber: selectedBill.id,
+        rtgsNumber: "",
+        transactionId: "",
+        remarks: "",
+      };
+
+      await axiosPrivate.post(
+        `/api/v1/Billing/${selectedBill.id}/stages`,
+        payload,
+      );
+
+      toast.success("PS Section saved successfully!");
+    } catch (error) {
+      console.error("Error saving PS section:", error);
+      toast.error("Failed to save PS section. Please try again.");
+    }
+  };
+
+  // --- SAVE SECTION (MINISTER) ---
+  const handleSaveMinister = async () => {
+    if (!selectedBill) return;
+
+    try {
+      if (ministerFile) {
+        const docFormData = new FormData();
+        docFormData.append("file", ministerFile);
+        docFormData.append("ownerType", String(DocumentOwnerType.Billing));
+        docFormData.append("documentType", String(DocumentType.CheckListDoc5));
+        docFormData.append("ownerId", selectedBill.id);
+
+        await axiosPrivate.post("/api/v1/Documents/upload", docFormData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+      }
+
+      const payload = {
+        gate: "BillToMinister",
         yesNo: formData.billSentMinister === "Yes",
         entryDate: formData.ministerDate
           ? new Date(formData.ministerDate).toISOString()
@@ -340,10 +437,10 @@ export function Billing() {
         payload,
       );
 
-      toast.success("PS / Minister Section saved successfully!");
+      toast.success("Minister Section saved successfully!");
     } catch (error) {
-      console.error("Error saving PS/Minister section:", error);
-      toast.error("Failed to save PS/Minister section. Please try again.");
+      console.error("Error saving Minister section:", error);
+      toast.error("Failed to save Minister section. Please try again.");
     }
   };
 
@@ -356,7 +453,7 @@ export function Billing() {
         const docFormData = new FormData();
         docFormData.append("file", paymentOrderFile);
         docFormData.append("ownerType", String(DocumentOwnerType.Billing));
-        docFormData.append("documentType", String(DocumentType.PaymentOrder));
+        docFormData.append("documentType", String(DocumentType.CheckListDoc6));
         docFormData.append("ownerId", selectedBill.id);
 
         await axiosPrivate.post("/api/v1/Documents/upload", docFormData, {
@@ -409,7 +506,7 @@ export function Billing() {
         const docFormData = new FormData();
         docFormData.append("file", grantFile);
         docFormData.append("ownerType", String(DocumentOwnerType.Billing));
-        docFormData.append("documentType", String(DocumentType.GRCopy));
+        docFormData.append("documentType", String(DocumentType.CheckListDoc7));
         docFormData.append("ownerId", selectedBill.id);
 
         await axiosPrivate.post("/api/v1/Documents/upload", docFormData, {
@@ -454,7 +551,7 @@ export function Billing() {
         const docFormData = new FormData();
         docFormData.append("file", ddoFile);
         docFormData.append("ownerType", String(DocumentOwnerType.Billing));
-        docFormData.append("documentType", String(DocumentType.Invoice));
+        docFormData.append("documentType", String(DocumentType.CheckListDoc8));
         docFormData.append("ownerId", selectedBill.id);
 
         await axiosPrivate.post("/api/v1/Documents/upload", docFormData, {
@@ -496,7 +593,7 @@ export function Billing() {
         const docFormData = new FormData();
         docFormData.append("file", treasuryFile);
         docFormData.append("ownerType", String(DocumentOwnerType.Billing));
-        docFormData.append("documentType", String(DocumentType.Invoice));
+        docFormData.append("documentType", String(DocumentType.CheckListDoc9));
         docFormData.append("ownerId", selectedBill.id);
 
         await axiosPrivate.post("/api/v1/Documents/upload", docFormData, {
@@ -538,7 +635,7 @@ export function Billing() {
         const docFormData = new FormData();
         docFormData.append("file", vendorFile);
         docFormData.append("ownerType", String(DocumentOwnerType.Billing));
-        docFormData.append("documentType", String(DocumentType.Invoice));
+        docFormData.append("documentType", String(DocumentType.CheckListDoc10));
         docFormData.append("ownerId", selectedBill.id);
 
         await axiosPrivate.post("/api/v1/Documents/upload", docFormData, {
@@ -601,6 +698,8 @@ export function Billing() {
     return getBillingSectionsConfig({
       handleSaveDDMR,
       handleSaveDO,
+      handleSaveDirector,
+      handleSavePS,
       handleSaveMinister,
       handleSavePaymentOrder,
       handleSaveGrant,
@@ -609,6 +708,8 @@ export function Billing() {
       handleSaveVendor,
       setDdmrFile,
       setDoFile,
+      setDirectorFile,
+      setPsFile,
       setMinisterFile,
       setPaymentOrderFile,
       setGrantFile,
@@ -617,6 +718,8 @@ export function Billing() {
       setVendorFile,
       ddmrFile,
       doFile,
+      directorFile,
+      psFile,
       ministerFile,
       paymentOrderFile,
       grantFile,
@@ -629,6 +732,8 @@ export function Billing() {
     formData,
     ddmrFile,
     doFile,
+    directorFile,
+    psFile,
     ministerFile,
     paymentOrderFile,
     grantFile,
@@ -791,6 +896,9 @@ export function Billing() {
                                   ] as string,
                                 )
                               : null
+                          }
+                          disabledDate={(current) =>
+                            current && current > dayjs().endOf("day")
                           }
                           onChange={(_date, dateString) =>
                             setFormData((prev) => ({

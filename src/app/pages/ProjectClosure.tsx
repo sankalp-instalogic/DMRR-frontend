@@ -1,8 +1,8 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import toast from "react-hot-toast";
-import { DatePicker } from "antd";
+import toast from "../../utils/toast";
+import { DatePicker, Modal } from "antd";
 import dayjs from "dayjs";
 import type { ColDef } from "ag-grid-community";
 import { Table } from "../components/Table";
@@ -10,16 +10,6 @@ import { Button } from "../components/ui/button";
 import { Spinner } from "../components/ui/spinner";
 import { FileUpload } from "../components/FileUpload";
 import { DocumentOwnerType, DocumentType } from "../../../constants/documents";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "../components/ui/alert-dialog";
 
 // --- Type Definitions ---
 export interface Project {
@@ -811,35 +801,26 @@ export function ProjectClosure() {
                     Upload Social Audit Files
                   </label>
                   {completionData.socialAuditFiles.length > 0 && (
-                    <ul className="mb-3 space-y-2">
+                    <div className="mb-3 space-y-2">
                       {completionData.socialAuditFiles.map((file, index) => (
-                        <li
+                        <FileUpload
                           key={`${file.name}-${index}`}
-                          className="flex items-center justify-between gap-3 bg-muted border border-border rounded-lg px-3 py-2"
-                        >
-                          <span
-                            className="text-sm truncate"
-                            title={file.name}
-                          >
-                            {file.name}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() =>
+                          variant="compact"
+                          value={file}
+                          onChange={(f) => {
+                            if (f === null) {
                               setCompletionData((prev) => ({
                                 ...prev,
                                 socialAuditFiles: prev.socialAuditFiles.filter(
                                   (_, i) => i !== index,
                                 ),
-                              }))
+                              }));
                             }
-                            className="text-destructive text-sm font-medium shrink-0 cursor-pointer hover:opacity-80"
-                          >
-                            Remove
-                          </button>
-                        </li>
+                          }}
+                          accept=".pdf,.doc,.docx,image/*"
+                        />
                       ))}
-                    </ul>
+                    </div>
                   )}
                   <FileUpload
                     variant="compact"
@@ -882,27 +863,26 @@ export function ProjectClosure() {
           </div>
         )}
       </div>
-      <AlertDialog
+      <Modal
         open={!!projectToClose}
-        onOpenChange={() => setProjectToClose(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to close this project?. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="cursor-pointer">
+        title="Are you absolutely sure?"
+        centered
+        onCancel={() => setProjectToClose(null)}
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              className="cursor-pointer"
+              onClick={() => setProjectToClose(null)}
+            >
               Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              className="cursor-pointer bg-destructive text-primary-foreground hover:bg-destructive"
+            </Button>
+            <Button
+              variant="destructive"
+              className="cursor-pointer"
+              disabled={closeProjectMutation.isPending}
               onClick={() => {
-                if (projectToClose) {
-                  closeProjectMutation.mutate(projectToClose);
-                }
+                if (projectToClose) closeProjectMutation.mutate(projectToClose);
               }}
             >
               {closeProjectMutation.isPending ? (
@@ -913,10 +893,15 @@ export function ProjectClosure() {
               ) : (
                 "Close Project"
               )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </Button>
+          </div>
+        }
+      >
+        <p>
+          Are you sure you want to close this project? This action cannot be
+          undone.
+        </p>
+      </Modal>
     </div>
   );
 }

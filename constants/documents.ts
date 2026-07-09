@@ -89,6 +89,8 @@ export const DocumentType = {
   CheckListDoc11: 53,
   CheckListDoc12: 54,
   CheckListDoc13: 55,
+  CheckListDoc14: 56,
+  CheckListDoc15: 57,
 } as const;
 
 export type DocumentType = (typeof DocumentType)[keyof typeof DocumentType];

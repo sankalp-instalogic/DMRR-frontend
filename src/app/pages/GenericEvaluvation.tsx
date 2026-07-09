@@ -11,7 +11,7 @@ import {
 import { useNavigate, useParams, Navigate } from "react-router";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import toast from "react-hot-toast";
+import toast from "../../utils/toast";
 import dayjs from "dayjs"; // Required for Ant Design DatePicker/TimePicker parsing
 
 // Ant Design & Table Imports

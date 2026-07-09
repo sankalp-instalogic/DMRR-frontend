@@ -2,7 +2,7 @@ import { useState, useRef, useMemo } from "react";
 import { Save, Pencil } from "lucide-react";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import toast from "react-hot-toast";
+import toast from "../../utils/toast";
 import { useNavigate } from "react-router";
 
 // Ant Design Imports
@@ -13,6 +13,7 @@ import type { ColDef } from "ag-grid-community";
 import { Table } from "../components/Table";
 import { Button } from "../components/ui/button";
 import { Spinner } from "../components/ui/spinner";
+import formattedDate from "../../utils/dateFormatter";
 import { DocumentOwnerType, DocumentType } from "../../../constants/documents";
 import { FileUpload } from "../components/FileUpload";
 
@@ -317,12 +318,10 @@ export function DDMAWorkflow() {
                 <div>
                   <label className="block text-sm mb-2">Date of Revision</label>
                   <Input
-                    value={
+                    value={formattedDate(
                       selectedProposal.revisionDate ||
-                      new Date(
                         selectedProposal.createdAtUtc,
-                      ).toLocaleDateString()
-                    }
+                    )}
                     readOnly
                     className="bg-muted"
                   />
@@ -396,7 +395,7 @@ export function DDMAWorkflow() {
 
               {/* UPLOAD RESOLUTION */}
               <div>
-                <label className="block text-sm mb-2">Upload Resolution</label>
+                <label className="block text-sm mb-2">Upload Proposals</label>
                 <FileUpload
                   variant="compact"
                   value={resolutionFile}

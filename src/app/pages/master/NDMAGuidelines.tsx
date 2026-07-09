@@ -10,6 +10,7 @@ import type { ColDef } from "ag-grid-community";
 
 import { Button } from "../../components/ui/button";
 import { Spinner } from "../../components/ui/spinner";
+import formattedDate from "../../../utils/dateFormatter";
 import {
   Input as AntdInput,
   Select as AntdSelect,
@@ -236,17 +237,7 @@ export function NDMAGuidelines() {
     addMutation.mutate(payload);
   };
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "-";
-    const date = new Date(dateString);
-    return date
-      .toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      })
-      .replace(/ /g, "-");
-  };
+  const formatDate = (dateString: string) => formattedDate(dateString);
 
   // --- AG GRID COLUMN DEFINITIONS ---
   const columnDefs = useMemo<ColDef[]>(
