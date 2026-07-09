@@ -152,7 +152,7 @@ export function GenericEvaluation() {
       queryKey: [`${configKey}Proposals`, "new"],
       queryFn: async () => {
         const response = await axiosPrivate.get(
-          `/api/v1/Committees/${config.id}/queue?revised=false`,
+          `/api/v1/Committees/${config.id}/queue?revised=false&rejected=false`,
         );
         return response.data;
       },
@@ -163,7 +163,17 @@ export function GenericEvaluation() {
     queryKey: [`${configKey}Proposals`, "revised"],
     queryFn: async () => {
       const response = await axiosPrivate.get(
-        `/api/v1/Committees/${config.id}/queue?revised=true`,
+        `/api/v1/Committees/${config.id}/queue?revised=true&rejected=false`,
+      );
+      return response.data;
+    },
+  });
+
+  const { data: rejectedList = [], isLoading: isLoadingRejected } = useQuery({
+    queryKey: [`${configKey}Proposals`, "rejected"],
+    queryFn: async () => {
+      const response = await axiosPrivate.get(
+        `/api/v1/Committees/${config.id}/queue?revised=false&rejected=true`,
       );
       return response.data;
     },
@@ -198,9 +208,18 @@ export function GenericEvaluation() {
     selectedProposal?.lastComments ||
     "No previous comments available.";
 
-  const isLoading = activeTab === "new" ? isLoadingPending : isLoadingRevised;
+  const isLoading =
+    activeTab === "new"
+      ? isLoadingPending
+      : activeTab === "revised"
+        ? isLoadingRevised
+        : isLoadingRejected;
   const currentTableData =
-    activeTab === "new" ? pendingProposals : revisionList;
+    activeTab === "new"
+      ? pendingProposals
+      : activeTab === "revised"
+        ? revisionList
+        : rejectedList;
 
   // --- AG GRID ---
 
@@ -309,6 +328,46 @@ export function GenericEvaluation() {
     ],
     // ADD DEPENDENCIES HERE
     [resetForm],
+  );
+
+  // --- AG GRID (REJECTED TAB) ---
+  // Rejected proposals are terminal, so no evaluation action is offered.
+  const rejectedColumnDefs = useMemo<ColDef[]>(
+    () => [
+      {
+        headerName: "Proposal ID",
+        field: "proposalRefNo",
+        flex: 1,
+        valueGetter: (params) => params.data.proposalRefNo || params.data.id,
+      },
+      {
+        headerName: "Project Name",
+        field: "title",
+        flex: 2,
+        valueGetter: (params) => params.data.projectName || params.data.title,
+      },
+      { headerName: "District", field: "district", flex: 1 },
+      {
+        headerName: "Status",
+        field: "status",
+        flex: 1,
+        cellRenderer: (params: any) => (
+          <span className="px-3 py-1 rounded-full text-xs font-medium bg-destructive-muted text-destructive-muted-foreground">
+            {params.value || "Rejected"}
+          </span>
+        ),
+      },
+      {
+        headerName: "Reason for Rejection",
+        field: "rejectionReason",
+        flex: 2,
+        valueGetter: (params) =>
+          params.data.rejectionReason ||
+          params.data.lastComments ||
+          "—",
+      },
+    ],
+    [],
   );
 
   // --- MUTATIONS ---
@@ -530,6 +589,20 @@ const handleRejectOrRevision = (type: number) => {
         >
           Revised Proposals
         </button>
+        <button
+          onClick={() => {
+            setActiveTab("rejected");
+            resetForm();
+            setCurrentPage(1);
+          }}
+          className={`px-5 py-2 rounded-lg font-medium transition-colors ${
+            activeTab === "rejected"
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted hover:bg-muted/80"
+          }`}
+        >
+          Rejected Proposals
+        </button>
       </div>
 
       <div className="min-h-50 relative">
@@ -544,7 +617,7 @@ const handleRejectOrRevision = (type: number) => {
         ) : (
           <Table
             rowData={currentTableData}
-            columnDefs={columnDefs}
+            columnDefs={activeTab === "rejected" ? rejectedColumnDefs : columnDefs}
             totalCount={currentTableData.length}
             page={currentPage}
             totalPages={Math.ceil(currentTableData.length / 10) || 1}
@@ -554,7 +627,7 @@ const handleRejectOrRevision = (type: number) => {
         )}
       </div>
 
-      {selectedProposal && (
+      {selectedProposal && activeTab !== "rejected" && (
         <div
           ref={evaluationContainerRef}
           className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"

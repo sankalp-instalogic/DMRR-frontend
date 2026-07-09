@@ -59,28 +59,11 @@ const CHART_COLOR_TOKENS = [
   "--destructive",
 ];
 
-const notifications = [
-  {
-    type: "alert",
-    message: "15 proposals pending PAC approval for >30 days",
-    link: "/evaluation/pac",
-  },
-  {
-    type: "warning",
-    message: "Budget threshold 85% reached for Pune district",
-    link: "/budget-rationalization",
-  },
-  {
-    type: "info",
-    message: "New NDMA guidelines published for flood mitigation",
-    link: "/master/ndma-guidelines",
-  },
-];
-
 export function Dashboard() {
   const navigate = useNavigate();
   const [selectedFY, setSelectedFY] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [selectedLineDepartment, setSelectedLineDepartment] = useState("");
 
   const axiosPrivate = useAxiosPrivate();
 
@@ -104,6 +87,29 @@ export function Dashboard() {
       []),
   ];
 
+  // 1b. Fetch Line Departments for Dropdown
+  const { data: lineDepartmentsData, isLoading: isLineDepartmentsLoading } =
+    useQuery({
+      queryKey: ["lineDepartments"],
+      queryFn: async () => {
+        const response = await axiosPrivate.get(
+          "/api/v1/masters/line-departments",
+        );
+        return response.data?.items || [];
+      },
+    });
+
+  // Map line department API data to Antd Select options
+  const lineDepartmentOptions = [
+    { value: "", label: "All Departments" },
+    ...((Array.isArray(lineDepartmentsData) &&
+      lineDepartmentsData?.map((dept: any) => ({
+        value: dept.id, // Using 'id' as the value to send to the backend
+        label: dept.name, // Using 'name' for the display label
+      }))) ||
+      []),
+  ];
+
   // 2. Fetch Dashboard Summary (Taking query parameters into account)
   // 2. Fetch Dashboard Summary
   const {
@@ -111,12 +117,18 @@ export function Dashboard() {
     isLoading: isSummaryLoading,
     error: summaryError,
   } = useQuery({
-    queryKey: ["dashboard-summary", selectedFY, selectedDistrict],
+    queryKey: [
+      "dashboard-summary",
+      selectedFY,
+      selectedDistrict,
+      selectedLineDepartment,
+    ],
     queryFn: async () => {
       const response = await axiosPrivate.get("/api/v1/Dashboard/summary", {
         params: {
           financialYear: selectedFY || undefined,
           districtId: selectedDistrict || undefined,
+          lineDepartmentId: selectedLineDepartment || undefined,
         },
       });
       return response.data;
@@ -129,12 +141,18 @@ export function Dashboard() {
     isLoading: isChartsLoading,
     error: chartsError,
   } = useQuery({
-    queryKey: ["dashboard-charts", selectedFY, selectedDistrict],
+    queryKey: [
+      "dashboard-charts",
+      selectedFY,
+      selectedDistrict,
+      selectedLineDepartment,
+    ],
     queryFn: async () => {
       const response = await axiosPrivate.get("/api/v1/Dashboard/charts", {
         params: {
           financialYear: selectedFY || undefined,
           districtId: selectedDistrict || undefined,
+          lineDepartmentId: selectedLineDepartment || undefined,
         },
       });
       return response.data;
@@ -272,6 +290,26 @@ export function Dashboard() {
               options={districtOptions}
               loading={isDistrictsLoading}
               disabled={isDistrictsLoading}
+              showSearch
+              filterOption={(input, option) =>
+                (option?.label ?? "")
+                  .toString()
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
+            />
+          </div>
+          <div className="flex-1">
+            <label className="text-[14px] font-medium text-muted-foreground mb-1 block">
+              Line Department
+            </label>
+            <Select
+              value={selectedLineDepartment}
+              onChange={(value) => setSelectedLineDepartment(value)}
+              className="w-full h-10"
+              options={lineDepartmentOptions}
+              loading={isLineDepartmentsLoading}
+              disabled={isLineDepartmentsLoading}
               showSearch
               filterOption={(input, option) =>
                 (option?.label ?? "")
@@ -526,7 +564,7 @@ export function Dashboard() {
               </div>
             </div>
             <div className="text-[32px] font-bold text-foreground">
-              ₹{formatCurrencyLakhs(summaryData.procurementValue) || 0}
+              {formatCurrencyLakhs(summaryData.procurementValue) || 0}
             </div>
           </div>
         </div>
@@ -661,41 +699,6 @@ export function Dashboard() {
             </ResponsiveContainer>
           </div>
         </div>
-
-        {/* Notifications Panel */}
-        {/* <div className="bg-card border border-border rounded-2xl p-5 shadow-sm mb-6">
-          <h3 className="mb-6 text-[20px] font-semibold text-primary">
-            Recent Alerts & Notifications
-          </h3>
-
-          <div className="space-y-3">
-            {notifications.map((notif, index) => (
-              <Link
-                key={index}
-                to={notif.link}
-                className="flex items-start gap-3 p-3 rounded-[10px] hover:bg-muted transition-colors border border-transparent hover:border-border"
-              >
-                <AlertCircle
-                  className={`size-5 mt-0.5 ${
-                    notif.type === "alert"
-                      ? "text-destructive"
-                      : notif.type === "warning"
-                        ? "text-warning"
-                        : "text-category-3"
-                  }`}
-                />
-                <div className="flex-1">
-                  <p className="text-[14px] font-medium text-foreground">
-                    {notif.message}
-                  </p>
-                  <p className="text-[12px] text-muted-foreground mt-1">
-                    View details →
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div> */}
       </div>
     </div>
   );
