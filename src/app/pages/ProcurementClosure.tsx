@@ -1,5 +1,4 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Search } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import toast from "../../utils/toast";
@@ -8,7 +7,6 @@ import type { ColDef } from "ag-grid-community";
 import { Button } from "../components/ui/button";
 import { Spinner } from "../components/ui/spinner";
 import { FileUpload } from "../components/FileUpload";
-import { X } from "lucide-react";
 import { DocumentOwnerType, DocumentType } from "../../../constants/documents";
 
 export function ProcurementClosure() {
@@ -16,7 +14,6 @@ export function ProcurementClosure() {
   const queryClient = useQueryClient();
 
   // --- Table States ---
-  const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
 
@@ -27,27 +24,15 @@ export function ProcurementClosure() {
 
   interface CompletionDataState {
     completionCertificate: File | null;
-    socialAuditFiles: File[];
+    socialAuditFile: File | null;
   }
 
   // Cleaned up state: only keeping certificate and audit files
   const [completionData, setCompletionData] = useState<CompletionDataState>({
     completionCertificate: null,
-    socialAuditFiles: [],
+    socialAuditFile: null,
   });
 
-  // --- API Queries ---
-  const {
-    data: tenders = [],
-    isLoading: isTendersLoading,
-    isError: isTendersError,
-  } = useQuery({
-    queryKey: ["procurement-tenders"],
-    queryFn: async () => {
-      const response = await axiosPrivate.get("/api/v1/procurement-tenders");
-      return response.data;
-    },
-  });
 
   const {
     data: procurementResponse,
@@ -203,23 +188,13 @@ export function ProcurementClosure() {
     return "bg-info-muted text-info border-info-border";
   };
 
-  const filteredTenders = tenders.filter((tender: any) => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      tender.tenderTitle?.toLowerCase().includes(searchLower) ||
-      tender.tenderRefNo?.toLowerCase().includes(searchLower) ||
-      tender.tenderCode?.toLowerCase().includes(searchLower) ||
-      tender.organizationChain?.toLowerCase().includes(searchLower)
-    );
-  });
-
   // --- Handlers ---
   const handleSelectForClosure = (item: any, type: string) => {
     setSelectedItem({ ...item, itemType: type });
     setIsCompleted("");
     setCompletionData({
       completionCertificate: null,
-      socialAuditFiles: [],
+      socialAuditFile: null,
     });
   };
 
@@ -248,25 +223,20 @@ export function ProcurementClosure() {
               file: completionData.completionCertificate,
               ownerId: itemId,
               ownerType: ownerType,
-              documentType: DocumentType.SocialAuditLetter,
+              documentType: DocumentType.Proc_Closure_CompletionCertificate,
             }),
           );
         }
 
-        if (
-          completionData.socialAuditFiles &&
-          completionData.socialAuditFiles.length > 0
-        ) {
-          for (const file of completionData.socialAuditFiles) {
-            uploadPromises.push(
-              uploadDocumentMutation.mutateAsync({
-                file: file,
-                ownerId: itemId,
-                ownerType: ownerType,
-                documentType: DocumentType.CompletionCertificate,
-              }),
-            );
-          }
+        if (completionData.socialAuditFile) {
+          uploadPromises.push(
+            uploadDocumentMutation.mutateAsync({
+              file: completionData.socialAuditFile,
+              ownerId: itemId,
+              ownerType: ownerType,
+              documentType: DocumentType.Proc_Closure_SocialAudit,
+            }),
+          );
         }
 
         if (uploadPromises.length > 0) {
@@ -280,7 +250,7 @@ export function ProcurementClosure() {
       );
       setSelectedItem(null);
       setIsCompleted("");
-      setCompletionData({ completionCertificate: null, socialAuditFiles: [] });
+      setCompletionData({ completionCertificate: null, socialAuditFile: null });
 
       if (isTender) {
         queryClient.invalidateQueries({ queryKey: ["procurement-tenders"] });
@@ -306,60 +276,6 @@ export function ProcurementClosure() {
     }
   }, [selectedItem]);
 
-  // --- AG Grid Column Definitions ---
-  const tenderColumnDefs: ColDef[] = useMemo(
-    () => [
-      {
-        field: "tenderTitle",
-        headerName: "Tender Title",
-        flex: 1,
-        minWidth: 250,
-      },
-      {
-        field: "tenderRefNo",
-        headerName: "Tender Ref No",
-        flex: 1,
-        minWidth: 180,
-      },
-      { field: "tenderCode", headerName: "Tender ID", flex: 1, minWidth: 150 },
-      {
-        field: "organisationChain",
-        headerName: "Organizational Chain",
-        flex: 1,
-        minWidth: 200,
-      },
-      {
-        field: "status",
-        headerName: "Status",
-        flex: 1,
-        minWidth: 150,
-        cellRenderer: (params: any) => (
-          <span
-            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusStyles(params.value)}`}
-          >
-            {params.value || "Unknown"}
-          </span>
-        ),
-      },
-      {
-        headerName: "Actions",
-        flex: 1,
-        minWidth: 160,
-        sortable: false,
-        filter: false,
-        pinned: "right", // Optional: pins the action column so it's always visible when scrolling
-        cellRenderer: (params: any) => (
-          <Button
-            size="sm"
-            onClick={() => handleSelectForClosure(params.data, "tender")}
-          >
-            Project Closure
-          </Button>
-        ),
-      },
-    ],
-    [handleSelectForClosure], // Best practice to include this if linting complains
-  );
 
   const procurementColumnDefs: ColDef[] = useMemo(
     () => [
@@ -384,7 +300,7 @@ export function ProcurementClosure() {
       },
       {
         field: "awardCostInclGstLakhs",
-        headerName: "Award Cost (Lakhs)",
+        headerName: "Award Cost",
         flex: 1,
         valueFormatter: (params) =>
           `₹${params.value?.toLocaleString("en-IN") || "0"}`,
@@ -434,53 +350,6 @@ export function ProcurementClosure() {
             Manage tenders, procurement records, and final asset handovers
           </p>
         </div>
-      </div>
-
-      {/* --- TABLE 1: ALL TENDERS --- */}
-      <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
-        <div className="p-4 border-b border-border flex justify-between items-center bg-muted/50">
-          <h2 className="text-lg font-semibold text-primary">All Tenders</h2>
-          <div className="relative w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search tenders..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-card border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20"
-            />
-          </div>
-        </div>
-
-        {isTendersLoading ? (
-          <div className="p-8">
-            <Spinner label="Loading tenders..." iconClassName="size-6" />
-          </div>
-        ) : isTendersError ? (
-          <div className="p-8 text-center text-destructive">
-            Failed to load tenders. Please try again later.
-          </div>
-        ) : filteredTenders.length === 0 ? (
-          <div className="p-8 text-center text-muted-foreground">
-            No tenders found.
-          </div>
-        ) : (
-          <Table
-            rowData={filteredTenders}
-            columnDefs={tenderColumnDefs}
-            totalCount={filteredTenders.length}
-            page={1}
-            totalPages={1}
-            onPageChange={() => {}}
-            // onRowClicked is REMOVED
-            rowClassRules={{
-              "bg-info-muted/80 border-l-4 border-secondary": (params) =>
-                selectedItem?.id ===
-                (params.data.id || params.data.procurementId),
-              "hover:bg-muted/50": () => true, // Kept hover, removed cursor-pointer
-            }}
-          />
-        )}
       </div>
 
       {/* --- TABLE 2: PROCUREMENT RECORDS --- */}
@@ -590,53 +459,17 @@ export function ProcurementClosure() {
                   <label className="block mb-2 font-medium text-sm text-primary">
                     Upload Social Audit File
                   </label>
-                  {completionData.socialAuditFiles.length > 0 && (
-                    <ul className="space-y-1 mb-2">
-                      {completionData.socialAuditFiles.map((file, index) => (
-                        <li
-                          key={`${file.name}-${index}`}
-                          className="flex items-center justify-between gap-2 text-sm bg-card border border-border rounded-md px-3 py-1.5"
-                        >
-                          <span className="truncate" title={file.name}>
-                            {file.name}
-                          </span>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            aria-label="Remove file"
-                            className="text-destructive hover:bg-destructive-muted size-7"
-                            onClick={() =>
-                              setCompletionData({
-                                ...completionData,
-                                socialAuditFiles:
-                                  completionData.socialAuditFiles.filter(
-                                    (_, i) => i !== index,
-                                  ),
-                              })
-                            }
-                          >
-                            <X className="size-4" />
-                          </Button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
                   <FileUpload
                     variant="compact"
-                    value={null}
-                    onChange={(f) => {
-                      if (!f) return;
+                    value={completionData.socialAuditFile}
+                    onChange={(f) =>
                       setCompletionData({
                         ...completionData,
-                        socialAuditFiles: [
-                          ...completionData.socialAuditFiles,
-                          f,
-                        ],
-                      });
-                    }}
+                        socialAuditFile: f,
+                      })
+                    }
                     accept=".pdf,.doc,.docx,image/*"
-                    buttonText="Add File"
+                    buttonText="Select File"
                   />
                 </div>
               </div>

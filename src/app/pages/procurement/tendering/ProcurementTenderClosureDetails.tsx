@@ -16,11 +16,11 @@ import { FileUpload } from "../../../components/FileUpload";
 
 // Document Type Mapping (ownerType is 2 for this table context)
 const DOCUMENT_TYPES: Record<string, DocumentType> = {
-  techBidOpening: DocumentType.TechnicalBidOpening,
-  techEvaluation: DocumentType.TechnicalEvaluation,
-  finBidOpening: DocumentType.FinancialBidOpening,
-  finEvaluation: DocumentType.FinancialEvaluation,
-  aoc: DocumentType.AOC,
+  techBidOpening: DocumentType.Proc_Tend_FinancialBidOpening,
+  techEvaluation: DocumentType.Proc_Tend_TechnicalEvaluation,
+  finBidOpening: DocumentType.Proc_Tend_FinancialBidOpening,
+  finEvaluation: DocumentType.Proc_Tend_FinancialEvaluation,
+  aoc: DocumentType.Proc_Tend_AOC,
 };
 
 export function ProcurementTenderClosureDetails() {

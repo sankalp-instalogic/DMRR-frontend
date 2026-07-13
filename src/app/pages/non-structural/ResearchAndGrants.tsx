@@ -165,7 +165,7 @@ export function ResearchAndGrants() {
           await uploadMutation.mutateAsync({
             file: completionCertificateFile,
             ownerId: responseData.id,
-            documentType: DocumentType.CompletionCertificate,
+            documentType: DocumentType.ResearchGrant_CompletionCertificate,
           });
         } catch (err) {
           console.error("Document upload failed:", err);

@@ -9,7 +9,7 @@ import { Table } from "../components/Table";
 import { Button } from "../components/ui/button";
 import { Spinner } from "../components/ui/spinner";
 import { FileUpload } from "../components/FileUpload";
-import { DocumentOwnerType, DocumentType } from "../../../constants/documents";
+import { DocumentOwnerType } from "../../../constants/documents";
 
 // --- Type Definitions ---
 export interface Project {
@@ -21,19 +21,6 @@ export interface Project {
   closureStatus: string;
   IsChecklistCompleted?: boolean;
   isChecklistCompleted?: boolean;
-}
-
-export interface CompletionData {
-  completionDate: string;
-  certificateDate: string;
-  completionCertificate: File | null;
-  socialAuditFiles: File[];
-}
-
-interface CompletionPayload {
-  isCompleted: boolean;
-  completionDate: string | null;
-  certificateIssuedDate: string | null;
 }
 
 export interface ChecklistItem {
@@ -152,9 +139,7 @@ export function ProjectClosure() {
   const [projectToClose, setProjectToClose] = useState<string | number | null>(
     null,
   );
-  const [activeAction, setActiveAction] = useState<
-    "checklist" | "completion" | null
-  >(null);
+  const [activeAction, setActiveAction] = useState<"checklist" | null>(null);
   const [page, setPage] = useState(1);
   const [checklistPage, setChecklistPage] = useState(1);
 
@@ -170,15 +155,6 @@ export function ProjectClosure() {
       }, 100);
     }
   }, [activeAction]);
-
-  // Completion Form State
-  const [isCompleted, setIsCompleted] = useState<"Yes" | "No" | "">("");
-  const [completionData, setCompletionData] = useState<CompletionData>({
-    completionDate: "",
-    certificateDate: "",
-    completionCertificate: null,
-    socialAuditFiles: [],
-  });
 
   // Checklist Form State
   const [checklistData, setChecklistData] = useState<Record<number, string>>(
@@ -219,69 +195,6 @@ export function ProjectClosure() {
   });
 
   const checklistItems: ChecklistItem[] = checklistResponse?.items || [];
-
-  const uploadDocument = async (file: File, documentType: number) => {
-    if (!selectedProject) throw new Error("No project selected");
-    const formData = new FormData();
-    formData.append("ownerType", String(DocumentOwnerType.Proposal));
-    formData.append("documentType", documentType.toString());
-    formData.append("ownerId", selectedProject.proposalId.toString());
-    formData.append("file", file);
-
-    return axios.post("/api/v1/Documents/upload", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-  };
-
-  const saveCompletionMutation = useMutation({
-    mutationFn: async (payload: CompletionPayload) => {
-      if (!selectedProject) throw new Error("No project selected");
-      const response = await axios.post(
-        `/api/v1/closures/${selectedProject.projectId}/completion`,
-        payload,
-      );
-      return response.data;
-    },
-    onSuccess: async () => {
-      toast.success("Project Completion Saved Successfully");
-      const uploadPromises: Promise<any>[] = [];
-
-      if (completionData.completionCertificate)
-        uploadPromises.push(
-          uploadDocument(
-            completionData.completionCertificate,
-            DocumentType.CompletionCertificate,
-          ),
-        );
-      if (completionData.socialAuditFiles?.length > 0) {
-        completionData.socialAuditFiles.forEach((file) =>
-          uploadPromises.push(uploadDocument(file, DocumentType.SocialAuditLetter)),
-        );
-      }
-
-      if (uploadPromises.length > 0) {
-        const toastId = toast.loading("Uploading documents...");
-        try {
-          await Promise.all(uploadPromises);
-          toast.success("All documents uploaded successfully!", {
-            id: toastId,
-          });
-        } catch (uploadError) {
-          toast.error("Data saved, but some documents failed to upload.", {
-            id: toastId,
-          });
-        }
-      }
-
-      resetForms();
-      queryClient.invalidateQueries({ queryKey: ["closures"] });
-    },
-    onError: (error: any) => {
-      toast.error(
-        error?.response?.data?.message || "Failed to save project closure",
-      );
-    },
-  });
 
   const closeProjectMutation = useMutation({
     mutationFn: async (projectId: string | number) => {
@@ -373,32 +286,9 @@ export function ProjectClosure() {
   const resetForms = () => {
     setSelectedProject(null);
     setActiveAction(null);
-    setIsCompleted("");
-    setCompletionData({
-      completionDate: "",
-      certificateDate: "",
-      completionCertificate: null,
-      socialAuditFiles: [],
-    });
     setChecklistData({});
     setChecklistDates({});
     setChecklistFiles({});
-  };
-
-  const handleSaveCompletion = () => {
-    if (!selectedProject) return toast.error("Please select a project first.");
-    if (!isCompleted)
-      return toast.error("Please select whether the project is completed.");
-
-    const formatToISO = (dateStr: string): string | null =>
-      dateStr ? new Date(dateStr).toISOString() : null;
-
-    const payload: CompletionPayload = {
-      isCompleted: isCompleted === "Yes",
-      completionDate: formatToISO(completionData.completionDate),
-      certificateIssuedDate: formatToISO(completionData.certificateDate),
-    };
-    saveCompletionMutation.mutate(payload);
   };
 
   const handleSaveChecklist = () => {
@@ -469,19 +359,6 @@ export function ProjectClosure() {
                     )}
                   </Button>
                 )}
-
-              {project.closureStatus === "Pending" && checklistDone && (
-                <Button
-                  className="mt-2"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedProject(project);
-                    setActiveAction("completion");
-                  }}
-                >
-                  Add completion details
-                </Button>
-              )}
 
               {(project.closureStatus === "Pending" ||
                 project.closureStatus === "Ready for Closure") &&
@@ -677,186 +554,6 @@ export function ProjectClosure() {
                   </>
                 ) : (
                   "Submit Checklist"
-                )}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* COMPLETION FORM SECTION */}
-        {selectedProject && activeAction === "completion" && (
-          <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
-            <div className="flex justify-between items-center mb-6 border-b pb-4">
-              <h3 className="text-xl font-bold text-primary">
-                Final Project Completion: {selectedProject.proposalRefNo}
-              </h3>
-              <button
-                onClick={resetForms}
-                className="text-muted-foreground hover:text-foreground text-sm font-medium"
-              >
-                ✕ Cancel
-              </button>
-            </div>
-
-            <div className="mb-6">
-              <label className="block font-medium mb-3">
-                Is Project Completed?
-              </label>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setIsCompleted("Yes")}
-                  className={`px-4 py-2 cursor-pointer rounded-lg transition-colors ${
-                    isCompleted === "Yes" ? "bg-success text-primary-foreground" : "border"
-                  }`}
-                >
-                  Yes
-                </button>
-                <button
-                  onClick={() => setIsCompleted("No")}
-                  className={`px-4 py-2 cursor-pointer rounded-lg transition-colors ${
-                    isCompleted === "No" ? "bg-destructive text-primary-foreground" : "border"
-                  }`}
-                >
-                  No
-                </button>
-              </div>
-            </div>
-
-            {isCompleted === "Yes" && (
-              <div className="space-y-6 bg-muted p-5 rounded-lg border border-border">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block mb-2 font-medium text-sm">
-                      Date of Completion
-                    </label>
-                    <DatePicker
-                      className="w-full h-10 border rounded-lg cursor-pointer"
-                      format="YYYY-MM-DD"
-                      value={
-                        completionData.completionDate
-                          ? dayjs(completionData.completionDate)
-                          : null
-                      }
-                      onChange={(_date, dateString) =>
-                        setCompletionData({
-                          ...completionData,
-                          completionDate:
-                            typeof dateString === "string"
-                              ? dateString
-                              : Array.isArray(dateString)
-                                ? (dateString[0] ?? "")
-                                : "",
-                        })
-                      }
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block mb-2 font-medium text-sm">
-                      Date of Completion Certificate Issued
-                    </label>
-                    <DatePicker
-                      className="w-full h-10 border rounded-lg cursor-pointer"
-                      format="YYYY-MM-DD"
-                      value={
-                        completionData.certificateDate
-                          ? dayjs(completionData.certificateDate)
-                          : null
-                      }
-                      onChange={(_date, dateString) =>
-                        setCompletionData({
-                          ...completionData,
-                          certificateDate:
-                            typeof dateString === "string"
-                              ? dateString
-                              : Array.isArray(dateString)
-                                ? (dateString[0] ?? "")
-                                : "",
-                        })
-                      }
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block mb-2 font-medium text-sm">
-                    Upload Completion Certificate
-                  </label>
-                  <FileUpload
-                    variant="compact"
-                    value={completionData.completionCertificate}
-                    onChange={(file) =>
-                      setCompletionData({
-                        ...completionData,
-                        completionCertificate: file,
-                      })
-                    }
-                    accept=".pdf,.doc,.docx,image/*"
-                    buttonText="Select File"
-                  />
-                </div>
-
-                <div>
-                  <label className="block mb-2 font-medium text-sm">
-                    Upload Social Audit Files
-                  </label>
-                  {completionData.socialAuditFiles.length > 0 && (
-                    <div className="mb-3 space-y-2">
-                      {completionData.socialAuditFiles.map((file, index) => (
-                        <FileUpload
-                          key={`${file.name}-${index}`}
-                          variant="compact"
-                          value={file}
-                          onChange={(f) => {
-                            if (f === null) {
-                              setCompletionData((prev) => ({
-                                ...prev,
-                                socialAuditFiles: prev.socialAuditFiles.filter(
-                                  (_, i) => i !== index,
-                                ),
-                              }));
-                            }
-                          }}
-                          accept=".pdf,.doc,.docx,image/*"
-                        />
-                      ))}
-                    </div>
-                  )}
-                  <FileUpload
-                    variant="compact"
-                    value={null}
-                    onChange={(file) => {
-                      if (file) {
-                        setCompletionData((prev) => ({
-                          ...prev,
-                          socialAuditFiles: [...prev.socialAuditFiles, file],
-                        }));
-                      }
-                    }}
-                    accept=".pdf,.doc,.docx,image/*"
-                    buttonText="Add File"
-                  />
-                </div>
-              </div>
-            )}
-
-            <div className="mt-8 pt-6 border-t border-border flex items-center gap-4">
-              <button
-                onClick={handleSaveCompletion}
-                disabled={saveCompletionMutation.isPending}
-                className={`px-6 py-3 cursor-pointer bg-success text-primary-foreground rounded-lg transition-colors font-medium ${
-                  saveCompletionMutation.isPending
-                    ? "opacity-70 cursor-not-allowed"
-                    : "hover:bg-success"
-                }`}
-              >
-                {saveCompletionMutation.isPending ? (
-                  <>
-                    <Spinner inline iconClassName="size-4" />
-                    Saving...
-                  </>
-                ) : (
-                  "Save Completion Details"
                 )}
               </button>
             </div>

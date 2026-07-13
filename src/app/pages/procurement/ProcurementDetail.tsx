@@ -6,7 +6,6 @@ import type { ColDef } from "ag-grid-community";
 import {
   FileText,
   MapPin,
-  Building2,
   Calendar,
   IndianRupee,
   User,
@@ -16,17 +15,19 @@ import {
   Clock,
   AlertCircle,
   Eye,
+  Package,
+  Building2,
 } from "lucide-react";
 
-import { formatCurrencyLakhs } from "../../utils/currencyFormatter";
-import formattedDate from "../../utils/dateFormatter";
+import { formatCurrencyLakhs } from "../../../utils/currencyFormatter";
+import formattedDate from "../../../utils/dateFormatter";
 import { useQuery } from "@tanstack/react-query";
-import toast from "../../utils/toast";
-import useAxiosPrivate from "../../hooks/useAxiosPrivate";
-import { Table } from "../components/Table"; // Adjust path to your custom Table component
-import { DocumentPreviewModal } from "../components/DocumentPreviewModal";
-import { Spinner } from "../components/ui/spinner";
-import { DocumentOwnerType } from "../../../constants/documents";
+import toast from "../../../utils/toast";
+import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
+import { Table } from "../../components/Table";
+import { DocumentPreviewModal } from "../../components/DocumentPreviewModal";
+import { Spinner } from "../../components/ui/spinner";
+import { DocumentOwnerType } from "../../../../constants/documents";
 
 // Helper functions for formatting
 const formatDate = (dateString: string) => formattedDate(dateString);
@@ -52,7 +53,7 @@ const formatBytes = (bytes: number, decimals = 2) => {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 };
 
-export function ProposalDetail() {
+export function ProcurementDetail() {
   const [activeTab, setActiveTab] = useState("overview");
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(
@@ -61,7 +62,7 @@ export function ProposalDetail() {
 
   // Pagination State for Audit Trail
   const [auditPage, setAuditPage] = useState(1);
-  const [auditPageSize] = useState(10); // Keeping size constant for this example
+  const [auditPageSize] = useState(10);
 
   const { id } = useParams();
   const axiosPrivate = useAxiosPrivate();
@@ -70,6 +71,7 @@ export function ProposalDetail() {
     setSelectedDocumentId(docId);
     setIsPreviewOpen(true);
   };
+
   const getStatusColor = (status: string) => {
     if (!status) return "text-muted-foreground bg-muted";
 
@@ -88,31 +90,35 @@ export function ProposalDetail() {
     ) {
       return "text-info bg-info-muted";
     }
-    if (lowerStatus.includes("pending") || lowerStatus.includes("pac")) {
+    if (lowerStatus.includes("pending") || lowerStatus.includes("psc")) {
       return "text-warning bg-warning-muted";
+    }
+    if (lowerStatus.includes("rejected")) {
+      return "text-destructive bg-destructive-muted";
     }
     return "text-muted-foreground bg-muted";
   };
 
-  // Fetch Proposal Data
+  // Fetch Procurement Data
   const {
-    data: proposalData,
-    isLoading: isProposalLoading,
-    isError: isProposalError,
+    data: procurementData,
+    isLoading: isProcurementLoading,
+    isError: isProcurementError,
   } = useQuery({
-    queryKey: ["proposal", id],
+    queryKey: ["procurement", id],
     queryFn: async () => {
-      const response = await axiosPrivate.get(`/api/v1/Proposals/${id}`);
+      const response = await axiosPrivate.get(`/api/v1/Procurements/${id}`);
       return response.data;
     },
+    enabled: !!id,
   });
 
   // Fetch Documents Data
   const { data: documentsData, isLoading: isDocsLoading } = useQuery({
-    queryKey: ["documents", id],
+    queryKey: ["procurement-documents", id],
     queryFn: async () => {
       const response = await axiosPrivate.get(`/api/v1/Documents/list`, {
-        params: { ownerType: DocumentOwnerType.Proposal, ownerId: id },
+        params: { ownerType: DocumentOwnerType.Procurement, ownerId: id },
       });
       return response.data;
     },
@@ -121,10 +127,10 @@ export function ProposalDetail() {
 
   // Fetch Timeline Data
   const { data: timelineData, isLoading: isTimelineLoading } = useQuery({
-    queryKey: ["timeline", id],
+    queryKey: ["procurement-timeline", id],
     queryFn: async () => {
       const response = await axiosPrivate.get(
-        `/api/v1/Proposals/${id}/timeline`,
+        `/api/v1/Procurements/${id}/timeline`,
       );
       return response.data;
     },
@@ -138,9 +144,9 @@ export function ProposalDetail() {
     isError: isAuditError,
     isFetching: isAuditFetching,
   } = useQuery({
-    queryKey: ["audit", id, auditPage, auditPageSize],
+    queryKey: ["procurement-audit", id, auditPage, auditPageSize],
     queryFn: async () => {
-      const response = await axiosPrivate.get(`/api/v1/Audit/proposal/${id}`, {
+      const response = await axiosPrivate.get(`/api/v1/Audit/procurement/${id}`, {
         params: {
           page: auditPage,
           pageSize: auditPageSize,
@@ -179,6 +185,35 @@ export function ProposalDetail() {
   };
 
   // --- Column Definitions for Custom Tables ---
+
+  const itemColumnDefs = useMemo<ColDef[]>(
+    () => [
+      {
+        headerName: "#",
+        flex: 0.5,
+        valueGetter: (params) =>
+          (params.node?.rowIndex ?? 0) + 1,
+      },
+      {
+        field: "quantity",
+        headerName: "Quantity",
+        flex: 1,
+        valueFormatter: (params) => params.value ?? "0",
+      },
+      {
+        field: "location",
+        headerName: "Location",
+        flex: 2,
+        cellRenderer: (params: any) => (
+          <div className="flex items-center gap-1 h-full">
+            <MapPin className="size-3 text-muted-foreground shrink-0" />
+            <span>{params.value || "-"}</span>
+          </div>
+        ),
+      },
+    ],
+    [],
+  );
 
   const documentColumnDefs = useMemo<ColDef[]>(
     () => [
@@ -294,103 +329,105 @@ export function ProposalDetail() {
 
   // --- Ant Design Tabs Configuration ---
 
+  const renderApprovalBadge = (approved: boolean, date: string | null) => (
+    <div className="font-semibold flex items-center gap-2">
+      <span
+        className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${
+          approved ? "text-success bg-success-muted" : "text-warning bg-warning-muted"
+        }`}
+      >
+        {approved ? (
+          <CheckCircle2 className="size-3" />
+        ) : (
+          <Clock className="size-3" />
+        )}
+        {approved ? "Approved" : "Pending"}
+      </span>
+      {approved && date && (
+        <span className="text-xs text-muted-foreground font-normal">
+          {formatDate(date)}
+        </span>
+      )}
+    </div>
+  );
+
   const tabItems: TabsProps["items"] = [
     {
       key: "overview",
       label: <span className="font-bold text-base">Overview</span>,
       children: (
         <div className="space-y-6 mt-4">
-          {/* Proposal Metadata */}
+          {/* Procurement Details */}
           <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
-            <h3 className="font-bold mb-4 text-primary">Proposal Metadata</h3>
+            <h3 className="font-bold mb-4 text-primary">Procurement Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
+                <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                  <Package className="size-3" /> Item Name
+                </div>
+                <div className="font-semibold">{procurementData?.itemName}</div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                  <Building2 className="size-3" /> Demand From
+                </div>
+                <div className="font-semibold">
+                  {procurementData?.beneficiaryDistrict ||
+                    procurementData?.beneficiaryDepartment ||
+                    procurementData?.demandFrom ||
+                    "-"}
+                </div>
+              </div>
+              <div>
                 <div className="text-xs text-muted-foreground mb-1">
-                  Disaster Type
+                  Financial Year
                 </div>
                 <div className="font-semibold">
-                  {proposalData?.disasterType}
+                  {procurementData?.financialYear}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-1">
+                  Total Quantity
+                </div>
+                <div className="font-semibold">
+                  {procurementData?.quantity ?? 0}
                 </div>
               </div>
               <div>
                 <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                  <MapPin className="size-3" /> Location
+                  <MapPin className="size-3" /> Delivery Location
                 </div>
                 <div className="font-semibold">
-                  {proposalData?.district}, {proposalData?.taluka}
+                  {procurementData?.deliveryLocation || "-"}
                 </div>
               </div>
               <div>
                 <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                  <Building2 className="size-3" /> Department
+                  <Calendar className="size-3" /> Delivery Deadline
                 </div>
                 <div className="font-semibold">
-                  {proposalData?.lineDepartment}
+                  {formatDate(procurementData?.deliveryDeadline)}
                 </div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                  <User className="size-3" /> Received From
+                <div className="text-xs text-muted-foreground mb-1">
+                  Items Delivered
                 </div>
+                <div className="font-semibold">
+                  {procurementData?.itemsDelivered ?? 0} ({procurementData?.deliveryPct ?? 0}%)
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-1">Vendor</div>
                 <div
                   className={
-                    proposalData?.receivedFromName
+                    procurementData?.vendor
                       ? "font-semibold"
                       : "font-semibold text-muted-foreground"
                   }
                 >
-                  {proposalData?.receivedFromName
-                    ? `${proposalData.receivedFromName} (${proposalData.receivedFromSource})`
-                    : "Not specified"}
-                </div>
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground mb-1">
-                  Receiving Authority
-                </div>
-                <div
-                  className={
-                    proposalData?.receivingAuthority
-                      ? "font-semibold"
-                      : "font-semibold text-muted-foreground"
-                  }
-                >
-                  {proposalData?.receivingAuthority || "Not specified"}
-                </div>
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground mb-1">
-                  Officer In Charge
-                </div>
-                {proposalData?.officerInChargeName ? (
-                  <div className="font-semibold">
-                    {proposalData.officerInChargeName}
-                    {proposalData.officerInChargeDesignation && (
-                      <span className="text-xs text-muted-foreground font-normal block">
-                        {proposalData.officerInChargeDesignation}
-                      </span>
-                    )}
-                  </div>
-                ) : (
-                  <div className="font-semibold text-muted-foreground">
-                    Not specified
-                  </div>
-                )}
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground mb-1">
-                  NDMA Guideline
-                </div>
-                <div className="font-semibold">
-                  {proposalData?.ndmaGuideline}
-                </div>
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                  <Calendar className="size-3" /> Created Date
-                </div>
-                <div className="font-semibold">
-                  {formatDate(proposalData?.createdAtUtc)}
+                  {procurementData?.vendor || "Not assigned"}
                 </div>
               </div>
               <div>
@@ -398,49 +435,124 @@ export function ProposalDetail() {
                   Current Stage
                 </div>
                 <div className="font-semibold text-primary">
-                  {proposalData?.currentStage}
+                  {procurementData?.stage}
+                </div>
+              </div>
+              {procurementData?.remarks && (
+                <div className="md:col-span-2 lg:col-span-3">
+                  <div className="text-xs text-muted-foreground mb-1">
+                    Remarks
+                  </div>
+                  <div className="font-semibold">{procurementData.remarks}</div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Approvals */}
+          <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+            <h3 className="font-bold mb-4 text-primary">Approvals</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <div className="text-xs text-muted-foreground mb-1">
+                  SEC Approval
+                </div>
+                {renderApprovalBadge(
+                  procurementData?.secApproved,
+                  procurementData?.secApprovalDate,
+                )}
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-1">
+                  Administrative Approval
+                </div>
+                {renderApprovalBadge(
+                  procurementData?.aaApproved,
+                  procurementData?.aaApprovalDate,
+                )}
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-1">
+                  Contract Awarded
+                </div>
+                {renderApprovalBadge(
+                  procurementData?.contractAwarded,
+                  procurementData?.contractAwardedDate,
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Financial Information */}
+          <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+            <h3 className="font-bold mb-4 text-primary">
+              Financial Information
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div>
+                <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                  <IndianRupee className="size-3" /> AA Value
+                </div>
+                <div className="text-2xl font-bold text-foreground">
+                  {formatCurrencyLakhs(procurementData?.aaValueLakhs)}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                  <IndianRupee className="size-3" /> Award Cost (incl. GST)
+                </div>
+                <div className="text-2xl font-bold text-primary">
+                  {formatCurrencyLakhs(procurementData?.awardCostInclGstLakhs)}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                  <IndianRupee className="size-3" /> Savings
+                </div>
+                <div
+                  className={`text-2xl font-bold ${
+                    (procurementData?.savingRsLakhs ?? 0) < 0
+                      ? "text-destructive"
+                      : "text-success"
+                  }`}
+                >
+                  {formatCurrencyLakhs(procurementData?.savingRsLakhs)}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-1">
+                  Savings %
+                </div>
+                <div
+                  className={`text-2xl font-bold ${
+                    (procurementData?.savingPct ?? 0) < 0
+                      ? "text-destructive"
+                      : "text-success"
+                  }`}
+                >
+                  {procurementData?.savingPct ?? 0}%
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Budget Information */}
+          {/* Items */}
           <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
-            <h3 className="font-bold mb-4 text-primary">Budget Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div>
-                <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                  <IndianRupee className="size-3" /> Total Project Cost
-                </div>
-                <div className="text-2xl font-bold text-foreground">
-                  {formatCurrencyLakhs(proposalData?.costOfProjectLakhs)}
-                </div>
+            <h3 className="font-bold mb-4 text-primary">Items</h3>
+            {!procurementData?.items || procurementData.items.length === 0 ? (
+              <div className="flex justify-center items-center h-24 text-muted-foreground">
+                No items found for this procurement.
               </div>
-              <div>
-                <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                  <IndianRupee className="size-3" /> Budget Allocated
-                </div>
-                <div className="text-2xl font-bold text-primary">
-                  {formatCurrencyLakhs(proposalData?.budgetAllocated)}
-                </div>
-              </div>
-              <div>
-                {/* <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                  <IndianRupee className="size-3" /> Budget Received
-                </div>
-                <div className="text-2xl font-bold text-secondary">
-                  {formatCurrencyLakhs(proposalData?.budgetReceived)}
-                </div>
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                  <IndianRupee className="size-3" /> Budget Utilized
-                </div>
-                <div className="text-2xl font-bold text-success">
-                  {formatCurrencyLakhs(proposalData?.budgetUtilized)}
-                </div> */}
-              </div>
-            </div>
+            ) : (
+              <Table
+                rowData={procurementData.items}
+                columnDefs={itemColumnDefs}
+                totalCount={procurementData.items.length}
+                page={1}
+                totalPages={1}
+                onPageChange={() => {}}
+              />
+            )}
           </div>
         </div>
       ),
@@ -456,16 +568,16 @@ export function ProposalDetail() {
             </div>
           ) : !documentsData || documentsData.length === 0 ? (
             <div className="flex justify-center items-center h-32 text-muted-foreground bg-card border border-border rounded-xl shadow-sm">
-              No documents found for this proposal.
+              No documents found for this procurement.
             </div>
           ) : (
             <Table
               rowData={documentsData}
               columnDefs={documentColumnDefs}
-              totalCount={documentsData.length} // Pass length if no backend pagination for docs
+              totalCount={documentsData.length}
               page={1}
               totalPages={1}
-              onPageChange={() => {}} // No-op if purely static data
+              onPageChange={() => {}}
             />
           )}
         </div>
@@ -483,7 +595,7 @@ export function ProposalDetail() {
             </div>
           ) : !timelineData || timelineData.length === 0 ? (
             <div className="flex justify-center items-center h-32 text-muted-foreground">
-              No timeline data available for this proposal.
+              No timeline data available for this procurement.
             </div>
           ) : (
             <div className="relative">
@@ -492,71 +604,49 @@ export function ProposalDetail() {
                 {timelineData.map((item: any, index: number) => {
                   const status = item.status?.toLowerCase() || "";
                   const isPending = status.includes("pending");
-                  // A step gets the green tick when the next step is available
-                  // (a later step exists) or it is the final/completed step —
-                  // anything that isn't still pending is treated as done.
                   const hasNextStep = index < timelineData.length - 1;
                   const showTick = hasNextStep || !isPending;
                   return (
-                  <div key={index} className="relative pl-12">
-                    <div
-                      className={`absolute left-0 w-8 h-8 rounded-full flex items-center justify-center bg-background ${
-                        showTick
-                          ? "bg-success-muted border-2 border-success text-success"
-                          : status.includes("pending")
-                            ? "bg-muted border-2 border-border text-muted-foreground"
-                            : "bg-info-muted border-2 border-info text-info"
-                      }`}
-                    >
-                      {showTick ? (
-                        <CheckCircle2 className="size-4" />
-                      ) : status.includes("pending") ? (
-                        <Clock className="size-4" />
-                      ) : (
-                        <RefreshCw className="size-4" />
-                      )}
-                    </div>
-                    <div className="bg-muted/30 rounded-lg p-4 border border-border">
-                      <div className="flex items-start justify-between mb-2">
-                        <h4 className="font-semibold">{item.stage}</h4>
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                            item.status,
-                          )}`}
-                        >
-                          {item.status}
-                        </span>
+                    <div key={index} className="relative pl-12">
+                      <div
+                        className={`absolute left-0 w-8 h-8 rounded-full flex items-center justify-center bg-background ${
+                          showTick
+                            ? "bg-success-muted border-2 border-success text-success"
+                            : status.includes("pending")
+                              ? "bg-muted border-2 border-border text-muted-foreground"
+                              : "bg-info-muted border-2 border-info text-info"
+                        }`}
+                      >
+                        {showTick ? (
+                          <CheckCircle2 className="size-4" />
+                        ) : status.includes("pending") ? (
+                          <Clock className="size-4" />
+                        ) : (
+                          <RefreshCw className="size-4" />
+                        )}
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="size-3" />
-                          {formatDate(item.enteredUtc)}
+                      <div className="bg-muted/30 rounded-lg p-4 border border-border">
+                        <div className="flex items-start justify-between mb-2">
+                          <h4 className="font-semibold">{item.stage}</h4>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                              item.status,
+                            )}`}
+                          >
+                            {item.status}
+                          </span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <User className="size-3" />
-                          {item.actorName || "System"}
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="size-3" />
+                            {formatDate(item.decisionDate)}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <FileText className="size-3" />
-                          {item.documentsUploaded || 0} docs
-                        </div>
+                        {item.remarks && (
+                          <p className="text-sm mt-2">{item.remarks}</p>
+                        )}
                       </div>
-                      {item.remarks && (
-                        <p className="text-sm mt-2">{item.remarks}</p>
-                      )}
-                      {item.revisionReson && (
-                        <p className="text-sm mt-2 text-warning">
-                          <strong>Revision Reason:</strong> {item.revisionReson}
-                        </p>
-                      )}
-                      {item.rejectionResion && (
-                        <p className="text-sm mt-2 text-destructive">
-                          <strong>Rejection Reason:</strong>{" "}
-                          {item.rejectionResion}
-                        </p>
-                      )}
                     </div>
-                  </div>
                   );
                 })}
               </div>
@@ -603,14 +693,17 @@ export function ProposalDetail() {
     },
   ];
 
-  if (isProposalLoading) {
-    return <Spinner fullPage label="Loading Proposal..." iconClassName="size-6" />;
+  if (isProcurementLoading) {
+    return (
+      <Spinner fullPage label="Loading Procurement..." iconClassName="size-6" />
+    );
   }
 
-  if (isProposalError || !proposalData) {
+  if (isProcurementError || !procurementData) {
     return (
       <div className="flex justify-center items-center h-64 text-destructive">
-        <AlertCircle className="size-6 mr-2" /> Error loading proposal details.
+        <AlertCircle className="size-6 mr-2" /> Error loading procurement
+        details.
       </div>
     );
   }
@@ -621,18 +714,19 @@ export function ProposalDetail() {
       <div className="flex items-start justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-bold">{proposalData.proposalRefNo}</h1>
+            <h1 className="text-3xl font-bold">
+              {procurementData.procurementRefNo}
+            </h1>
             <span
               className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
-                proposalData.status,
+                procurementData.status,
               )}`}
             >
-              {proposalData.status}
+              {procurementData.status}
             </span>
           </div>
           <p className="text-sm text-muted-foreground">
-            {proposalData.title} — {proposalData.district},{" "}
-            {proposalData.taluka}
+            {procurementData.itemName} — {procurementData.demandFrom}
           </p>
         </div>
       </div>

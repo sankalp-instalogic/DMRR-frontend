@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { Save, FileText, CheckCircle2, XCircle } from "lucide-react";
+import { CircleCheck, FileText } from "lucide-react";
 import toast from "../../utils/toast";
 import useAxPrivate from "../../hooks/useAxiosPrivate";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -7,17 +7,15 @@ import { Input, Select, Radio, DatePicker } from "antd";
 import dayjs from "dayjs";
 import { Table } from "../components/Table";
 import { Link } from "react-router";
-import { Button } from "../components/ui/button";
+import { Button, buttonVariants } from "../components/ui/button";
 import { Spinner } from "../components/ui/spinner";
 import { DocumentOwnerType, DocumentType } from "../../../constants/documents";
 import { FileUpload } from "../components/FileUpload";
+import { cn } from "../components/ui/utils";
 
 // Document Type Mapping Configuration
 const DOCUMENT_TYPES: Record<string, DocumentType> = {
-  bidEvaluationReport: DocumentType.BidevaluationReport,
-  workOrderCopy: DocumentType.WorkOrder,
-  tenderNotice: DocumentType.TenderNotice,
-  dmrrLetter: DocumentType.DMRRLetter,
+  consolidatedTenderDocument: DocumentType.ConsolidatedTenderDocument,
 };
 
 export function Tendering() {
@@ -44,10 +42,7 @@ export function Tendering() {
 
   // Track dynamic file upload states
   const [documents, setDocuments] = useState<{ [key: string]: File | null }>({
-    bidEvaluationReport: null,
-    workOrderCopy: null,
-    tenderNotice: null,
-    dmrrLetter: null,
+    consolidatedTenderDocument: null,
   });
 
   // Reset form states whenever selected tender row changes
@@ -173,39 +168,6 @@ export function Tendering() {
       );
       return response.data;
     },
-    onSuccess: async (_, variables) => {
-      const proposalId = variables.proposalId;
-
-      // Map through uploaded documents sequentially via Promise processing structure
-      const uploadPromises = Object.entries(documents).map(([docKey, file]) => {
-        const documentType = DOCUMENT_TYPES[docKey];
-        if (file && documentType) {
-          return uploadDocumentMutation.mutateAsync({
-            file,
-            ownerId: proposalId,
-            documentType,
-          });
-        }
-        return Promise.resolve();
-      });
-
-      try {
-        await Promise.all(uploadPromises);
-        toast.success("Tender details and documents saved successfully");
-      } catch (err) {
-        console.error("One or more document uploads failed:", err);
-        toast.error(
-          "Tender details saved, but some documents failed to upload.",
-        );
-      }
-
-      setSelectedTender(null);
-      queryClient.invalidateQueries({ queryKey: ["tendersQueue"] });
-    },
-    onError: (err) => {
-      console.error("Failed to save tender details:", err);
-      toast.error("Failed to save tender details. Please try again.");
-    },
   });
 
   // 6. Mutation for completing/closing the tender
@@ -227,8 +189,10 @@ export function Tendering() {
     },
   });
 
-  const handleSave = async () => {
+  const handleMoveToExecution = async () => {
     if (!selectedTender) return;
+
+    const proposalId = selectedTender.proposalId;
 
     const selectedVendor = vendors.find(
       (v: any) => String(v.id) === String(formData.vendorId),
@@ -245,39 +209,37 @@ export function Tendering() {
           : new Date().toISOString(),
     };
 
-    saveDetailsMutation.mutate({
-      proposalId: selectedTender.proposalId,
-      payload,
+    // Step 1: Save tender details. Only proceed to execution on success.
+    try {
+      await saveDetailsMutation.mutateAsync({ proposalId, payload });
+    } catch (err) {
+      console.error("Failed to save tender details:", err);
+      toast.error("Failed to save tender details. Please try again.");
+      return;
+    }
+
+    // Step 2: Upload supporting documents (best-effort, non-blocking).
+    const uploadPromises = Object.entries(documents).map(([docKey, file]) => {
+      const documentType = DOCUMENT_TYPES[docKey];
+      if (file && documentType) {
+        return uploadDocumentMutation.mutateAsync({
+          file,
+          ownerId: proposalId,
+          documentType,
+        });
+      }
+      return Promise.resolve();
     });
-  };
 
-  // Helper function to render table rows for documents
-  const renderDocumentRow = (docName: string, docKey: string) => {
-    const isUploaded = documents[docKey] !== null;
+    try {
+      await Promise.all(uploadPromises);
+    } catch (err) {
+      console.error("One or more document uploads failed:", err);
+      toast.error("Tender details saved, but some documents failed to upload.");
+    }
 
-    return (
-      <tr className="hover:bg-muted/50 transition-colors" key={docKey}>
-        <td className="px-6 py-4 font-medium text-foreground">{docName}</td>
-        <td className="px-6 py-4 text-center">
-          <FileUpload
-            variant="compact"
-            value={documents[docKey] ?? null}
-            onChange={(f) =>
-              setDocuments((prev) => ({ ...prev, [docKey]: f }))
-            }
-            accept=".csv,.xls,.xlsx,.pdf,image/*"
-            buttonText="Upload"
-          />
-        </td>
-        <td className="px-6 py-4 text-center">
-          {isUploaded ? (
-            <CheckCircle2 className="w-5 h-5 text-success mx-auto" />
-          ) : (
-            <XCircle className="w-5 h-5 text-destructive mx-auto" />
-          )}
-        </td>
-      </tr>
-    );
+    // Step 3: Move to project execution (complete the tender).
+    completeTenderMutation.mutate(proposalId);
   };
 
   // AG Grid Column Definitions
@@ -357,7 +319,9 @@ export function Tendering() {
                   variant="outline"
                   size="sm"
                   onClick={() => setSelectedTender(tender)}
-                  className="cursor-pointer bg-info-muted text-info-muted-foreground border-info-border rounded-lg text-xs hover:bg-info-muted"
+                  className={cn(
+                    buttonVariants({ variant: "default", size: "sm" }),
+                  )}
                 >
                   <FileText size={14} />
                   Open Details
@@ -475,7 +439,7 @@ export function Tendering() {
 
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
-                L1 Cost (Lakhs)
+                L1 Cost
                 <span className="text-destructive">*</span>
               </label>
               <Input
@@ -538,64 +502,41 @@ export function Tendering() {
             </div>
           </div>
 
-          {/* Documents Table Section */}
+          {/* Documents Section */}
           <h4 className="font-semibold text-[16px] text-foreground mb-4 border-b pb-2">
             Supporting Documents
           </h4>
 
-          <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden mb-6">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-muted text-muted-foreground border-b border-border">
-                  <tr>
-                    <th className="px-6 py-3 font-medium">Document Name</th>
-                    <th className="px-6 py-3 font-medium text-center">
-                      Upload Document
-                    </th>
-                    <th className="px-6 py-3 font-medium text-center">
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {renderDocumentRow(
-                    "Bid Evaluation Report",
-                    "bidEvaluationReport",
-                  )}
-                  {renderDocumentRow("Work Order Copy", "workOrderCopy")}
-                  {renderDocumentRow("Tender Notice", "tenderNotice")}
-                  {renderDocumentRow("DMRR letter", "dmrrLetter")}
-                </tbody>
-              </table>
-            </div>
+          <div className="bg-card rounded-xl shadow-sm border border-border p-6 mb-6">
+            <FileUpload
+              variant="compact"
+              label="Consolidated Tender Document"
+              value={documents.consolidatedTenderDocument ?? null}
+              onChange={(f) =>
+                setDocuments((prev) => ({
+                  ...prev,
+                  consolidatedTenderDocument: f,
+                }))
+              }
+              accept=".csv,.xls,.xlsx,.pdf,image/*"
+              buttonText="Upload"
+            />
           </div>
 
           <div className="flex justify-end gap-3 border-t border-border pt-4">
             <Button
-              onClick={handleSave}
+              onClick={handleMoveToExecution}
               disabled={isSaving || isCompleting}
               className="px-6 h-10 rounded-[10px] cursor-pointer"
             >
-              {isSaving ? (
+              {isSaving || isCompleting ? (
                 <Spinner inline iconClassName="size-4" />
               ) : (
-                <Save className="w-4 h-4" />
+                <CircleCheck className="w-4 h-4" />
               )}
-              {isSaving ? "Saving..." : "Save Details"}
-            </Button>
-            <Button
-              onClick={() =>
-                completeTenderMutation.mutate(selectedTender.proposalId)
-              }
-              disabled={isCompleting || isSaving}
-              className="px-6 h-10 rounded-[10px] cursor-pointer"
-            >
-              {isCompleting ? (
-                <Spinner inline iconClassName="size-4" />
-              ) : (
-                <XCircle className="w-4 h-4" />
-              )}
-              {isCompleting ? "Closing..." : "Mark As Close"}
+              {isSaving || isCompleting
+                ? "Processing..."
+                : "Move to Project Execution"}
             </Button>
           </div>
         </div>

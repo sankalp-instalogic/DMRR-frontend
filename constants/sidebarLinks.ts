@@ -1,13 +1,14 @@
 import {
-  // BarChart3,
+  BarChart3,
   Brain,
   Database,
   FileText,
-  // FolderOpen,
+  FolderOpen,
   LayoutDashboard,
   Settings,
   Shield,
   ShoppingCart,
+  Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -18,6 +19,7 @@ export interface NavItem {
   end?: boolean;
   stateKey?: string;
   children?: NavItem[];
+  adminOnly?: boolean;
 }
 
 export const sidebarLinks: NavItem[] = [
@@ -136,11 +138,11 @@ export const sidebarLinks: NavItem[] = [
     ],
   },
 
-  // {
-  //   title: "Document Management",
-  //   to: "/documents",
-  //   icon: FolderOpen,
-  // },
+  {
+    title: "Document Management",
+    to: "/documents",
+    icon: FolderOpen,
+  },
 
   {
     title: "AI Document Intelligence",
@@ -177,8 +179,16 @@ export const sidebarLinks: NavItem[] = [
   },
 
   {
+    title: "User Management",
+    to: "/admin/user-management",
+    icon: Users,
+    adminOnly: true,
+  },
+
+  {
     title: "Admin & Configuration",
     to: "/admin",
     icon: Settings,
+    end: true,
   },
 ];

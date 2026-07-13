@@ -15,6 +15,17 @@ import { Spinner } from "../components/ui/spinner";
 import formattedDate from "../../utils/dateFormatter";
 import { DocumentOwnerType, DocumentType } from "../../../constants/documents";
 import { FileUpload } from "../components/FileUpload";
+import { DocumentPreviewModal } from "../components/DocumentPreviewModal";
+import { Eye } from "lucide-react";
+
+// Maps each supporting-document row to its backend `documentTypeName`. Used to
+// match already-uploaded documents returned by `GET /api/v1/Documents/list`.
+const docTypeNameMap: Record<string, string> = {
+  siteInspectionReport: "Exec_SiteInspectionReport",
+  tpqaReport: "Exec_TPQA",
+  utilizationCertificate: "Exec_UtilizationCertificate",
+  completionCertificate: "Exec_CompletionCertificate",
+};
 
 export function ProjectExecution() {
   const axiosPrivate = useAxiosPrivate();
@@ -78,6 +89,11 @@ export function ProjectExecution() {
     completionCertificate: null,
   });
 
+  // State for the document preview modal (used to view geo-tagged photos)
+  const [previewDocumentId, setPreviewDocumentId] = useState<string | null>(
+    null,
+  );
+
   // 1. Fetch main projects list
   const { data, isLoading, isError } = useQuery({
     queryKey: ["projects", page],
@@ -114,6 +130,52 @@ export function ProjectExecution() {
     },
     enabled: !!selectedProject?.id && activeTab === "mpr",
   });
+
+  // 2.6 Fetch uploaded geo-tagged photos for the selected project
+  const { data: photosList, isLoading: isPhotosListLoading } = useQuery({
+    queryKey: ["projectPhotos", selectedProject?.id],
+    queryFn: async () => {
+      const response = await axiosPrivate.get(
+        `/api/v1/Projects/${selectedProject.id}/photos`,
+      );
+      return response.data;
+    },
+    enabled: !!selectedProject?.id && activeTab === "photos",
+  });
+
+  // 2.7 Fetch already-uploaded supporting documents for the selected project so
+  // the user isn't prompted to re-upload documents that already exist.
+  const proposalId = projectDetails?.proposalId ?? selectedProject?.proposalId;
+  const { data: uploadedDocuments, isLoading: isUploadedDocumentsLoading } =
+    useQuery({
+      queryKey: ["projectDocuments", proposalId],
+      queryFn: async () => {
+        const response = await axiosPrivate.get("/api/v1/Documents/list", {
+          params: {
+            ownerType: DocumentOwnerType.Proposal,
+            ownerId: proposalId,
+          },
+        });
+        return response.data;
+      },
+      enabled: !!proposalId && activeTab === "documents",
+    });
+
+  // Index the uploaded documents by `documentTypeName`, keeping only the
+  // supporting-document types and the latest version of each.
+  const uploadedDocsByType = useMemo(() => {
+    const allowed = Object.values(docTypeNameMap);
+    const map: Record<string, any> = {};
+    (uploadedDocuments || [])
+      .filter((doc: any) => allowed.includes(doc.documentTypeName))
+      .forEach((doc: any) => {
+        const existing = map[doc.documentTypeName];
+        if (!existing || (doc.version ?? 0) > (existing.version ?? 0)) {
+          map[doc.documentTypeName] = doc;
+        }
+      });
+    return map;
+  }, [uploadedDocuments]);
 
   // Determine if Entry Details have been saved on the backend
   const isEntrySaved = Boolean(projectDetails?.entryDate);
@@ -153,6 +215,12 @@ export function ProjectExecution() {
       queryClient.invalidateQueries({
         queryKey: ["project", selectedProject.id],
       });
+      // Saving entry dates flips the project's status to "In Progress" on the
+      // backend, which is what unlocks the "Ensure Billing" action in the list.
+      // Invalidate the list query so the row (and its action button) refreshes.
+      queryClient.invalidateQueries({
+        queryKey: ["projects"],
+      });
     },
     onError: () => {
       toast.error("Failed to save entry details. Please try again.");
@@ -168,7 +236,7 @@ export function ProjectExecution() {
         const formData = new FormData();
         formData.append("file", mprData.file);
         formData.append("ownerType", String(DocumentOwnerType.Proposal));
-        formData.append("documentType", String(DocumentType.MonthlyProgressReport));
+        formData.append("documentType", String(DocumentType.MonthlyProgressReports));
         formData.append("ownerId", selectedProject?.proposalId || "");
 
         const uploadResponse = await axiosPrivate.post(
@@ -241,10 +309,10 @@ export function ProjectExecution() {
 
   // Document Type Enum Mapping
   const documentTypeMap: Record<string, DocumentType> = {
-    tpqaReport: DocumentType.TPQAReport,
-    utilizationCertificate: DocumentType.UtilizationCertificate,
-    completionCertificate: DocumentType.CompletionCertificate,
-    siteInspectionReport: DocumentType.SiteInspectionReport,
+    tpqaReport: DocumentType.Exec_TPQA,
+    utilizationCertificate: DocumentType.Exec_UtilizationCertificate,
+    completionCertificate: DocumentType.Exec_CompletionCertificate,
+    siteInspectionReport: DocumentType.Exec_SiteInspectionReport,
   };
 
   // 7. Mutation for uploading Supporting Documents
@@ -279,6 +347,9 @@ export function ProjectExecution() {
       queryClient.invalidateQueries({
         queryKey: ["project", selectedProject.id],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["projectDocuments", proposalId],
+      });
       setDocuments({
         siteInspectionReport: null,
         tpqaReport: null,
@@ -302,7 +373,7 @@ export function ProjectExecution() {
         const formData = new FormData();
         formData.append("file", photo.file);
         formData.append("ownerType", String(DocumentOwnerType.Proposal));
-        formData.append("documentType", String(DocumentType.GeoTaggedPhoto));
+        formData.append("documentType", String(DocumentType.GeoTaggedPhotos));
         formData.append("ownerId", selectedProject?.proposalId || "");
 
         const uploadResponse = await axiosPrivate.post(
@@ -338,6 +409,9 @@ export function ProjectExecution() {
       toast.success("Photos saved successfully");
       queryClient.invalidateQueries({
         queryKey: ["project", selectedProject.id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["projectPhotos", selectedProject.id],
       });
       setPhotos([
         { file: null, latitude: "", longitude: "", date: "", description: "" },
@@ -428,6 +502,23 @@ export function ProjectExecution() {
 
   const handleSave = () => {
     if (activeTab === "entry") {
+      const { entryDate, startDate, expectedCompletionDate } = entryDetails;
+
+      if (!entryDate || !startDate || !expectedCompletionDate) {
+        toast.error("Please fill in all entry dates.");
+        return;
+      }
+      if (dayjs(entryDate).isAfter(dayjs(), "day")) {
+        toast.error("Date of entry cannot be in the future.");
+        return;
+      }
+      if (dayjs(startDate).isAfter(dayjs(expectedCompletionDate), "day")) {
+        toast.error(
+          "Project start date cannot be after expected completion date.",
+        );
+        return;
+      }
+
       saveEntryMutation.mutate({
         entryDate: entryDetails.entryDate,
         startDate: entryDetails.startDate,
@@ -453,24 +544,60 @@ export function ProjectExecution() {
   };
 
   const renderDocumentRow = (docName: string, docKey: string) => {
-    const isUploaded = documents[docKey] !== null;
+    const existingDoc = uploadedDocsByType[docTypeNameMap[docKey]];
+    const isAlreadyUploaded = !!existingDoc;
+    const isSelected = documents[docKey] !== null;
 
     return (
       <tr className="hover:bg-muted/50 transition-colors" key={docKey}>
         <td className="px-6 py-4 font-medium text-foreground">{docName}</td>
         <td className="px-6 py-4 text-center">
-          <FileUpload
-            variant="compact"
-            value={documents[docKey] ?? null}
-            onChange={(f) =>
-              setDocuments((prev) => ({ ...prev, [docKey]: f }))
-            }
-            accept=".pdf,.doc,.docx,image/*"
-            buttonText="Upload"
-          />
+          {isAlreadyUploaded ? (
+            <div className="flex items-center justify-center gap-1">
+              <span
+                className="max-w-40 truncate text-xs text-muted-foreground"
+                title={existingDoc.fileName}
+              >
+                {existingDoc.fileName}
+              </span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-primary hover:bg-primary/10"
+                onClick={() => setPreviewDocumentId(existingDoc.id)}
+                title="View Document"
+              >
+                <Eye className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-primary hover:bg-primary/10"
+                onClick={() =>
+                  handleDownloadDocument({
+                    id: existingDoc.id,
+                    documentId: existingDoc.id,
+                  })
+                }
+                title="Download Document"
+              >
+                <Download className="w-4 h-4" />
+              </Button>
+            </div>
+          ) : (
+            <FileUpload
+              variant="compact"
+              value={documents[docKey] ?? null}
+              onChange={(f) =>
+                setDocuments((prev) => ({ ...prev, [docKey]: f }))
+              }
+              accept=".pdf,.doc,.docx,image/*"
+              buttonText="Upload"
+            />
+          )}
         </td>
         <td className="px-6 py-4 text-center">
-          {isUploaded ? (
+          {isAlreadyUploaded || isSelected ? (
             <CheckCircle2 className="w-5 h-5 text-success mx-auto" />
           ) : (
             <XCircle className="w-5 h-5 text-destructive mx-auto" />
@@ -559,7 +686,7 @@ export function ProjectExecution() {
           <div className="grid md:grid-cols-3 gap-4 mb-6">
             <div>
               <label className="text-sm font-medium mb-1 block">
-                Date of Entry into System
+                Date of Entry into System <span className="text-destructive">*</span>
               </label>
               <DatePicker
                 value={
@@ -573,11 +700,12 @@ export function ProjectExecution() {
                 }
                 className="w-full rounded-lg"
                 size="large"
+                maxDate={dayjs()}
               />
             </div>
             <div>
               <label className="text-sm font-medium mb-1 block">
-                Project Start Date
+                Project Start Date <span className="text-destructive">*</span>
               </label>
               <DatePicker
                 value={
@@ -591,12 +719,16 @@ export function ProjectExecution() {
                 }
                 className="w-full rounded-lg"
                 size="large"
-                minDate={dayjs()}
+                maxDate={
+                  entryDetails.expectedCompletionDate
+                    ? dayjs(entryDetails.expectedCompletionDate)
+                    : undefined
+                }
               />
             </div>
             <div>
               <label className="text-sm font-medium mb-1 block">
-                Expected Completion Date
+                Expected Completion Date <span className="text-destructive">*</span>
               </label>
               <DatePicker
                 value={
@@ -612,6 +744,11 @@ export function ProjectExecution() {
                 }
                 className="w-full rounded-lg"
                 size="large"
+                minDate={
+                  entryDetails.startDate
+                    ? dayjs(entryDetails.startDate)
+                    : undefined
+                }
               />
             </div>
           </div>
@@ -755,15 +892,28 @@ export function ProjectExecution() {
                         </td>
                         <td className="px-4 py-3 text-center">
                           {mpr.documentId ? (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-primary hover:bg-primary/10"
-                              onClick={() => handleDownloadDocument(mpr)}
-                              title="Download Document"
-                            >
-                              <Download className="w-4 h-4" />
-                            </Button>
+                            <div className="flex items-center justify-center gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-primary hover:bg-primary/10"
+                                onClick={() =>
+                                  setPreviewDocumentId(mpr.documentId)
+                                }
+                                title="View Document"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-primary hover:bg-primary/10"
+                                onClick={() => handleDownloadDocument(mpr)}
+                                title="Download Document"
+                              >
+                                <Download className="w-4 h-4" />
+                              </Button>
+                            </div>
                           ) : (
                             <span className="text-muted-foreground text-xs">
                               N/A
@@ -856,6 +1006,90 @@ export function ProjectExecution() {
               )}
             </div>
           ))}
+
+          {/* Uploaded Geo Tagged Photos Table */}
+          <div className="mt-8 border-t border-border pt-6">
+            <h5 className="font-semibold mb-4 text-sm">Uploaded Photos</h5>
+            <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-muted text-muted-foreground">
+                  <tr>
+                    <th className="px-4 py-3 font-medium">Latitude</th>
+                    <th className="px-4 py-3 font-medium">Longitude</th>
+                    <th className="px-4 py-3 font-medium">Photo Date</th>
+                    <th className="px-4 py-3 font-medium">Description</th>
+                    <th className="px-4 py-3 font-medium text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {isPhotosListLoading ? (
+                    <tr>
+                      <td colSpan={5} className="px-4 py-4">
+                        <Spinner
+                          label="Loading photos..."
+                          iconClassName="size-4"
+                        />
+                      </td>
+                    </tr>
+                  ) : photosList && photosList.length > 0 ? (
+                    photosList.map((photo: any) => (
+                      <tr
+                        key={photo.id}
+                        className="hover:bg-muted/50 transition-colors"
+                      >
+                        <td className="px-4 py-3">{photo.latitude}</td>
+                        <td className="px-4 py-3">{photo.longitude}</td>
+                        <td className="px-4 py-3">
+                          {formattedDate(photo.photoDate)}
+                        </td>
+                        <td
+                          className="px-4 py-3 max-w-50 truncate"
+                          title={photo.description}
+                        >
+                          {photo.description}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center justify-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-primary hover:bg-primary/10"
+                              onClick={() =>
+                                setPreviewDocumentId(photo.documentId)
+                              }
+                              title="View Photo"
+                              disabled={!photo.documentId}
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-primary hover:bg-primary/10"
+                              onClick={() => handleDownloadDocument(photo)}
+                              title="Download Photo"
+                              disabled={!photo.documentId}
+                            >
+                              <Download className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan={5}
+                        className="px-4 py-4 text-center text-muted-foreground"
+                      >
+                        No photos uploaded yet.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       ),
     },
@@ -881,18 +1115,31 @@ export function ProjectExecution() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {renderDocumentRow(
-                    "Site Inspection Report",
-                    "siteInspectionReport",
-                  )}
-                  {renderDocumentRow("TPQA Report", "tpqaReport")}
-                  {renderDocumentRow(
-                    "Utilization Certificate",
-                    "utilizationCertificate",
-                  )}
-                  {renderDocumentRow(
-                    "Completion Certificate",
-                    "completionCertificate",
+                  {isUploadedDocumentsLoading ? (
+                    <tr>
+                      <td colSpan={3} className="px-6 py-4">
+                        <Spinner
+                          label="Loading documents..."
+                          iconClassName="size-4"
+                        />
+                      </td>
+                    </tr>
+                  ) : (
+                    <>
+                      {renderDocumentRow(
+                        "Site Inspection Report",
+                        "siteInspectionReport",
+                      )}
+                      {renderDocumentRow("TPQA Report", "tpqaReport")}
+                      {renderDocumentRow(
+                        "Utilization Certificate",
+                        "utilizationCertificate",
+                      )}
+                      {renderDocumentRow(
+                        "Completion Certificate",
+                        "completionCertificate",
+                      )}
+                    </>
                   )}
                 </tbody>
               </table>
@@ -1030,6 +1277,13 @@ export function ProjectExecution() {
           </div>
         </div>
       )}
+
+      {/* Document preview modal for viewing geo-tagged photos */}
+      <DocumentPreviewModal
+        isOpen={!!previewDocumentId}
+        onClose={() => setPreviewDocumentId(null)}
+        documentId={previewDocumentId}
+      />
     </div>
   );
 }

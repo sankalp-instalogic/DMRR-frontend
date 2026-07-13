@@ -1,13 +1,22 @@
 import { NavLink, useLocation } from "react-router";
 import { useState, useEffect } from "react";
 import { useSidebar } from "../../context/SidebarContext";
+import { useAuth } from "../../context/AuthContext";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { sidebarLinks } from "../../../constants/sidebarLinks";
 import type { NavItem } from "../../../constants/sidebarLinks";
 
 export default function Sidebar() {
   const { sidebarOpen } = useSidebar();
+  const { auth } = useAuth();
   const location = useLocation();
+
+  const isAdmin = auth?.role === "Admin";
+
+  // Hide admin-only links (e.g. User Management) from non-admin users.
+  const visibleLinks = sidebarLinks.filter(
+    (item) => !item.adminOnly || isAdmin,
+  );
   const [expandedSections, setExpandedSections] = useState<
     Record<string, boolean>
   >({});
@@ -90,7 +99,7 @@ export default function Sidebar() {
         className="p-4 space-y-2 overflow-y-auto h-full pb-20"
         aria-label="Main navigation"
       >
-        {sidebarLinks.map((item) => {
+        {visibleLinks.map((item) => {
           const Icon = item.icon;
 
           // --- LEVEL 1: Dropdown/Folders ---

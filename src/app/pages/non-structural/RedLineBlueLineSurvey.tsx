@@ -187,7 +187,7 @@ export function RedLineBlueLineSurvey() {
             uploadMutation.mutateAsync({
               file: grDocumentFile,
               ownerId: responseData.id,
-              documentType: DocumentType.GRCopy,
+              documentType: DocumentType.RLBL_GR,
             }),
           );
         }
@@ -197,7 +197,7 @@ export function RedLineBlueLineSurvey() {
             uploadMutation.mutateAsync({
               file: completionCertificateFile,
               ownerId: responseData.id,
-              documentType: DocumentType.CompletionCertificate,
+              documentType: DocumentType.RLBL_CompletionCertificate,
             }),
           );
         }

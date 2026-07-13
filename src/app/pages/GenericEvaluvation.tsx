@@ -48,7 +48,7 @@ const COMMITTEE_CONFIG: Record<string, any> = {
     nextRoute: "/evaluation/tac",
     nextStageName: "TAC",
     momDocType: DocumentType.PACMoM,
-    attendanceDocType: DocumentType.CommitteAttendanceSheet,
+    attendanceDocType: DocumentType.PacAttendanceSheet,
     timelineSearchStr: "PAC Revision",
   },
   tac: {
@@ -58,7 +58,7 @@ const COMMITTEE_CONFIG: Record<string, any> = {
     nextRoute: "/evaluation/sec",
     nextStageName: "SEC",
     momDocType: DocumentType.TACMoM,
-    attendanceDocType: DocumentType.CommitteAttendanceSheet,
+    attendanceDocType: DocumentType.TacAttendanceSheet,
     timelineSearchStr: "TAC Revision",
   },
   sec: {
@@ -67,8 +67,8 @@ const COMMITTEE_CONFIG: Record<string, any> = {
     subtitle: "State Empowered Committee review and approval",
     nextRoute: "/evaluation/aa",
     nextStageName: "Administrative Approval",
-    momDocType: DocumentType.SECMoM,
-    attendanceDocType: DocumentType.CommitteAttendanceSheet,
+    momDocType: DocumentType.SecMoM,
+    attendanceDocType: DocumentType.SecAttendanceSheet,
     timelineSearchStr: "SEC Revision",
   },
   aa: {
@@ -78,7 +78,7 @@ const COMMITTEE_CONFIG: Record<string, any> = {
     nextRoute: "/evaluation/sdma",
     nextStageName: "SDMA",
     momDocType: DocumentType.AdministrativeApprovalOrder,
-    attendanceDocType: DocumentType.CommitteAttendanceSheet,
+    attendanceDocType: DocumentType.AAAttendanceSheet,
     timelineSearchStr: "AdministrativeApproval Revision", // Adjust to match API exactly
   },
   sdma: {
@@ -87,8 +87,8 @@ const COMMITTEE_CONFIG: Record<string, any> = {
     subtitle: "State Disaster Management Authority Final Approval",
     nextRoute: "/tendering", // Exits the evaluation flow
     nextStageName: "Tendering & Procurement",
-    momDocType: DocumentType.SDMAMoM,
-    attendanceDocType: DocumentType.CommitteAttendanceSheet,
+    momDocType: DocumentType.SDMAMOM,
+    attendanceDocType: DocumentType.SDMAAttendanceSheet,
     timelineSearchStr: "SDMA Revision",
   },
 };

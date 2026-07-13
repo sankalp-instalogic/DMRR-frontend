@@ -15,6 +15,7 @@ import { ProjectClosure } from "./pages/ProjectClosure";
 import { ProcurementDashboard } from "./pages/procurement/ProcurementDashboard";
 import { ProcurementList } from "./pages/procurement/ProcurementList";
 import { NewProcurement } from "./pages/procurement/NewProcurement";
+import { ProcurementDetail } from "./pages/procurement/ProcurementDetail";
 import { ProposalScrutinyCommittee } from "./pages/procurement/ProposalScrutinyCommittee";
 import { ProcurementClosure } from "./pages/ProcurementClosure";
 import { TechnicalAppraisalCommittee } from "./pages/procurement/TechnicalAppraisalCommittee";
@@ -31,9 +32,9 @@ import { NDMAGuidelines } from "./pages/master/NDMAGuidelines";
 import { VendorMaster } from "./pages/master/VendorMaster";
 import { EquipmentCatalogue } from "./pages/master/EquipmentCatalogue";
 import { AdminConfiguration } from "./pages/AdminConfiguration";
+import { UserManagement } from "./pages/UserManagement";
 import { TendersList } from "./pages/procurement/tendering/TendersList";
 import { TenderDetails } from "./pages/procurement/tendering/TenderDetails";
-import { NewTender } from "./pages/procurement/tendering/NewTender";
 import { UnderDevelopment } from "./pages/UnderDevelopment";
 import { RedLineBlueLineSurvey } from "./pages/non-structural/RedLineBlueLineSurvey";
 import { NatureBasedSolutions } from "./pages/non-structural/NatureBasedSolutions";
@@ -43,6 +44,7 @@ import { FundsDistributedDistricts } from "./pages/funds-distributed/FundsDistri
 import { FundsDistributedOther } from "./pages/funds-distributed/FundsDistributedOther";
 import { ProcurementTenderClosureDetails } from "./pages/procurement/tendering/ProcurementTenderClosureDetails";
 import { NotFound } from "./pages/NotFound";
+import { DocumentManagement } from "./pages/DocumentManagement";
 
 // const RedLineBlueLine = () => <UnderDevelopment moduleName="Red Line Blue Line Survey" />;
 // const NatureBasedSolutions = () => <UnderDevelopment moduleName="Nature Based Solutions" />;
@@ -102,6 +104,7 @@ export const router = createBrowserRouter([
           // Proposals for Preparedness & Capacity Building - Procurements
           { path: "procurement", Component: ProcurementDashboard },
           { path: "procurement-list", Component: ProcurementList },
+          { path: "procurement-detail/:id", Component: ProcurementDetail },
           { path: "procurement/new", Component: NewProcurement },
           { path: "procurement-psc", Component: ProposalScrutinyCommittee },
           { path: "procurement-tac", Component: TechnicalAppraisalCommittee },
@@ -122,7 +125,6 @@ export const router = createBrowserRouter([
             path: "procurement-tendering/tenders/procurement/:id",
             Component: ProcurementTenderClosureDetails,
           },
-          { path: "procurement-tendering/new", Component: NewTender },
           {
             path: "procurement/project-execution",
             Component: ProjectExecution,
@@ -149,6 +151,7 @@ export const router = createBrowserRouter([
           { path: "prep/media-budget", Component: MediaBudget },
 
           // Other modules (unchanged)
+          { path: "documents", Component: DocumentManagement },
           { path: "ai-intelligence", Component: AIDocumentIntelligence },
           { path: "audit-trail", Component: AuditTrail },
           { path: "master/district", Component: DistrictMaster },
@@ -160,6 +163,7 @@ export const router = createBrowserRouter([
           { path: "master/vendor", Component: VendorMaster },
           { path: "master/equipment", Component: EquipmentCatalogue },
           { path: "admin", Component: AdminConfiguration },
+          { path: "admin/user-management", Component: UserManagement },
         ],
       },
     ],

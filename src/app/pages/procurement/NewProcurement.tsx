@@ -5,8 +5,9 @@ import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { Input, Select, DatePicker, InputNumber } from "antd";
 import dayjs from "dayjs";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
-import { Button } from "../../components/ui/button";
+import { Button, buttonVariants } from "../../components/ui/button";
 import { Spinner } from "../../components/ui/spinner";
+import { cn } from "../../components/ui/utils";
 
 interface DetailRow {
   quantity: string | number;
@@ -398,7 +399,7 @@ export function NewProcurement() {
             type="button"
             variant="outline"
             onClick={() => append({ quantity: "", location: "" })}
-            className="border-dashed border-primary text-primary hover:bg-info-muted mb-6"
+            className={cn(buttonVariants({ variant: "outline" }), "flex items-center gap-2 mb-2")}
           >
             <Plus className="size-4" />
             Add Row

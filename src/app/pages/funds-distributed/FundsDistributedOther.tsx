@@ -126,7 +126,7 @@ export function FundsDistributedOther() {
       uploadData.append("file", file);
       uploadData.append("ownerId", ownerId);
       uploadData.append("ownerType", String(DocumentOwnerType.FundsOthers));
-      uploadData.append("documentType", String(DocumentType.UtilizationCertificate));
+      uploadData.append("documentType", String(DocumentType.FD_Others_UtilisationCertificate));
 
       return await axiosPrivate.post("/api/v1/Documents/upload", uploadData, {
         headers: { "Content-Type": "multipart/form-data" },

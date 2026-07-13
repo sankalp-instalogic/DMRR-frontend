@@ -22,10 +22,10 @@ import { DocumentOwnerType, DocumentType } from "../../../../constants/documents
 
 // Document Type Mapping (ownerType is 8 for Tenders)
 const DOCUMENT_TYPES: Record<string, DocumentType> = {
-  "Technical Bid Opening": DocumentType.TechnicalBidOpening,
-  "Technical Evaluation": DocumentType.TechnicalEvaluation,
-  "Financial Bid Opening": DocumentType.FinancialBidOpening,
-  "Financial Evaluation": DocumentType.FinancialEvaluation,
+  "Technical Bid Opening": DocumentType.DMT_TechnicalBidOpening,
+  "Technical Evaluation": DocumentType.DMT_TechnicalEvaluation,
+  "Financial Bid Opening": DocumentType.DMT_FinancialBidOpening,
+  "Financial Evaluation": DocumentType.DMT_FinancialEvaluation,
 };
 
 const stageList = [
@@ -107,25 +107,25 @@ export function Tenders() {
     {
       name: "Technical Bid Opening",
       key: "docTechnicalBidOpening" as const,
-      type: DocumentType.TechnicalBidOpening,
+      type: DocumentType.DMT_TechnicalBidOpening,
       file: watchedDocs[0],
     },
     {
       name: "Technical Evaluation",
       key: "docTechnicalEvaluation" as const,
-      type: DocumentType.TechnicalEvaluation,
+      type: DocumentType.DMT_TechnicalEvaluation,
       file: watchedDocs[1],
     },
     {
       name: "Financial Bid Opening",
       key: "docFinancialBidOpening" as const,
-      type: DocumentType.FinancialBidOpening,
+      type: DocumentType.DMT_FinancialBidOpening,
       file: watchedDocs[2],
     },
     {
       name: "Financial Evaluation",
       key: "docFinancialEvaluation" as const,
-      type: DocumentType.FinancialEvaluation,
+      type: DocumentType.DMT_FinancialEvaluation,
       file: watchedDocs[3],
     },
   ];
@@ -234,10 +234,10 @@ export function Tenders() {
       if (responseData?.id) {
         // Map form keys back to their backend stage types for uploading
         const fileMap = [
-          { file: formFiles.docTechnicalBidOpening, type: DocumentType.TechnicalBidOpening },
-          { file: formFiles.docTechnicalEvaluation, type: DocumentType.TechnicalEvaluation },
-          { file: formFiles.docFinancialBidOpening, type: DocumentType.FinancialBidOpening },
-          { file: formFiles.docFinancialEvaluation, type: DocumentType.FinancialEvaluation },
+          { file: formFiles.docTechnicalBidOpening, type: DocumentType.DMT_TechnicalBidOpening },
+          { file: formFiles.docTechnicalEvaluation, type: DocumentType.DMT_TechnicalEvaluation },
+          { file: formFiles.docFinancialBidOpening, type: DocumentType.DMT_FinancialBidOpening },
+          { file: formFiles.docFinancialEvaluation, type: DocumentType.DMT_FinancialEvaluation },
         ];
 
         const uploadPromises = fileMap.map(({ file, type }) => {

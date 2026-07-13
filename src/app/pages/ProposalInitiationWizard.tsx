@@ -48,6 +48,7 @@ export function ProposalInitiationWizard() {
   });
 
   const [step2Data, setStep2Data] = useState({
+    title: "",
     lineDepartment: "",
     proposalReceivedFrom: "",
     sourceName: "",
@@ -95,8 +96,8 @@ export function ProposalInitiationWizard() {
       const result = await preflight.mutateAsync({
         payload: {
           proposalRefNo: null,
-          title: step2Data.sourceName
-            ? `Structural Mitigation - ${step2Data.sourceName}`
+          title: step2Data.title
+            ? `Structural Mitigation - ${step2Data.title}`
             : "Structural Mitigation Proposal",
           financialYear: currentFinancialYear(),
           disasterTypeId: step1Data.disasterType || null,
@@ -111,11 +112,13 @@ export function ProposalInitiationWizard() {
           receivingOfficerId: step2Data.officerInCharge || null,
           receivingOfficerName: null,
           ndmaGuidelineId: step3Data.ndmaGuideline || null,
-          costOfProjectLakhs: step4Data.projectCost ? Number(step4Data.projectCost) : null,
+          costOfProjectLakhs: step4Data.projectCost
+            ? Number(step4Data.projectCost)
+            : null,
           costEstimationLakhs: null,
           forwardedToDepartmentId: null,
           description: step2Data.sourceName || null,
-          documentTypeName: "ProposalDocument"
+          documentTypeName: "ProposalDocument",
         },
         file: step4Data.proposalDemandFile,
       });
@@ -128,7 +131,10 @@ export function ProposalInitiationWizard() {
         const matches =
           result.existence?.matchingProjects
             ?.slice(0, 3)
-            .map((m) => `• ${m.title ?? m.projectId} (${Math.round((m.similarity ?? 0) * 100)}%)`)
+            .map(
+              (m) =>
+                `• ${m.title ?? m.projectId} (${Math.round((m.similarity ?? 0) * 100)}%)`,
+            )
             .join("\n") ?? "";
         setNdmaValidationMessage(
           `${result.blockReason ?? "This proposal appears to be a duplicate."}` +
@@ -144,15 +150,21 @@ export function ProposalInitiationWizard() {
       // Displays existence notes regardless of risk tier if data/recommendations exist
       if (result.existence) {
         const risk = result.existence.duplicateRisk || "Low";
-        const existRecs = result.existence.recommendations?.map((r) => `• ${r}`).join("\n") || "";
-        const matches = result.existence.matchingProjects
-          ?.slice(0, 3)
-          .map((m) => `• ${m.title ?? m.projectId} (${Math.round((m.similarity ?? 0) * 100)}%)`)
-          .join("\n") ?? "";
+        const existRecs =
+          result.existence.recommendations?.map((r) => `• ${r}`).join("\n") ||
+          "";
+        const matches =
+          result.existence.matchingProjects
+            ?.slice(0, 3)
+            .map(
+              (m) =>
+                `• ${m.title ?? m.projectId} (${Math.round((m.similarity ?? 0) * 100)}%)`,
+            )
+            .join("\n") ?? "";
 
         const riskEmoji = risk.toLowerCase() === "low" ? "✅" : "⚠️";
         messageOutput += `${riskEmoji} Duplicate Risk Assessment: ${risk}\n`;
-        
+
         if (existRecs) {
           messageOutput += `\nRecommendations:\n${existRecs}\n`;
         }
@@ -166,25 +178,34 @@ export function ProposalInitiationWizard() {
         const r = result.readiness;
         const score = r?.readinessScore ?? 0;
         const passed = result.readinessPassed;
-        const missing = (r?.missingItems ?? []).slice(0, 6).map((m) => `• ${m}`).join("\n");
-        const recs = (r?.recommendations ?? []).slice(0, 6).map((m) => `• ${m}`).join("\n");
+        const missing = (r?.missingItems ?? [])
+          .slice(0, 6)
+          .map((m) => `• ${m}`)
+          .join("\n");
+        const recs = (r?.recommendations ?? [])
+          .slice(0, 6)
+          .map((m) => `• ${m}`)
+          .join("\n");
 
-        if (messageOutput) messageOutput += "\n----------------------------------------\n\n";
+        if (messageOutput)
+          messageOutput += "\n----------------------------------------\n\n";
 
-        messageOutput += `📊 Readiness Check: ${score}/100 (${r?.category ?? "Assessed"})${passed ? " — meets threshold" : " — below threshold (allowed to submit; metrics will log to database)"}.` +
+        messageOutput +=
+          `📊 Readiness Check: ${score}/100 (${r?.category ?? "Assessed"})${passed ? " — meets threshold" : " — below threshold (allowed to submit; metrics will log to database)"}.` +
           (r?.executiveSummary ? `\n\n${r.executiveSummary}` : "") +
           (missing ? `\n\nMissing items:\n${missing}` : "") +
           (recs ? `\n\nRecommendations:\n${recs}` : "");
       } else {
         if (messageOutput) {
-          messageOutput += "\nNote: Duplicate system validation verified. Comprehensive readiness profile parameters skipped or unassigned.";
+          messageOutput +=
+            "\nNote: Duplicate system validation verified. Comprehensive readiness profile parameters skipped or unassigned.";
         } else {
-          messageOutput = "✅ AI Preflight checks passed. Document ready for processing.";
+          messageOutput =
+            "✅ AI Preflight checks passed. Document ready for processing.";
         }
       }
 
       setNdmaValidationMessage(messageOutput);
-
     } catch (err: any) {
       setNdmaValidationStatus("failed");
       setNdmaValidationMessage(
@@ -219,11 +240,13 @@ export function ProposalInitiationWizard() {
       markedToAuthorityId: step2Data.receivingAuthority || null,
       dateReceivedByAuthority: formatToISO(step2Data.authorityReceivedDate),
       receivingOfficerId: step2Data.officerInCharge || null,
-      receivingOfficerName: "", 
+      receivingOfficerName: "",
       ndmaGuidelineId: step3Data.ndmaGuideline || null,
-      costOfProjectLakhs: step4Data.projectCost ? Number(step4Data.projectCost) : 0,
-      title: step2Data.sourceName
-        ? `Structural Mitigation - ${step2Data.sourceName}`
+      costOfProjectLakhs: step4Data.projectCost
+        ? Number(step4Data.projectCost)
+        : 0,
+      title: step2Data.title
+        ? `Structural Mitigation - ${step2Data.title}`
         : "Structural Mitigation Proposal",
       aiAssessment: toAiAssessment(aiResult),
     };
@@ -254,11 +277,15 @@ export function ProposalInitiationWizard() {
         formData.append("documentType", String(DocumentType.ProposalDocument));
         formData.append("file", step4Data.proposalDemandFile);
 
-        const uploadResponse = await axiosPrivate.post("/api/v1/Documents/upload", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
+        const uploadResponse = await axiosPrivate.post(
+          "/api/v1/Documents/upload",
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
           },
-        });
+        );
 
         const documentId = uploadResponse.data?.id;
         if (documentId) {

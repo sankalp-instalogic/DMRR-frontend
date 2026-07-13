@@ -179,7 +179,7 @@ export function NatureBasedSolutions() {
             uploadMutation.mutateAsync({
               file: grDocumentFile,
               ownerId: responseData.id,
-              documentType: DocumentType.GRCopy,
+              documentType: DocumentType.NBS_GR,
             }),
           );
         }
@@ -189,7 +189,7 @@ export function NatureBasedSolutions() {
             uploadMutation.mutateAsync({
               file: completionCertificateFile,
               ownerId: responseData.id,
-              documentType: DocumentType.CompletionCertificate,
+              documentType: DocumentType.NBS_CompletionCertificate,
             }),
           );
         }

@@ -80,13 +80,13 @@ export function DetailScreen({
   const getDocumentType = (type: number): DocumentType | undefined => {
     switch (type) {
       case 1:
-        return DocumentType.PCSApprovalLetter;
+        return DocumentType.Proc_AAApprovalDoc;
       case 2:
-        return DocumentType.TACApprovalLetter;
+        return DocumentType.Proc_TACApprovalDoc;
       case 3:
-        return DocumentType.SECApprovalLetter;
+        return DocumentType.Proc_SECApprovalDoc;
       case 4:
-        return DocumentType.AdministratiionApprovalLetter;
+        return DocumentType.Proc_AAApprovalDoc;
       default:
         return undefined;
     }

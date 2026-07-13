@@ -193,7 +193,7 @@ export function FundsDistributedDistricts() {
       uploadData.append("file", file);
       uploadData.append("ownerId", ownerId);
       uploadData.append("ownerType", String(DocumentOwnerType.Fund));
-      uploadData.append("documentType", String(DocumentType.UtilizationCertificate));
+      uploadData.append("documentType", String(DocumentType.FD_District_UtilisationCertificate));
 
       const response = await axiosPrivate.post(
         "/api/v1/Documents/upload",

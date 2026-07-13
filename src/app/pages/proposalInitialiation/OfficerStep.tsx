@@ -6,6 +6,7 @@ import { Input, Select, DatePicker } from "antd";
 import dayjs from "dayjs"; // Ant Design v5 uses dayjs for dates
 
 interface Step2Data {
+  title: string;
   lineDepartment: string;
   proposalReceivedFrom: string;
   sourceName: string;
@@ -27,7 +28,9 @@ export function OfficersStep({ data, setData }: OfficersStepProps) {
   const { data: lineDepartments = [], isLoading: isLoadingDepts } = useQuery({
     queryKey: ["lineDepartments"],
     queryFn: async () => {
-      const response = await axiosPrivate.get("/api/v1/masters/line-departments");
+      const response = await axiosPrivate.get(
+        "/api/v1/masters/line-departments",
+      );
       return response.data.items;
     },
   });
@@ -35,18 +38,21 @@ export function OfficersStep({ data, setData }: OfficersStepProps) {
   const { data: proposalSources = [], isLoading: isLoadingSources } = useQuery({
     queryKey: ["proposalSources"],
     queryFn: async () => {
-      const response = await axiosPrivate.get("/api/v1/lookups/proposal-sources");
+      const response = await axiosPrivate.get(
+        "/api/v1/lookups/proposal-sources",
+      );
       return response.data;
     },
   });
 
-  const { data: receivingAuthorities = [], isLoading: isLoadingAuthorities } = useQuery({
-    queryKey: ["receivingAuthorities"],
-    queryFn: async () => {
-      const response = await axiosPrivate.get("/api/v1/lookups/authorities");
-      return response.data;
-    },
-  });
+  const { data: receivingAuthorities = [], isLoading: isLoadingAuthorities } =
+    useQuery({
+      queryKey: ["receivingAuthorities"],
+      queryFn: async () => {
+        const response = await axiosPrivate.get("/api/v1/lookups/authorities");
+        return response.data;
+      },
+    });
 
   const { data: officers = [], isLoading: isLoadingOfficers } = useQuery({
     queryKey: ["officers"],
@@ -62,7 +68,18 @@ export function OfficersStep({ data, setData }: OfficersStepProps) {
         <Building2 className="size-5" />
         Step 2: Line Department & Officers
       </h3>
-
+      <div>
+        <label className="block text-sm font-medium mb-2">
+          Title <span className="text-destructive">*</span>
+        </label>
+        <Input
+          size="large"
+          className="w-full"
+          placeholder="Enter title"
+          value={data.title}
+          onChange={(e) => setData({ ...data, title: e.target.value })}
+        />
+      </div>
       {/* Line Department */}
       <div>
         <label className="block text-sm font-medium mb-2">
@@ -79,7 +96,10 @@ export function OfficersStep({ data, setData }: OfficersStepProps) {
         >
           {Array.isArray(lineDepartments) &&
             lineDepartments.map((dept: any) => (
-              <Select.Option key={dept.id || dept.name || dept} value={dept.id || dept}>
+              <Select.Option
+                key={dept.id || dept.name || dept}
+                value={dept.id || dept}
+              >
                 {dept.name || dept}
               </Select.Option>
             ))}
@@ -96,13 +116,18 @@ export function OfficersStep({ data, setData }: OfficersStepProps) {
           className="w-full"
           placeholder="Select Source"
           value={data.proposalReceivedFrom || undefined}
-          onChange={(value) => setData({ ...data, proposalReceivedFrom: value })}
+          onChange={(value) =>
+            setData({ ...data, proposalReceivedFrom: value })
+          }
           disabled={isLoadingSources}
           loading={isLoadingSources}
         >
           {Array.isArray(proposalSources) &&
             proposalSources.map((source: any) => (
-              <Select.Option key={source.id || source.name || source} value={source.id || source}>
+              <Select.Option
+                key={source.id || source.name || source}
+                value={source.id || source}
+              >
                 {source.name || source}
               </Select.Option>
             ))}
@@ -117,7 +142,9 @@ export function OfficersStep({ data, setData }: OfficersStepProps) {
         <DatePicker
           size="large"
           className="w-full"
-          value={data.proposalReceivedDate ? dayjs(data.proposalReceivedDate) : null}
+          value={
+            data.proposalReceivedDate ? dayjs(data.proposalReceivedDate) : null
+          }
           onChange={(_date, dateString) =>
             setData({ ...data, proposalReceivedDate: dateString as string })
           }
@@ -154,7 +181,10 @@ export function OfficersStep({ data, setData }: OfficersStepProps) {
         >
           {Array.isArray(receivingAuthorities) &&
             receivingAuthorities.map((auth: any) => (
-              <Select.Option key={auth.id || auth.name || auth} value={auth.id || auth}>
+              <Select.Option
+                key={auth.id || auth.name || auth}
+                value={auth.id || auth}
+              >
                 {auth.name || auth}
               </Select.Option>
             ))}
@@ -164,12 +194,17 @@ export function OfficersStep({ data, setData }: OfficersStepProps) {
       {/* Date of Receipt by Authority */}
       <div>
         <label className="block text-sm font-medium mb-2">
-          Date of Receipt by Authority <span className="text-destructive">*</span>
+          Date of Receipt by Authority{" "}
+          <span className="text-destructive">*</span>
         </label>
         <DatePicker
           size="large"
           className="w-full"
-          value={data.authorityReceivedDate ? dayjs(data.authorityReceivedDate) : null}
+          value={
+            data.authorityReceivedDate
+              ? dayjs(data.authorityReceivedDate)
+              : null
+          }
           onChange={(_date, dateString) =>
             setData({ ...data, authorityReceivedDate: dateString as string })
           }
@@ -191,7 +226,10 @@ export function OfficersStep({ data, setData }: OfficersStepProps) {
           loading={isLoadingOfficers}
         >
           {officers.map((officer: any) => (
-            <Select.Option key={officer.id || officer.name || officer} value={officer.id || officer}>
+            <Select.Option
+              key={officer.id || officer.name || officer}
+              value={officer.id || officer}
+            >
               {officer.name || officer}
             </Select.Option>
           ))}

@@ -1,6 +1,15 @@
 import { useState, useMemo } from "react";
-import { useNavigate } from "react-router";
-import { Search, RotateCcw, Plus } from "lucide-react";
+import { useNavigate, Link } from "react-router";
+import {
+  Search,
+  RotateCcw,
+  Plus,
+  Eye,
+  FileText,
+  MapPin,
+  Building2,
+  Filter,
+} from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 import { Input, Select } from "antd";
@@ -28,7 +37,7 @@ export function ProcurementList() {
 
   // --- PAGINATION & FILTER STATE ---
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(10);
 
   const [searchInput, setSearchInput] = useState("");
   const [financialYear, setFinancialYear] = useState<string | undefined>(
@@ -77,7 +86,7 @@ export function ProcurementList() {
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["procurements", page, appliedFilters],
+    queryKey: ["procurements", page, pageSize, appliedFilters],
     queryFn: async () => {
       const response = await axiosPrivate.get("/api/v1/Procurements", {
         params: {
@@ -121,38 +130,73 @@ export function ProcurementList() {
   // --- AG GRID COLUMN DEFINITIONS ---
   const columnDefs = useMemo<ColDef[]>(
     () => [
-      { headerName: "Procurement Ref No", field: "procurementRefNo", flex: 1 },
-      { headerName: "Financial Year", field: "financialYear", flex: 1 },
-      { headerName: "Item Name", field: "itemName", flex: 1 },
+      {
+        headerName: "Ref No. & Item",
+        field: "procurementRefNo",
+        flex: 1.5,
+        minWidth: 200,
+        cellRenderer: (params: any) => {
+          if (!params.data) return null;
+          return (
+            <div className="flex flex-col justify-center h-full">
+              <div className="flex items-center gap-2">
+                <FileText className="size-4 text-primary shrink-0" />
+                <span className="font-semibold text-sm whitespace-nowrap">
+                  {params.data.procurementRefNo}
+                </span>
+              </div>
+              <span
+                className="text-xs text-muted-foreground mt-1 truncate max-w-50"
+                title={params.data.itemName}
+              >
+                {params.data.itemName}
+              </span>
+            </div>
+          );
+        },
+      },
+      { headerName: "Financial Year", field: "financialYear", flex: 1, minWidth: 130 },
       {
         headerName: "Demand From",
         flex: 1,
-        valueGetter: (params) => {
+        minWidth: 150,
+        cellRenderer: (params: any) => {
           const row = params.data;
           if (!row) return "N/A";
+          let label = row.demandFrom || "N/A";
+          let Icon = MapPin;
           if (row.demandFrom === "Districts" && row.districtId) {
             const dist = districts.find((d: any) => d.id === row.districtId);
-            return dist ? dist.name : "Loading District...";
+            label = dist ? dist.name : "Loading District...";
+            Icon = MapPin;
+          } else if (
+            row.demandFrom === "Other Departments" &&
+            row.departmentId
+          ) {
+            const dept = departments.find((d: any) => d.id === row.departmentId);
+            label = dept ? dept.name : "Loading Department...";
+            Icon = Building2;
           }
-          if (row.demandFrom === "Other Departments" && row.departmentId) {
-            const dept = departments.find(
-              (d: any) => d.id === row.departmentId,
-            );
-            return dept ? dept.name : "Loading Department...";
-          }
-          return row.demandFrom || "N/A";
+          return (
+            <div className="flex items-center gap-1 text-sm whitespace-nowrap h-full">
+              <Icon className="size-3 text-muted-foreground shrink-0" />
+              {label}
+            </div>
+          );
         },
       },
       {
         headerName: "Total Quantity",
         field: "totalQuantity",
         flex: 1,
+        minWidth: 120,
         valueFormatter: (params) => params.value ?? "0",
       },
       {
         headerName: "Award Cost (Lakhs)",
         field: "awardCostInclGstLakhs",
         flex: 1,
+        minWidth: 150,
         valueFormatter: (params) =>
           `₹${params.value?.toLocaleString("en-IN") || "0"}`,
       },
@@ -160,17 +204,42 @@ export function ProcurementList() {
         headerName: "Current Status",
         field: "status",
         flex: 1,
+        minWidth: 120,
         cellRenderer: (params: any) => {
           const status = params.value;
           if (!status) return null;
           const colorClasses =
             statusColors[status] ?? "bg-muted text-foreground";
           return (
-            <span
-              className={`px-2 py-1 rounded-full text-xs font-medium ${colorClasses}`}
-            >
-              {status}
-            </span>
+            <div className="flex items-center h-full">
+              <span
+                className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${colorClasses}`}
+              >
+                {status}
+              </span>
+            </div>
+          );
+        },
+      },
+      {
+        headerName: "Actions",
+        flex: 0.8,
+        minWidth: 100,
+        sortable: false,
+        filter: false,
+        pinned: "right",
+        cellRenderer: (params: any) => {
+          if (!params.data) return null;
+          return (
+            <div className="flex items-center h-full">
+              <Link
+                to={`/procurement-detail/${params.data.id}`}
+                title="View"
+                className="inline-flex items-center justify-center size-9 text-primary hover:bg-info-muted rounded-lg transition-colors"
+              >
+                <Eye className="size-4" />
+              </Link>
+            </div>
           );
         },
       },
@@ -179,8 +248,9 @@ export function ProcurementList() {
   );
 
   return (
-    <div className="space-y-6 w-full">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 w-full max-w-full overflow-x-hidden px-2 sm:px-0">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-[30px] font-bold text-primary">
             Procurement List
@@ -191,66 +261,114 @@ export function ProcurementList() {
         </div>
         <Button
           onClick={() => navigate("/procurement/new")}
-          className="bg-primary hover:bg-primary/90 text-primary-foreground"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground whitespace-nowrap"
         >
           <Plus className="size-4" />
           New Procurement
         </Button>
       </div>
 
-      {/* Filters */}
-      <div className="bg-card border border-border rounded-xl p-5 shadow-sm space-y-4">
+      {/* Search and Filters */}
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-6 shadow-sm space-y-4 w-full">
+        {/* Search Bar */}
         <Input
-          prefix={<Search className="size-4 text-muted-foreground mr-2" />}
+          size="large"
           placeholder="Search Item Name..."
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           onPressEnter={handleSearchSubmit}
-          size="large"
+          prefix={<Search className="size-5 text-muted-foreground mr-2" />}
           className="w-full"
         />
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Select
-            value={financialYear}
-            onChange={setFinancialYear}
-            placeholder="All Financial Years"
-            size="large"
-            allowClear
-            options={[
-              { label: "2025-26", value: "2025-26" },
-              { label: "2024-25", value: "2024-25" },
-              { label: "2023-24", value: "2023-24" },
-            ]}
-          />
-          <Select
-            value={statusFilter}
-            onChange={setStatusFilter}
-            placeholder="All Statuses"
-            size="large"
-            allowClear
-            options={[
-              { label: "Pending PSC", value: "Pending PSC" },
-              { label: "In Progress", value: "In Progress" },
-              { label: "Completed", value: "Completed" },
-            ]}
-          />
-          <div className="flex gap-2">
-            <Button
-              variant="secondary"
-              onClick={handleReset}
-              className="flex-1"
-            >
-              <RotateCcw className="size-4" />
-              Reset
-            </Button>
-            <Button
-              onClick={handleSearchSubmit}
-              className="flex-1"
-            >
-              <Search className="size-4" />
-              Search
-            </Button>
+        {/* Filter Section */}
+        <div className="flex items-center gap-2 mb-2">
+          <Filter className="size-4 text-primary" />
+          <h3 className="font-semibold text-sm">Global Filters</h3>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1 block">
+              Financial Year
+            </label>
+            <Select
+              value={financialYear}
+              onChange={setFinancialYear}
+              placeholder="All Financial Years"
+              className="w-full"
+              allowClear
+              options={[
+                { label: "2025-26", value: "2025-26" },
+                { label: "2024-25", value: "2024-25" },
+                { label: "2023-24", value: "2023-24" },
+              ]}
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1 block">
+              Status
+            </label>
+            <Select
+              value={statusFilter}
+              onChange={setStatusFilter}
+              placeholder="All Statuses"
+              className="w-full"
+              allowClear
+              options={[
+                { label: "Pending PSC", value: "Pending PSC" },
+                { label: "In Progress", value: "In Progress" },
+                { label: "Completed", value: "Completed" },
+              ]}
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1 block">
+              &nbsp;
+            </label>
+            <div className="flex gap-2">
+              <Button
+                variant="secondary"
+                onClick={handleReset}
+                className="flex-1"
+              >
+                <RotateCcw className="size-4" />
+                Reset
+              </Button>
+              <Button onClick={handleSearchSubmit} className="flex-1">
+                <Search className="size-4" />
+                Search
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Results Count & Page Size */}
+        <div className="pt-2 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-2">
+          <p className="text-sm text-muted-foreground">
+            Showing{" "}
+            <span className="font-semibold text-primary">
+              {procurementItems.length}
+            </span>{" "}
+            results on this page
+          </p>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">
+              Items per page:
+            </span>
+            <Select
+              value={pageSize}
+              onChange={(value) => {
+                setPageSize(value);
+                setPage(1);
+              }}
+              options={[
+                { label: "10", value: 10 },
+                { label: "20", value: 20 },
+                { label: "50", value: 50 },
+              ]}
+              className="w-20"
+            />
           </div>
         </div>
       </div>
@@ -277,6 +395,7 @@ export function ProcurementList() {
             page={page}
             totalPages={totalPages}
             onPageChange={(newPage) => setPage(newPage)}
+            rowHeight={64}
           />
         )}
       </div>

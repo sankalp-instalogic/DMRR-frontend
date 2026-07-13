@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { useQuery } from "@tanstack/react-query";
 import { Select } from "antd";
-import { buttonVariants } from "../components/ui/button";
+import { Button, buttonVariants } from "../components/ui/button";
 import { Spinner } from "../components/ui/spinner";
 import { formatCurrencyLakhs } from "../../utils/currencyFormatter";
 import {
@@ -61,9 +61,14 @@ const CHART_COLOR_TOKENS = [
 
 export function Dashboard() {
   const navigate = useNavigate();
+  // Draft filter values — bound to the Selects, not yet applied.
   const [selectedFY, setSelectedFY] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
   const [selectedLineDepartment, setSelectedLineDepartment] = useState("");
+  // Applied filter values — drive the queries; updated only on "Apply Filter".
+  const [appliedFY, setAppliedFY] = useState("");
+  const [appliedDistrict, setAppliedDistrict] = useState("");
+  const [appliedLineDepartment, setAppliedLineDepartment] = useState("");
 
   const axiosPrivate = useAxiosPrivate();
 
@@ -119,16 +124,16 @@ export function Dashboard() {
   } = useQuery({
     queryKey: [
       "dashboard-summary",
-      selectedFY,
-      selectedDistrict,
-      selectedLineDepartment,
+      appliedFY,
+      appliedDistrict,
+      appliedLineDepartment,
     ],
     queryFn: async () => {
       const response = await axiosPrivate.get("/api/v1/Dashboard/summary", {
         params: {
-          financialYear: selectedFY || undefined,
-          districtId: selectedDistrict || undefined,
-          lineDepartmentId: selectedLineDepartment || undefined,
+          financialYear: appliedFY || undefined,
+          districtId: appliedDistrict || undefined,
+          lineDepartmentId: appliedLineDepartment || undefined,
         },
       });
       return response.data;
@@ -143,16 +148,16 @@ export function Dashboard() {
   } = useQuery({
     queryKey: [
       "dashboard-charts",
-      selectedFY,
-      selectedDistrict,
-      selectedLineDepartment,
+      appliedFY,
+      appliedDistrict,
+      appliedLineDepartment,
     ],
     queryFn: async () => {
       const response = await axiosPrivate.get("/api/v1/Dashboard/charts", {
         params: {
-          financialYear: selectedFY || undefined,
-          districtId: selectedDistrict || undefined,
-          lineDepartmentId: selectedLineDepartment || undefined,
+          financialYear: appliedFY || undefined,
+          districtId: appliedDistrict || undefined,
+          lineDepartmentId: appliedLineDepartment || undefined,
         },
       });
       return response.data;
@@ -161,7 +166,7 @@ export function Dashboard() {
 
   const handleKPIDrillDown = (filter: string) => {
     navigate(
-      `/proposal-list?filter=${filter}&fy=${selectedFY}&district=${selectedDistrict}`,
+      `/proposal-list?filter=${filter}&fy=${appliedFY}&district=${appliedDistrict}`,
     );
   };
 
@@ -320,6 +325,32 @@ export function Dashboard() {
             />
           </div>
         </div>
+        <div className="flex justify-end gap-3 mt-4">
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => {
+              setSelectedFY("");
+              setSelectedDistrict("");
+              setSelectedLineDepartment("");
+              setAppliedFY("");
+              setAppliedDistrict("");
+              setAppliedLineDepartment("");
+            }}
+          >
+            Reset Filter
+          </Button>
+          <Button
+            size="lg"
+            onClick={() => {
+              setAppliedFY(selectedFY);
+              setAppliedDistrict(selectedDistrict);
+              setAppliedLineDepartment(selectedLineDepartment);
+            }}
+          >
+            Apply Filter
+          </Button>
+        </div>
       </div>
 
       {/* SECTION 1 - MITIGATION PROPOSALS */}
@@ -428,7 +459,7 @@ export function Dashboard() {
 
         {/* C. Budget Section */}
         <h3 className="text-[20px] font-semibold mb-6 text-primary">
-          Budget Overview - FY {selectedFY}
+          Budget Overview - FY {appliedFY}
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -437,7 +468,7 @@ export function Dashboard() {
               Budget Allocated
             </div>
             <div className="text-[32px] font-bold text-primary">
-              ₹{totalAllocated.toLocaleString()}
+              {formatCurrencyLakhs(totalAllocated)}
             </div>
           </div>
 
@@ -446,7 +477,7 @@ export function Dashboard() {
               Budget Received
             </div>
             <div className="text-[32px] font-bold text-secondary">
-              ₹{totalReceived.toLocaleString()}
+              {formatCurrencyLakhs(totalReceived)}
             </div>
           </div>
         </div>
@@ -457,7 +488,7 @@ export function Dashboard() {
               Budget Utilized
             </div>
             <div className="text-[32px] font-bold mt-2 text-foreground">
-              ₹{totalUtilized.toLocaleString()}
+              {formatCurrencyLakhs(totalUtilized)}
             </div>
           </div>
 
@@ -468,7 +499,7 @@ export function Dashboard() {
                   Mitigation
                 </div>
                 <div className="text-[24px] font-bold text-primary-foreground mt-1">
-                  ₹{totalUtilized.toLocaleString()}
+                  {formatCurrencyLakhs(totalUtilized)}
                 </div>
               </div>
 
@@ -478,7 +509,7 @@ export function Dashboard() {
                     Structural Mitigation
                   </div>
                   <div className="text-[20px] font-bold text-category-1 mt-1">
-                    ₹{getSegmentUtilized("Structural").toLocaleString()}
+                    {formatCurrencyLakhs(getSegmentUtilized("Structural"))}
                   </div>
                 </div>
 
@@ -487,7 +518,7 @@ export function Dashboard() {
                     Non-Structural Mitigation
                   </div>
                   <div className="text-[20px] font-bold text-category-2 mt-1">
-                    ₹{getSegmentUtilized("Non-Structural").toLocaleString()}
+                    {formatCurrencyLakhs(getSegmentUtilized("Non-Structural"))}
                   </div>
                 </div>
 
@@ -496,7 +527,7 @@ export function Dashboard() {
                     Research & Grants
                   </div>
                   <div className="text-[20px] font-bold text-category-3 mt-1">
-                    ₹{getSegmentUtilized("Research").toLocaleString()}
+                    {formatCurrencyLakhs(getSegmentUtilized("Research"))}
                   </div>
                 </div>
               </div>
@@ -508,7 +539,7 @@ export function Dashboard() {
                   Preparedness & Capacity Building
                 </div>
                 <div className="text-[24px] font-bold mt-1">
-                  ₹{getSegmentUtilized("Preparedness").toLocaleString()}
+                  {formatCurrencyLakhs(getSegmentUtilized("Preparedness"))}
                 </div>
               </div>
 
@@ -518,7 +549,7 @@ export function Dashboard() {
                     Procurements
                   </div>
                   <div className="text-[20px] font-bold text-category-4 mt-1">
-                    ₹{getSegmentUtilized("Procurement").toLocaleString()}
+                    {formatCurrencyLakhs(getSegmentUtilized("Procurement"))}
                   </div>
                 </div>
 
@@ -527,7 +558,7 @@ export function Dashboard() {
                     Funds to Districts
                   </div>
                   <div className="text-[20px] font-bold text-category-5 mt-1">
-                    ₹{getSegmentUtilized("Districts").toLocaleString()}
+                    {formatCurrencyLakhs(getSegmentUtilized("Districts"))}
                   </div>
                 </div>
               </div>
@@ -564,7 +595,7 @@ export function Dashboard() {
               </div>
             </div>
             <div className="text-[32px] font-bold text-foreground">
-              {formatCurrencyLakhs(summaryData.procurementValue) || 0}
+              {formatCurrencyLakhs(summaryData.procurementValue)}
             </div>
           </div>
         </div>
@@ -588,8 +619,15 @@ export function Dashboard() {
                   tickLine={false}
                   tick={{ fontSize: 11 }}
                 />
-                <YAxis axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ borderRadius: "8px" }} />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={formatCurrencyLakhs}
+                />
+                <Tooltip
+                  formatter={(value: number) => formatCurrencyLakhs(value)}
+                  contentStyle={{ borderRadius: "8px" }}
+                />
                 <Line
                   type="monotone"
                   dataKey="value"
@@ -625,7 +663,7 @@ export function Dashboard() {
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(value: any) => `₹${value.toLocaleString()}`}
+                  formatter={(value: number) => formatCurrencyLakhs(value)}
                   contentStyle={{ borderRadius: "8px" }}
                 />
               </PieChart>
@@ -680,8 +718,15 @@ export function Dashboard() {
                   tickLine={false}
                   tick={{ fontSize: 12 }}
                 />
-                <YAxis axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ borderRadius: "8px" }} />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={formatCurrencyLakhs}
+                />
+                <Tooltip
+                  formatter={(value: number) => formatCurrencyLakhs(value)}
+                  contentStyle={{ borderRadius: "8px" }}
+                />
                 <Legend wrapperStyle={{ paddingTop: 20 }} />
                 <Bar
                   dataKey="value"

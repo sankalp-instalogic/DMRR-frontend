@@ -186,7 +186,7 @@ export function DocumentPreviewModal({ isOpen, onClose, documentId }: DocumentPr
           {/* Error State */}
           {(isMetadataError || isFileError) && !isMetadataLoading && !isFileLoading && (
             <div role="alert" className="flex flex-col items-center gap-2 text-destructive bg-destructive/10 p-6 rounded-xl border border-destructive/20 max-w-sm text-center">
-              <AlertCircle className="size-8" aria-hidden="true" />
+              <AlertCircle className="size-8 text-destructive" aria-hidden="true" />
               <h3 className="font-semibold text-base">Failed to load document</h3>
               <p className="text-sm opacity-90">
                 There was a problem retrieving the file. Please try again later.
@@ -217,7 +217,7 @@ export function DocumentPreviewModal({ isOpen, onClose, documentId }: DocumentPr
           {/* Non-previewable fallback (matches FileUpload's preview modal) */}
           {!isMetadataLoading && !isFileLoading && fileUrl && !canPreview && (
             <div className="flex flex-col items-center gap-3 text-muted-foreground text-center max-w-sm">
-              <AlertCircle className="size-8" aria-hidden="true" />
+              <AlertCircle className="size-8 text-destructive" aria-hidden="true" />
               <h3 className="font-semibold text-base text-foreground">
                 Preview not available
               </h3>

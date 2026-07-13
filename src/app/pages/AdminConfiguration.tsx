@@ -2,10 +2,8 @@ import { Link } from "react-router";
 import { Users, Shield, Server, FileText, IndianRupee, MapPin, Building2, HardHat, Package, FileCode, CheckCircle, Database } from "lucide-react";
 
 const adminModules = [
-  { title: "User Management", icon: Users, link: "#", color: "bg-chart-1" },
-  { title: "Role Management", icon: Shield, link: "#", color: "bg-chart-2" },
+  { title: "User Management", icon: Users, link: "user-management", color: "bg-chart-1" },
   { title: "OCR Queue Monitor", icon: FileCode, link: "#", color: "bg-chart-3" },
-  { title: "System Configuration", icon: Server, link: "#", color: "bg-chart-4" },
 ];
 
 const masterModules = [

@@ -46,6 +46,54 @@ export function ProcurementDashboard() {
   const [page, setPage] = useState<number>(1);
   const pageSize = 10;
 
+  // Fetch Districts for Dropdown
+  const { data: districtsData, isLoading: isDistrictsLoading } = useQuery({
+    queryKey: ["districts"],
+    queryFn: async () => {
+      const response = await axiosPrivate.get("/api/v1/masters/districts", {
+        params: { page: 1, pageSize: 100 },
+      });
+      return response.data?.items || [];
+    },
+  });
+
+  // Map district API data to Antd Select options
+  const districtOptions = [
+    { value: "", label: "All Districts" },
+    ...((Array.isArray(districtsData) &&
+      districtsData?.map((dist: any) => ({
+        value: dist.id,
+        label: dist.name,
+      }))) ||
+      []),
+  ];
+
+  // Fetch Line Departments for Dropdown
+  const { data: lineDepartmentsData, isLoading: isLineDepartmentsLoading } =
+    useQuery({
+      queryKey: ["lineDepartments"],
+      queryFn: async () => {
+        const response = await axiosPrivate.get(
+          "/api/v1/masters/line-departments",
+          {
+            params: { page: 1, pageSize: 100 },
+          },
+        );
+        return response.data?.items || [];
+      },
+    });
+
+  // Map line department API data to Antd Select options
+  const lineDepartmentOptions = [
+    { value: "", label: "All Departments" },
+    ...((Array.isArray(lineDepartmentsData) &&
+      lineDepartmentsData?.map((dept: any) => ({
+        value: dept.id,
+        label: dept.name,
+      }))) ||
+      []),
+  ];
+
   // Fetch Table Data
   const { data, isLoading, isError } = useQuery<ProcurementResponse, Error>({
     queryKey: [
@@ -61,8 +109,9 @@ export function ProcurementDashboard() {
         params: {
           Page: page,
           PageSize: pageSize,
-          // financialYear: financialYear || undefined,
-          // districtId: district || undefined,
+          financialYear: financialYear || undefined,
+          districtId: district || undefined,
+          lineDepartmentId: department || undefined,
         },
       });
       return response.data;
@@ -80,8 +129,9 @@ export function ProcurementDashboard() {
         "/api/v1/Procurements/dashboard",
         {
           params: {
-            // financialYear: financialYear || undefined,
-            // districtId: district || undefined,
+            financialYear: financialYear || undefined,
+            districtId: district || undefined,
+            lineDepartmentId: department || undefined,
           },
         },
       );
@@ -232,12 +282,16 @@ export function ProcurementDashboard() {
               value={district}
               onChange={(value) => setDistrict(value)}
               className="w-full h-10"
-              options={[
-                { value: "", label: "All Districts" },
-                { value: "Mumbai", label: "Mumbai" },
-                { value: "Pune", label: "Pune" },
-                { value: "Nagpur", label: "Nagpur" },
-              ]}
+              options={districtOptions}
+              loading={isDistrictsLoading}
+              disabled={isDistrictsLoading}
+              showSearch
+              filterOption={(input, option) =>
+                (option?.label ?? "")
+                  .toString()
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
             />
           </div>
           <div>
@@ -248,12 +302,16 @@ export function ProcurementDashboard() {
               value={department}
               onChange={(value) => setDepartment(value)}
               className="w-full h-10"
-              options={[
-                { value: "", label: "All Departments" },
-                { value: "Rural Development", label: "Rural Development" },
-                { value: "Health", label: "Health" },
-                { value: "Disaster Management", label: "Disaster Management" },
-              ]}
+              options={lineDepartmentOptions}
+              loading={isLineDepartmentsLoading}
+              disabled={isLineDepartmentsLoading}
+              showSearch
+              filterOption={(input, option) =>
+                (option?.label ?? "")
+                  .toString()
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
             />
           </div>
         </div>

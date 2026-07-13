@@ -109,7 +109,7 @@ export function DDMAWorkflow() {
         );
       if (sanctionFile)
         uploadPromises.push(
-          createUploadConfig(sanctionFile, DocumentType.SanctionOrder),
+          createUploadConfig(sanctionFile, DocumentType.TechnicalSanction),
         );
 
       if (uploadPromises.length > 0) {
@@ -380,7 +380,7 @@ export function DDMAWorkflow() {
 
               <div>
                 <label className="block text-sm mb-2">
-                  Cost Estimation (₹ Lakhs)
+                  Cost Estimation 
                 </label>
                 <Input
                   type="number"
@@ -395,7 +395,7 @@ export function DDMAWorkflow() {
 
               {/* UPLOAD RESOLUTION */}
               <div>
-                <label className="block text-sm mb-2">Upload Proposals</label>
+                <label className="block text-sm mb-2">Upload DDMA Proposal</label>
                 <FileUpload
                   variant="compact"
                   value={resolutionFile}
