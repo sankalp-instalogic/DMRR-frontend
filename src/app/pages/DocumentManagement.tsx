@@ -306,7 +306,7 @@ export function DocumentManagement() {
                   <span className="text-xs text-muted-foreground uppercase tracking-wider flex items-center gap-1">
                     <FileText className="size-3" /> Type
                   </span>
-                  <span className="text-sm font-medium break-words">
+                  <span className="text-sm font-medium wrap-break-word">
                     {selectedDoc.documentTypeName}
                   </span>
                 </div>
