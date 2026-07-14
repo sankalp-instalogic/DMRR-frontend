@@ -22,7 +22,7 @@ const adminModules = [
   {
     title: "OCR Queue Monitor",
     icon: FileCode,
-    link: "#",
+    link: "/documents",
     color: "bg-chart-3",
   },
 ];
